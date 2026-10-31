@@ -22,6 +22,7 @@ import {
   RULES_COHORTS,
   STARTER_LABEL,
   bandFor,
+  rebalanceWeights as rebalance,
   cohortFileStats,
   isLapsed,
   lastMonthBand,
@@ -395,24 +396,6 @@ function RulesBuilder({ policies }: { policies: Policy[] }) {
 }
 
 /* ---------------- Starter score ---------------- */
-
-function rebalance(weights: ScoreFactor[], key: string, value: number): ScoreFactor[] {
-  const enabled = weights.filter((w) => !w.disabled);
-  const others = enabled.filter((w) => w.key !== key);
-  const target = Math.max(0, Math.min(100, Math.round(value)));
-  const remaining = 100 - target;
-  const otherSum = others.reduce((s, w) => s + w.weight, 0);
-  let next = weights.map((w) => {
-    if (w.disabled) return w;
-    if (w.key === key) return { ...w, weight: target };
-    return { ...w, weight: otherSum > 0 ? Math.round((w.weight / otherSum) * remaining) : Math.round(remaining / Math.max(others.length, 1)) };
-  });
-  // Fix rounding so enabled weights sum to exactly 100.
-  const sum = next.filter((w) => !w.disabled).reduce((s, w) => s + w.weight, 0);
-  const fixKey = others.slice().sort((a, b) => b.weight - a.weight)[0]?.key;
-  if (sum !== 100 && fixKey) next = next.map((w) => (w.key === fixKey ? { ...w, weight: Math.max(0, w.weight + (100 - sum)) } : w));
-  return next;
-}
 
 function StarterScore({ policies }: { policies: Policy[] }) {
   const weightsRaw = usePersistencyStore((s) => s.starterWeights);
