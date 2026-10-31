@@ -114,7 +114,7 @@ function ControlTower() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <StatCard label="Policies in flight" value={num(stats.inFlight)} sub={`of ${num(scoped.length)} on book`} />
         <StatCard label="Due this month" value={num(stats.dueThisMonth)} sub={`${num(col.paidCount)} paid, ${num(col.upcomingCount)} not yet due`} />
         <StatCard
