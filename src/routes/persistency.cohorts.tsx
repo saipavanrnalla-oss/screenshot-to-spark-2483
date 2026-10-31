@@ -30,7 +30,6 @@ import {
   scorePolicy,
   type CohortSet,
   type Policy,
-  type Product,
   type ScoreFactor,
 } from "@/data/persistency";
 import { usePersistencyStore, type CohortGroup } from "@/store/persistency";
@@ -756,4 +755,3 @@ function Compare({ policies }: { policies: Policy[] }) {
   );
 }
 
-export type { Product };
