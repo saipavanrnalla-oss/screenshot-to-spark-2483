@@ -9,6 +9,10 @@ export * from "./workflows";
 export * from "./rules";
 export * from "./scorecard";
 export * from "./dates";
+export * from "./derived";
+export * from "./workflow-graphs";
+export type { FileAdapter } from "./files";
+export type { Person, PersonRole } from "./people";
 
 /** One seeded book used by every page. */
 export const BASE_POLICIES = generatePolicies();
