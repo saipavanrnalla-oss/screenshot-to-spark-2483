@@ -410,7 +410,7 @@ function StarterScore({ policies }: { policies: Policy[] }) {
     () => weightsRaw.map((w) => (w.key === "bureau" ? { ...w, disabled: !bureauOn, disabledNote: bureauOn ? undefined : w.disabledNote } : w)),
     [weightsRaw, bureauOn],
   );
-  const enabledSum = weights.filter((w) => !w.disabled).reduce((s, w) => s + w.weight, 0);
+  const enabledSum = weights.reduce((s, w) => s + w.weight, 0);
 
   const bands = useMemo(() => {
     const rows = [1, 2, 3, 4, 5].map((b) => ({ band: `Band ${b}`, count: 0, lapsed: 0 }));
@@ -467,7 +467,7 @@ function StarterScore({ policies }: { policies: Policy[] }) {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-[11px] text-dim">Moving one weight rebalances the others so enabled weights always total 100. Bureau signals stay off until a bureau_fields file is mapped in Data and integrations.</p>
+          <p className="mt-3 text-[11px] text-dim">Moving one weight rebalances the others so all weights always total 100; a greyed-out factor keeps its weight in reserve. Bureau signals stay off until a bureau_fields file is mapped in Data and integrations.</p>
           <div className="mt-5">
             <Eyebrow>Band cut-offs (score at which each band starts)</Eyebrow>
             <div className="mt-2 flex flex-wrap items-center gap-2">

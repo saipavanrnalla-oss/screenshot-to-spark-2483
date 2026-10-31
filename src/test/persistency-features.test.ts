@@ -4,16 +4,15 @@ import { PERSONAS } from "@/config/personas";
 import { evaluate } from "@/engine/persistency";
 import { usePersistencyStore } from "@/store/persistency";
 
-const enabledSum = (w: typeof DEFAULT_WEIGHTS) => w.filter((x) => !x.disabled).reduce((s, x) => s + x.weight, 0);
+const total = (w: typeof DEFAULT_WEIGHTS) => w.reduce((s, x) => s + x.weight, 0);
 
 describe("starter scorecard weights", () => {
   it("keeps enabled weights at exactly 100 after moving one slider", () => {
-    expect(enabledSum(DEFAULT_WEIGHTS)).toBe(96);
-    const base = rebalanceWeights(DEFAULT_WEIGHTS, "paymentMode", 18);
-    expect(enabledSum(base)).toBe(100);
-    const moved = rebalanceWeights(base, "paymentMode", 30);
+    expect(total(DEFAULT_WEIGHTS)).toBe(100);
+    const moved = rebalanceWeights(DEFAULT_WEIGHTS, "paymentMode", 30);
     expect(moved.find((w) => w.key === "paymentMode")?.weight).toBe(30);
-    expect(enabledSum(moved)).toBe(100);
+    expect(total(moved)).toBe(100);
+    expect(total(rebalanceWeights(moved, "region", 0))).toBe(100);
   });
 
   it("leaves the bureau factor out until a bureau file is mapped", () => {
