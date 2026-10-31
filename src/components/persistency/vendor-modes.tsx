@@ -16,7 +16,7 @@ export function vendorChange(name: string, mode: VendorMode, n: number, slice: n
     if (mode === "Direct") return "Desible sends each vendor its daily list and order. Desible itself makes no calls or messages.";
     return `Desible voice and WhatsApp act in the agreed slices (${num(slice)} high-risk policies in grace or early lapse now). Everything else stays with vendors.`;
   }
-  if (mode === "Observe") return `Desible suggests a next action for ${num(n)} of ${name}'s policies in a daily file. ${name} keeps its own list and dialling; nothing it does changes.`;
+  if (mode === "Observe") return `Desible suggests a next action for ${num(n)} of ${name.endsWith("s") ? `${name}'` : `${name}'s`} policies in a daily file. ${name} keeps its own list and dialling; nothing it does changes.`;
   if (mode === "Direct") return `Desible sends ${name} the daily list and call order for ${num(n)} policies. ${name} still does the work and is paid as today (${payout.toLowerCase()}).`;
   return `Desible takes one agreed slice: ${num(slice)} high-risk policies in grace or early lapse. ${name} keeps the other ${num(Math.max(0, n - slice))}. Payout for the slice moves to Desible.`;
 }
