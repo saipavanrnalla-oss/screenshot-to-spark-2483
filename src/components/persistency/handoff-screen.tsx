@@ -16,6 +16,13 @@ import { SendTestButton } from "./send-test";
 import { PolicyDrawer } from "./policy-drawer";
 
 const CALLABLE = new Set(["Grace", "Promised", "Lapsed early", "Revival offered", "Renewal window open"]);
+const ORDER: Record<string, number> = { Grace: 0, Promised: 1, "Renewal window open": 2, "Lapsed early": 3, "Revival offered": 4 };
+function callable(p: Policy): boolean {
+  if (!CALLABLE.has(p.state)) return false;
+  if (p.lifecycleStage === "Late lapse") return false;
+  if (p.state === "Renewal window open") return !!p.monthDue;
+  return true;
+}
 const TELECALL = new Set(["Pace Setters", "ATS", "Desible", "Ubona"]);
 
 function summary(p: Policy): string {
@@ -43,12 +50,12 @@ export function HandoffScreen() {
   const queue = useMemo(
     () =>
       scoped
-        .filter((p) => agentIndex(p) % 20 === 0 && (CALLABLE.has(p.state) || actions[`outcome:${p.policyId}`]))
+        .filter((p) => agentIndex(p) % 20 === 0 && (callable(p) || actions[`outcome:${p.policyId}`]))
         .filter((p) => {
           const d = decisions.get(p.policyId);
           return !!d && (TELECALL.has(d.executor) || !!actions[`outcome:${p.policyId}`]);
         })
-        .sort((a, b) => (a.graceEnd < b.graceEnd ? -1 : 1))
+        .sort((a, b) => (ORDER[a.state] ?? 9) - (ORDER[b.state] ?? 9) || (a.graceEnd < b.graceEnd ? -1 : 1))
         .slice(0, 30),
     [scoped, decisions, actions],
   );
@@ -70,7 +77,7 @@ export function HandoffScreen() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-subtle">
-          {me?.name ?? "Agent"} · Call {idx + 1} of {queue.length} in your queue · sorted by grace end
+          {me?.name ?? "Agent"} · Call {idx + 1} of {queue.length} in your queue · grace first, then promises, then early lapse
         </p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled={idx === 0} onClick={() => { setI(idx - 1); setObjection(null); }}><ChevronLeft /> Previous</Button>

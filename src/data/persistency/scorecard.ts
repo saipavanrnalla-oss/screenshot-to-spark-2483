@@ -113,3 +113,24 @@ export function bandFor(score: number, cutoffs: readonly number[] = DEFAULT_BAND
   for (const c of cutoffs) if (score >= c) band++;
   return band as StarterBand;
 }
+
+/** Moving one weight rebalances the other enabled weights so all weights (disabled ones held) always total 100. */
+export function rebalanceWeights(weights: ScoreFactor[], key: string, value: number): ScoreFactor[] {
+  const enabled = weights.filter((w) => !w.disabled);
+  const others = enabled.filter((w) => w.key !== key);
+  const budget = 100 - weights.filter((w) => w.disabled).reduce((s, w) => s + w.weight, 0);
+  const target = Math.max(0, Math.min(budget, Math.round(value)));
+  const remaining = budget - target;
+  const otherSum = others.reduce((s, w) => s + w.weight, 0);
+  let next = weights.map((w) => {
+    if (w.disabled) return w;
+    if (w.key === key) return { ...w, weight: target };
+    return { ...w, weight: otherSum > 0 ? Math.round((w.weight / otherSum) * remaining) : Math.round(remaining / Math.max(others.length, 1)) };
+  });
+  // Fix rounding so the total is exactly 100.
+  const sum = next.filter((w) => !w.disabled).reduce((s, w) => s + w.weight, 0);
+  const fixKey = others.slice().sort((a, b) => b.weight - a.weight)[0]?.key;
+  if (sum !== budget && fixKey) next = next.map((w) => (w.key === fixKey ? { ...w, weight: Math.max(0, w.weight + (budget - sum)) } : w));
+  return next;
+}
+

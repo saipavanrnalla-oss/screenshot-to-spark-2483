@@ -12,7 +12,7 @@ import { PolicyTable } from "@/components/persistency/policy-table";
 import { SUB_STEPS, matchesSub, subLabel, trackStation } from "@/components/persistency/lifecycle-model";
 import { useScopedPolicies } from "@/hooks/use-shell";
 import { STAGE_COLUMNS, WARMING_STATIONS, stageColumn, type StageColumn } from "@/data/persistency";
-import { usePersistencyStore } from "@/store/persistency";
+import { usePersistencyStore, useStationLabel } from "@/store/persistency";
 import { money, num } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -48,6 +48,7 @@ function LifecyclePage() {
   const navigate = useNavigate({ from: "/persistency/lifecycle" });
   const { scoped } = useScopedPolicies();
   const activeCohortSet = usePersistencyStore((s) => s.activeCohortSet);
+  const stationLabel = useStationLabel();
   const [openPolicy, setOpenPolicy] = useState<string | null>(null);
   const [query, setQuery] = useState(q);
 
@@ -154,7 +155,7 @@ function LifecyclePage() {
                             type="button"
                             onClick={() => setSub(k)}
                             aria-pressed={sub === k}
-                            title={`Station ${s.n} (T${s.dayOffset}): ${s.label}`}
+                            title={`Station ${s.n} (T${s.dayOffset}): ${stationLabel(s.n, s.label)}`}
                             className="group flex cursor-pointer flex-col items-center gap-1"
                           >
                             <span className="text-[10px] font-semibold text-subtle tabular">{num(n)}</span>
@@ -183,7 +184,7 @@ function LifecyclePage() {
                             <td className="py-1 pr-2 text-subtle">{s.n}</td>
                             <td className="py-1 pr-2 text-subtle tabular">T{s.dayOffset}</td>
                             <td className="py-1 pr-2 text-subtle">{s.channel}</td>
-                            <td className="py-1 text-subtle">{s.content}</td>
+                            <td className="py-1 text-subtle"><span className="font-semibold text-foreground">{stationLabel(s.n, s.label)}</span> · {s.content}</td>
                           </tr>
                         ))}
                       </tbody>

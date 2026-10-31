@@ -67,6 +67,7 @@ function KillSwitchBanner() {
 function PersonaSwitcher() {
   const { persona } = useShell();
   const navigate = useNavigate();
+  const enabled = usePersistencyStore((s) => s.enabledPersonas);
   return (
     <div className="flex items-center gap-2">
       <span className="hidden text-[11px] text-muted-foreground xl:inline">Viewing as</span>
@@ -81,7 +82,7 @@ function PersonaSwitcher() {
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="rounded-input border-border bg-card">
-          {PERSONAS.map((p, i) => (
+          {PERSONAS.map((p, i) => ({ p, i })).filter(({ p }) => enabled.includes(p.id) || p.id === persona.id).map(({ p, i }) => (
             <SelectItem key={p.id} value={p.id} className="text-xs">
               <span className="mr-1.5 text-dim tabular">{String(i + 1).padStart(2, "0")}</span>
               {p.label}

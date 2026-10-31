@@ -6,10 +6,10 @@ Source brief: uploaded "Persistency Control Tower: Lovable Build Prompt". The us
 - [x] 1. Shell: top bar, persona switcher, product switch, sidebar, tier badge, demo banner
 - [x] 2. Mock data module and engine
 - [x] 3. Control Tower, Lifecycle, Policy drawer
-- [ ] 4. Cohorts (all four tabs)
-- [ ] 5. Configuration console with product matrix
-- [ ] 6. Workflows library plus six canvases (needs @xyflow/react)
-- [ ] 7. Persona homes (all 14), agent handoff first
-- [ ] 8. Month-end war room, Guardrails, Measurement
-- [ ] 9. Where Desible sits, Data and integrations, Setup
-- [ ] 10. Polish: empty states, stale-file and kill-switch states, accessibility, 1024 check
+- [x] 4. Cohorts (all four tabs)
+- [x] 5. Configuration console with product matrix
+- [x] 6. Workflows library plus six canvases
+- [x] 7. Persona homes (all 14), agent handoff first
+- [x] 8. Month-end war room, Guardrails, Measurement
+- [x] 9. Where Desible sits, Data and integrations, Setup
+- [x] 10. Polish: empty states, stale-file and kill-switch states, accessibility, 1024 check

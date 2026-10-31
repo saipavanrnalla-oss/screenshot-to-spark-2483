@@ -70,7 +70,7 @@ export function useRecommendations(): Rec[] {
         title: `Move ${num(list.length)} grace calls from Pace Setters to Desible for cohort ${cohort}`,
         why: `${num(list.length)} ${cohort} policies in grace sit with Pace Setters. This month ${cohort} paid at ${pct(rP.rate)} with Pace Setters (${num(rP.n)} due) and ${pct(rD.rate)} with Desible (${num(rD.n)} due).`,
         count: list.length,
-        effect: lift > 0 ? `Between ${num(lo)} and ${num(hi)} more policies paid (${money(lo * avgInstalment * m.col.scale)} to ${money(hi * avgInstalment * m.col.scale)})` : "No gain expected from this month's rates; approve only to test",
+        effect: lift > 0 && hi === 0 ? "Less than one more policy paid on these numbers; too few calls to matter" : lift > 0 ? `Between ${num(lo)} and ${num(hi)} more policies paid (${money(lo * avgInstalment * m.col.scale)} to ${money(hi * avgInstalment * m.col.scale)})` : "No gain expected from this month's rates; approve only to test",
         assumption: "Assumes moved calls convert somewhere between half of and the full gap between the two vendors' paid rates on the same cohort this month.",
         editable: true,
         executor: "Desible",
@@ -101,7 +101,7 @@ export function useRecommendations(): Rec[] {
         title: `Extend field visits to the ${name} branch`,
         why: `${num(list.length)} cash or branch payers in ${name} are in grace. Visited cash payers paid at ${pct(visited.rate)} this month (${num(visited.n)} due) against ${pct(others.rate)} for those not visited.`,
         count: list.length,
-        effect: lift > 0 ? `Between ${num(lo)} and ${num(hi)} more policies paid (${money(lo * avgInstalment * m.col.scale)} to ${money(hi * avgInstalment * m.col.scale)})` : "No gain expected from this month's rates",
+        effect: lift > 0 && hi === 0 ? "Less than one more policy paid on these numbers; too few calls to matter" : lift > 0 ? `Between ${num(lo)} and ${num(hi)} more policies paid (${money(lo * avgInstalment * m.col.scale)} to ${money(hi * avgInstalment * m.col.scale)})` : "No gain expected from this month's rates",
         assumption: "Assumes newly visited customers pay at between half of and the full difference seen between visited and not-visited cash payers this month.",
         editable: false,
         rule: {
