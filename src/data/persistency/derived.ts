@@ -239,3 +239,53 @@ export function sinceYesterday(policies: Policy[]): Record<string, number> {
 export function peopleByRole(people: Person[], role: Person["role"]): Person[] {
   return people.filter((p) => p.role === role);
 }
+
+/* ---------- Illustrative unit costs (labelled illustrative wherever shown) ---------- */
+
+export const UNIT_COSTS: Record<string, { unit: string; cost: number }> = {
+  "Pace Setters": { unit: "per call", cost: 38 },
+  ATS: { unit: "per call", cost: 45 },
+  Paylocal: { unit: "per message", cost: 1 },
+  Ubona: { unit: "per call", cost: 6 },
+  Desible: { unit: "per action", cost: 12 },
+};
+
+/* ---------- Seeded queue details for persona screens ---------- */
+
+const WANTS_OUT_REASONS = ["Needs the money now", "Unhappy with fund returns", "Found a cheaper policy", "Advisor left, feels unserviced", "Premium too high after salary change"] as const;
+export function wantsOutReason(p: Policy): string {
+  return WANTS_OUT_REASONS[hashId(p.policyId + "wo") % WANTS_OUT_REASONS.length]!;
+}
+
+export const RETENTION_OFFERS: Record<Policy["product"], string[]> = {
+  ULIP: ["Partial withdrawal instead of surrender", "Premium holiday after lock-in", "Switch to a lower-risk fund"],
+  Traditional: ["Reduced paid-up policy", "Change to monthly mode", "Policy loan against surrender value"],
+  Term: ["Change to monthly mode", "Reduce cover to lower the premium"],
+};
+
+export function revivalRequirement(p: Policy): "Good-health declaration" | "Medicals" {
+  const daysLapsed = p.lapseDate ? Math.round((NOW.getTime() - new Date(`${p.lapseDate}T00:00:00Z`).getTime()) / 86_400_000) : 0;
+  return p.annualisedPremium >= 300_000 || daysLapsed > 540 ? "Medicals" : "Good-health declaration";
+}
+
+export function revivalStatus(p: Policy): "Declaration received" | "Awaiting medicals" | "Medical reports in" | "Awaiting declaration" {
+  const h = hashId(p.policyId + "uw") % 4;
+  if (revivalRequirement(p) === "Medicals") return h < 2 ? "Awaiting medicals" : "Medical reports in";
+  return h < 3 ? "Declaration received" : "Awaiting declaration";
+}
+
+export type MandateState = "Active" | "Pending registration" | "Rejected by bank" | "Cancelled by customer";
+export function mandateState(p: Policy): MandateState | null {
+  if (p.paymentMethod !== "NACH/ECS mandate" && p.paymentMethod !== "UPI autopay") return null;
+  if (p.reasonCode === "Mandate failed") return "Rejected by bank";
+  const h = hashId(p.policyId + "md") % 100;
+  if (p.lifecycleStage === "Sourcing" && h < 40) return "Pending registration";
+  if (h < 2) return "Cancelled by customer";
+  if (h < 5) return "Pending registration";
+  return "Active";
+}
+
+export function bounceStage(p: Policy): "Re-presentation scheduled" | "Re-presented, awaiting result" | "Failed again" {
+  const h = hashId(p.policyId + "bn") % 3;
+  return h === 0 ? "Re-presentation scheduled" : h === 1 ? "Re-presented, awaiting result" : "Failed again";
+}
