@@ -43,7 +43,7 @@ export function RunRateChart({ height = 260 }: { height?: number }) {
           <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} unit=" Cr" width={64} />
           <Tooltip {...TOOLTIP_STYLE} formatter={(v: number) => `₹${v.toFixed(1)} Cr`} />
           <Legend wrapperStyle={{ fontSize: 11 }} />
-          <ReferenceLine x={m.chart[TODAY - 1]?.label} stroke={GRID} strokeDasharray="3 3" label={{ value: "Today", fill: "var(--muted-foreground)", fontSize: 10, position: "top" }} />
+          <ReferenceLine x={m.chart[TODAY - 1]?.label ?? ""} stroke={GRID} strokeDasharray="3 3" label={{ value: "Today", fill: "var(--muted-foreground)", fontSize: 10, position: "top" }} />
           <Line type="monotone" dataKey="actual" name="Collected" stroke={SERIES[0]} strokeWidth={2.25} dot={false} connectNulls={false} />
           <Line type="monotone" dataKey="plan" name="Plan (straight line)" stroke={SERIES[2]} strokeDasharray="4 4" dot={false} />
           <Line type="monotone" dataKey="projected" name="At current run-rate" stroke={SERIES[1]} dot={false} />
