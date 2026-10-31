@@ -71,7 +71,7 @@ function first(role: string) {
 
 function Kpis({ items }: { items: [string, ReactNode][] }) {
   return (
-    <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-3">
       {items.map(([l, v]) => (
         <div key={l} className="rounded-input border border-border bg-surface-translucent px-3 py-2">
           <div className="text-lg font-extrabold text-foreground tabular">{v}</div>
