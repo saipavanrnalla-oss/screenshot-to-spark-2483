@@ -10,33 +10,207 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PersistencyRouteImport } from './routes/persistency'
+import { Route as PersistencyIndexRouteImport } from './routes/persistency.index'
+import { Route as PersistencyCohortsRouteImport } from './routes/persistency.cohorts'
+import { Route as PersistencyConfigurationRouteImport } from './routes/persistency.configuration'
+import { Route as PersistencyDataRouteImport } from './routes/persistency.data'
+import { Route as PersistencyGuardrailsRouteImport } from './routes/persistency.guardrails'
+import { Route as PersistencyLifecycleRouteImport } from './routes/persistency.lifecycle'
+import { Route as PersistencyMeasurementRouteImport } from './routes/persistency.measurement'
+import { Route as PersistencySetupRouteImport } from './routes/persistency.setup'
+import { Route as PersistencyWarRoomRouteImport } from './routes/persistency.war-room'
+import { Route as PersistencyWhereWeSitRouteImport } from './routes/persistency.where-we-sit'
+import { Route as PersistencyQueuesPersonaRouteImport } from './routes/persistency.queues.$persona'
+import { Route as PersistencyWorkflowsIndexRouteImport } from './routes/persistency.workflows.index'
+import { Route as PersistencyWorkflowsIdRouteImport } from './routes/persistency.workflows.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PersistencyRoute = PersistencyRouteImport.update({
+  id: '/persistency',
+  path: '/persistency',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PersistencyIndexRoute = PersistencyIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyCohortsRoute = PersistencyCohortsRouteImport.update({
+  id: '/cohorts',
+  path: '/cohorts',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyConfigurationRoute =
+  PersistencyConfigurationRouteImport.update({
+    id: '/configuration',
+    path: '/configuration',
+    getParentRoute: () => PersistencyRoute,
+  } as any)
+const PersistencyDataRoute = PersistencyDataRouteImport.update({
+  id: '/data',
+  path: '/data',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyGuardrailsRoute = PersistencyGuardrailsRouteImport.update({
+  id: '/guardrails',
+  path: '/guardrails',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyLifecycleRoute = PersistencyLifecycleRouteImport.update({
+  id: '/lifecycle',
+  path: '/lifecycle',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyMeasurementRoute = PersistencyMeasurementRouteImport.update({
+  id: '/measurement',
+  path: '/measurement',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencySetupRoute = PersistencySetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyWarRoomRoute = PersistencyWarRoomRouteImport.update({
+  id: '/war-room',
+  path: '/war-room',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyWhereWeSitRoute = PersistencyWhereWeSitRouteImport.update({
+  id: '/where-we-sit',
+  path: '/where-we-sit',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyQueuesPersonaRoute =
+  PersistencyQueuesPersonaRouteImport.update({
+    id: '/queues/$persona',
+    path: '/queues/$persona',
+    getParentRoute: () => PersistencyRoute,
+  } as any)
+const PersistencyWorkflowsIndexRoute =
+  PersistencyWorkflowsIndexRouteImport.update({
+    id: '/workflows/',
+    path: '/workflows/',
+    getParentRoute: () => PersistencyRoute,
+  } as any)
+const PersistencyWorkflowsIdRoute = PersistencyWorkflowsIdRouteImport.update({
+  id: '/workflows/$id',
+  path: '/workflows/$id',
+  getParentRoute: () => PersistencyRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/persistency': typeof PersistencyRouteWithChildren
+  '/persistency/cohorts': typeof PersistencyCohortsRoute
+  '/persistency/configuration': typeof PersistencyConfigurationRoute
+  '/persistency/data': typeof PersistencyDataRoute
+  '/persistency/guardrails': typeof PersistencyGuardrailsRoute
+  '/persistency/lifecycle': typeof PersistencyLifecycleRoute
+  '/persistency/measurement': typeof PersistencyMeasurementRoute
+  '/persistency/setup': typeof PersistencySetupRoute
+  '/persistency/war-room': typeof PersistencyWarRoomRoute
+  '/persistency/where-we-sit': typeof PersistencyWhereWeSitRoute
+  '/persistency/': typeof PersistencyIndexRoute
+  '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
+  '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
+  '/persistency/workflows/': typeof PersistencyWorkflowsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/persistency/cohorts': typeof PersistencyCohortsRoute
+  '/persistency/configuration': typeof PersistencyConfigurationRoute
+  '/persistency/data': typeof PersistencyDataRoute
+  '/persistency/guardrails': typeof PersistencyGuardrailsRoute
+  '/persistency/lifecycle': typeof PersistencyLifecycleRoute
+  '/persistency/measurement': typeof PersistencyMeasurementRoute
+  '/persistency/setup': typeof PersistencySetupRoute
+  '/persistency/war-room': typeof PersistencyWarRoomRoute
+  '/persistency/where-we-sit': typeof PersistencyWhereWeSitRoute
+  '/persistency': typeof PersistencyIndexRoute
+  '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
+  '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
+  '/persistency/workflows': typeof PersistencyWorkflowsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/persistency': typeof PersistencyRouteWithChildren
+  '/persistency/cohorts': typeof PersistencyCohortsRoute
+  '/persistency/configuration': typeof PersistencyConfigurationRoute
+  '/persistency/data': typeof PersistencyDataRoute
+  '/persistency/guardrails': typeof PersistencyGuardrailsRoute
+  '/persistency/lifecycle': typeof PersistencyLifecycleRoute
+  '/persistency/measurement': typeof PersistencyMeasurementRoute
+  '/persistency/setup': typeof PersistencySetupRoute
+  '/persistency/war-room': typeof PersistencyWarRoomRoute
+  '/persistency/where-we-sit': typeof PersistencyWhereWeSitRoute
+  '/persistency/': typeof PersistencyIndexRoute
+  '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
+  '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
+  '/persistency/workflows/': typeof PersistencyWorkflowsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/persistency'
+    | '/persistency/cohorts'
+    | '/persistency/configuration'
+    | '/persistency/data'
+    | '/persistency/guardrails'
+    | '/persistency/lifecycle'
+    | '/persistency/measurement'
+    | '/persistency/setup'
+    | '/persistency/war-room'
+    | '/persistency/where-we-sit'
+    | '/persistency/'
+    | '/persistency/queues/$persona'
+    | '/persistency/workflows/$id'
+    | '/persistency/workflows/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/persistency/cohorts'
+    | '/persistency/configuration'
+    | '/persistency/data'
+    | '/persistency/guardrails'
+    | '/persistency/lifecycle'
+    | '/persistency/measurement'
+    | '/persistency/setup'
+    | '/persistency/war-room'
+    | '/persistency/where-we-sit'
+    | '/persistency'
+    | '/persistency/queues/$persona'
+    | '/persistency/workflows/$id'
+    | '/persistency/workflows'
+  id:
+    | '__root__'
+    | '/'
+    | '/persistency'
+    | '/persistency/cohorts'
+    | '/persistency/configuration'
+    | '/persistency/data'
+    | '/persistency/guardrails'
+    | '/persistency/lifecycle'
+    | '/persistency/measurement'
+    | '/persistency/setup'
+    | '/persistency/war-room'
+    | '/persistency/where-we-sit'
+    | '/persistency/'
+    | '/persistency/queues/$persona'
+    | '/persistency/workflows/$id'
+    | '/persistency/workflows/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PersistencyRoute: typeof PersistencyRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +222,146 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/persistency': {
+      id: '/persistency'
+      path: '/persistency'
+      fullPath: '/persistency'
+      preLoaderRoute: typeof PersistencyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/persistency/': {
+      id: '/persistency/'
+      path: '/'
+      fullPath: '/persistency/'
+      preLoaderRoute: typeof PersistencyIndexRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/cohorts': {
+      id: '/persistency/cohorts'
+      path: '/cohorts'
+      fullPath: '/persistency/cohorts'
+      preLoaderRoute: typeof PersistencyCohortsRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/configuration': {
+      id: '/persistency/configuration'
+      path: '/configuration'
+      fullPath: '/persistency/configuration'
+      preLoaderRoute: typeof PersistencyConfigurationRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/data': {
+      id: '/persistency/data'
+      path: '/data'
+      fullPath: '/persistency/data'
+      preLoaderRoute: typeof PersistencyDataRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/guardrails': {
+      id: '/persistency/guardrails'
+      path: '/guardrails'
+      fullPath: '/persistency/guardrails'
+      preLoaderRoute: typeof PersistencyGuardrailsRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/lifecycle': {
+      id: '/persistency/lifecycle'
+      path: '/lifecycle'
+      fullPath: '/persistency/lifecycle'
+      preLoaderRoute: typeof PersistencyLifecycleRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/measurement': {
+      id: '/persistency/measurement'
+      path: '/measurement'
+      fullPath: '/persistency/measurement'
+      preLoaderRoute: typeof PersistencyMeasurementRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/setup': {
+      id: '/persistency/setup'
+      path: '/setup'
+      fullPath: '/persistency/setup'
+      preLoaderRoute: typeof PersistencySetupRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/war-room': {
+      id: '/persistency/war-room'
+      path: '/war-room'
+      fullPath: '/persistency/war-room'
+      preLoaderRoute: typeof PersistencyWarRoomRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/where-we-sit': {
+      id: '/persistency/where-we-sit'
+      path: '/where-we-sit'
+      fullPath: '/persistency/where-we-sit'
+      preLoaderRoute: typeof PersistencyWhereWeSitRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/queues/$persona': {
+      id: '/persistency/queues/$persona'
+      path: '/queues/$persona'
+      fullPath: '/persistency/queues/$persona'
+      preLoaderRoute: typeof PersistencyQueuesPersonaRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/workflows/': {
+      id: '/persistency/workflows/'
+      path: '/workflows'
+      fullPath: '/persistency/workflows/'
+      preLoaderRoute: typeof PersistencyWorkflowsIndexRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/workflows/$id': {
+      id: '/persistency/workflows/$id'
+      path: '/workflows/$id'
+      fullPath: '/persistency/workflows/$id'
+      preLoaderRoute: typeof PersistencyWorkflowsIdRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
   }
 }
 
+interface PersistencyRouteChildren {
+  PersistencyCohortsRoute: typeof PersistencyCohortsRoute
+  PersistencyConfigurationRoute: typeof PersistencyConfigurationRoute
+  PersistencyDataRoute: typeof PersistencyDataRoute
+  PersistencyGuardrailsRoute: typeof PersistencyGuardrailsRoute
+  PersistencyLifecycleRoute: typeof PersistencyLifecycleRoute
+  PersistencyMeasurementRoute: typeof PersistencyMeasurementRoute
+  PersistencySetupRoute: typeof PersistencySetupRoute
+  PersistencyWarRoomRoute: typeof PersistencyWarRoomRoute
+  PersistencyWhereWeSitRoute: typeof PersistencyWhereWeSitRoute
+  PersistencyIndexRoute: typeof PersistencyIndexRoute
+  PersistencyQueuesPersonaRoute: typeof PersistencyQueuesPersonaRoute
+  PersistencyWorkflowsIdRoute: typeof PersistencyWorkflowsIdRoute
+  PersistencyWorkflowsIndexRoute: typeof PersistencyWorkflowsIndexRoute
+}
+
+const PersistencyRouteChildren: PersistencyRouteChildren = {
+  PersistencyCohortsRoute: PersistencyCohortsRoute,
+  PersistencyConfigurationRoute: PersistencyConfigurationRoute,
+  PersistencyDataRoute: PersistencyDataRoute,
+  PersistencyGuardrailsRoute: PersistencyGuardrailsRoute,
+  PersistencyLifecycleRoute: PersistencyLifecycleRoute,
+  PersistencyMeasurementRoute: PersistencyMeasurementRoute,
+  PersistencySetupRoute: PersistencySetupRoute,
+  PersistencyWarRoomRoute: PersistencyWarRoomRoute,
+  PersistencyWhereWeSitRoute: PersistencyWhereWeSitRoute,
+  PersistencyIndexRoute: PersistencyIndexRoute,
+  PersistencyQueuesPersonaRoute: PersistencyQueuesPersonaRoute,
+  PersistencyWorkflowsIdRoute: PersistencyWorkflowsIdRoute,
+  PersistencyWorkflowsIndexRoute: PersistencyWorkflowsIndexRoute,
+}
+
+const PersistencyRouteWithChildren = PersistencyRoute._addFileChildren(
+  PersistencyRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PersistencyRoute: PersistencyRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
