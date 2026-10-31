@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Button } from "@/components/ui/button";
 import { Chip, Eyebrow, StatusPill } from "@/components/ds/primitives";
 import { TierBadge } from "@/components/ds/tier-badge";
-import { DIMENSION_LABEL, SIMULATED_EVENTS, workflowById, type DimensionKey } from "@/data/persistency";
+import { DIMENSION_LABEL, SIMULATED_EVENTS, VENDORS, workflowById, type DimensionKey } from "@/data/persistency";
 import { LEVEL_LABEL, baseTimeline, cohortLabel, evaluate } from "@/engine/persistency";
 import { useEngineContext, usePersistencyStore, usePolicy } from "@/store/persistency";
 import { date, dateTime, inr } from "@/lib/format";
@@ -17,6 +17,7 @@ export function PolicyDrawer({ policyId, onClose }: { policyId: string | null; o
   const rules = usePersistencyStore((s) => s.rules);
   const extra = usePersistencyStore((s) => (policyId ? s.extraTimeline[policyId] : undefined));
   const simulate = usePersistencyStore((s) => s.simulate);
+  const vendorModes = usePersistencyStore((s) => s.vendorModes);
   const ctx = useEngineContext();
 
   const decision = useMemo(() => (policy ? evaluate(policy, rules, ctx) : null), [policy, rules, ctx]);
@@ -100,6 +101,12 @@ export function PolicyDrawer({ policyId, onClose }: { policyId: string | null; o
                 </p>
                 {decision.frozen && <StatusPill status="failed" className="mt-2">Outreach frozen</StatusPill>}
                 {decision.cancelledReason && <StatusPill status="attention" className="mt-2">Cancelled: {decision.cancelledReason}</StatusPill>}
+                {(() => {
+                  const v = VENDORS.find((x) => x.name === decision.executor);
+                  return v && vendorModes[v.id] === "Observe" ? (
+                    <p className="mt-2 text-[11px] text-subtle"><StatusPill status="simulated">Observe mode</StatusPill> Desible suggests this action; {v.name} acts on its own list.</p>
+                  ) : null;
+                })()}
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
