@@ -1,12 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { BuildStepPlaceholder } from "@/components/persistency/build-step-placeholder";
-import { personaById } from "@/config/personas";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { EmptyState, PageHeader } from "@/components/ds/primitives";
+import { PersonaHome } from "@/components/persistency/persona-home";
+import { PERSONAS, panelTitles } from "@/config/personas";
 
 export const Route = createFileRoute("/persistency/queues/$persona")({
   head: ({ params }) => {
-    const p = personaById(params.persona);
-    const title = `${p.landsOn} · ${p.label} · desible.ai`;
-    const description = `Work queue for ${p.label}: ${p.panels.join(", ")}.`;
+    const p = PERSONAS.find((x) => x.id === params.persona);
+    const title = p ? `${p.landsOn} · ${p.label} · desible.ai` : "Work queue · desible.ai";
+    const description = p ? `Work queue for ${p.label}: ${panelTitles(p).join(", ")}.` : "Persistency work queue.";
     return {
       meta: [
         { title },
@@ -21,14 +22,14 @@ export const Route = createFileRoute("/persistency/queues/$persona")({
 
 function PersonaQueue() {
   const { persona } = Route.useParams();
-  const p = personaById(persona);
-  return (
-    <BuildStepPlaceholder
-      eyebrow={`Work queue · ${p.label}`}
-      title={p.landsOn}
-      step={7}
-      tiers={["live-engine", "live-channels"]}
-      willShow={[...p.panels.map((x) => `Panel: ${x}`), `Primary action: ${p.primaryAction}`, "What changed since yesterday"]}
-    />
-  );
+  const p = PERSONAS.find((x) => x.id === persona);
+  if (!p) {
+    return (
+      <div className="mx-auto max-w-[900px] space-y-4">
+        <PageHeader eyebrow="Work queues" title="No such work queue" tiers={["live-engine"]} />
+        <EmptyState title={`There is no persona called "${persona}".`} action={<Link to="/persistency" className="text-xs font-semibold text-primary hover:underline">Back to the Control Tower</Link>} />
+      </div>
+    );
+  }
+  return <PersonaHome key={p.id} persona={p} />;
 }
