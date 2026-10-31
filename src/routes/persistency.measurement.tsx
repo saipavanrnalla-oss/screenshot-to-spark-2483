@@ -154,7 +154,7 @@ function MeasurementPage() {
           </ul>
         </Panel>
 
-        <Panel eyebrow="Cost per rupee collected" title={`${inr(cost.perRupee * 100)} spent per ₹100 collected`} tiers={["simulated"]}>
+        <Panel eyebrow="Cost per rupee collected" title={`₹${(cost.perRupee * 100).toFixed(2)} spent per ₹100 collected`} tiers={["simulated"]}>
           <NoteBanner tone="attention" className="mb-3">Illustrative inputs. Replace with your vendor rates; nothing here is a saving claim.</NoteBanner>
           <DataTable head={["Vendor", "Unit cost (₹)", "Touches (30 days)", "Spend this month"]} minWidth={460}>
             {cost.rows.map((r) => (
