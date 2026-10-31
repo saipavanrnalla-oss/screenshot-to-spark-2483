@@ -234,3 +234,26 @@
 @utility animate-pulse-dot {
   animation: pulse-dot 1.6s ease-in-out infinite;
 }
+
+/* Workflow canvas (React Flow) themed with PRISM tokens only. */
+.prism-flow .react-flow {
+  --xy-background-color: var(--background);
+  --xy-controls-button-background-color: var(--card);
+  --xy-controls-button-background-color-hover: var(--brand-tint);
+  --xy-controls-button-color: var(--text-secondary);
+  --xy-controls-button-color-hover: var(--foreground);
+  --xy-controls-button-border-color: var(--border);
+  --xy-controls-box-shadow: none;
+  --xy-node-boxshadow-selected: none;
+  --xy-edge-label-background-color: var(--card);
+}
+.prism-flow .react-flow__node-step {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.prism-flow .react-flow__controls {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}

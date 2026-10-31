@@ -8,10 +8,10 @@ import { PageHeader, Panel, StatCard, StatusPill, Eyebrow, EmptyState } from "@/
 import { TierBadge } from "@/components/ds/tier-badge";
 import { PolicyDrawer } from "@/components/persistency/policy-drawer";
 import { useScopedPolicies, useShell } from "@/hooks/use-shell";
-import { FILE_ADAPTERS, NOW_ISO, collection, headline, stageSummary, workflowById } from "@/data/persistency";
+import { NOW_ISO, collection, headline, stageSummary, workflowById } from "@/data/persistency";
 import type { Tier } from "@/data/persistency/workflows";
 import { cohortLabel } from "@/engine/persistency";
-import { TICK_MS, useDecisions, usePersistencyStore } from "@/store/persistency";
+import { TICK_MS, useAdapters, useDecisions, usePersistencyStore } from "@/store/persistency";
 import { croreValue, money, num, pct, time } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -60,10 +60,11 @@ function ControlTower() {
   const col = useMemo(() => collection(all, product), [all, product]);
   const stages = useMemo(() => stageSummary(scoped), [scoped]);
   const decisions = useDecisions(scoped);
+  const adapters = useAdapters();
 
   const spine = useMemo(() => {
     const receiptSet = new Set(receipts);
-    const enabled = FILE_ADAPTERS.filter((a) => a.enabled);
+    const enabled = adapters.filter((a) => a.enabled);
     const filesToday = enabled.filter((a) => a.lastReceived.startsWith("28 Oct 2026")).length;
     const cohorted = scoped.filter((p) => cohortLabel(p, activeCohortSet[p.product]) !== "Unscored").length;
     let decided = 0, sent = 0, conflicts = 0, capHeld = 0;
@@ -85,9 +86,9 @@ function ControlTower() {
       { key: "learn", label: "Learn", value: num(pending.length), caption: "rule changes proposed", explain: "Outcomes turn into proposed rule changes with the evidence count shown. Nothing changes until a named person approves it.", tiers: ["live-engine"] },
     ];
     return { steps, conflicts, capHeld };
-  }, [scoped, decisions, receipts, activeCohortSet, pending.length]);
+  }, [scoped, decisions, receipts, activeCohortSet, pending.length, adapters]);
 
-  const staleAdapters = FILE_ADAPTERS.filter((a) => a.stale);
+  const staleAdapters = adapters.filter((a) => a.stale);
   const visibleTicker = ticker.filter((t) => product === "All" || t.product === product).slice(0, 8);
 
   return (
