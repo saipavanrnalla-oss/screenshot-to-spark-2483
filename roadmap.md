@@ -1,12 +1,12 @@
 # Persistency Control Tower roadmap
 
-Source brief: uploaded "Persistency Control Tower: Lovable Build Prompt". User asked to pause after each build step.
+Source brief: uploaded "Persistency Control Tower: Lovable Build Prompt". The user first asked to pause after each step, then (31 Oct 2026) asked to build all remaining steps in one go.
 
 - [x] 0. Scaffold: design tokens, font, routing, entry page
 - [x] 1. Shell: top bar, persona switcher, product switch, sidebar, tier badge, demo banner
 - [x] 2. Mock data module and engine
 - [x] 3. Control Tower, Lifecycle, Policy drawer
-- [ ] 4. Cohorts (all four tabs) — waiting for user review of steps 0-3
+- [ ] 4. Cohorts (all four tabs)
 - [ ] 5. Configuration console with product matrix
 - [ ] 6. Workflows library plus six canvases (needs @xyflow/react)
 - [ ] 7. Persona homes (all 14), agent handoff first
