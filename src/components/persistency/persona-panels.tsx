@@ -819,9 +819,10 @@ function BounceReturns() {
   const me = first("Ops / remittance");
   const rows = scoped.filter((p) => p.reasonCode === "Mandate bounce" || (p.reasonCode === "Mandate failed" && p.lifecycleStage !== "Late lapse"));
   const failed = rows.filter((p) => bounceStage(p) === "Failed again");
+  const actions = usePersistencyStore((s) => s.personaActions);
   return (
     <div className="space-y-3">
-      <Kpis items={[["Bounces and failures", num(rows.length)], ["Failed again after retry", num(failed.length)], ["Retry batches this session", num(Object.keys(usePersistencyStore.getState().personaActions).filter((k) => k.startsWith("retry:")).length)]]} />
+      <Kpis items={[["Bounces and failures", num(rows.length)], ["Failed again after retry", num(failed.length)], ["Retry batches this session", num(Object.keys(actions).filter((k) => k.startsWith("retry")).length)]]} />
       <DataTable head={["Policy", "Method", "Amount", "Reason", "Re-presentation", ""]} minWidth={720} maxHeight={360}>
         {rows.slice(0, 20).map((p) => (
           <tr key={p.policyId}>
