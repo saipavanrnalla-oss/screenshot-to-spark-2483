@@ -287,7 +287,10 @@ export function generatePolicies(): Policy[] {
           const roll = r.next();
           status = roll < pPay ? "paid" : roll < pPay + 0.07 ? "promised" : "unpaid";
         }
-        const paidOn = status === "paid" ? toIso(addDays(octDue, Math.min(r.int(0, 6), diffDays(NOW, octDue)))) : undefined;
+        // Paid ahead of an upcoming due date: spread over the last few weeks rather than landing on today.
+        const offset = status === "paid" ? r.int(0, 6) : 0;
+        const sinceDue = diffDays(NOW, octDue);
+        const paidOn = status === "paid" ? toIso(sinceDue >= 0 ? addDays(octDue, Math.min(offset, sinceDue)) : addDays(NOW, -((idx * 7) % 21))) : undefined;
         monthDue = {
           date: toIso(octDue),
           amount: d.instalmentAmount,
