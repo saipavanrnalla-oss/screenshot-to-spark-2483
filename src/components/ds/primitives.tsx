@@ -196,3 +196,86 @@ export function EmptyState({ title, action }: { title: string; action?: ReactNod
     </div>
   );
 }
+
+/** Pill tabs (role=tablist). Content is rendered by the caller. */
+export function PillTabs<T extends string>({
+  value,
+  tabs,
+  onChange,
+  label,
+}: {
+  value: T;
+  tabs: readonly { id: T; label: string }[];
+  onChange: (v: T) => void;
+  label: string;
+}) {
+  return (
+    <div role="tablist" aria-label={label} className="flex flex-wrap gap-1.5">
+      {tabs.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          role="tab"
+          aria-selected={t.id === value}
+          onClick={() => onChange(t.id)}
+          className={cn(
+            "cursor-pointer rounded-pill border px-3.5 py-1.5 text-xs font-semibold transition-colors",
+            t.id === value ? "border-brand-tint-border bg-brand-tint text-foreground" : "border-border text-subtle hover:text-foreground",
+          )}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Dense 12px data table with sticky header and translucent zebra rows. */
+export function DataTable({
+  head,
+  children,
+  minWidth = 640,
+  maxHeight,
+  className,
+}: {
+  head: ReactNode[];
+  children: ReactNode;
+  minWidth?: number;
+  maxHeight?: number;
+  className?: string;
+}) {
+  return (
+    <div className={cn("overflow-hidden rounded-card border border-border", className)}>
+      <div className="scrollbar-prism overflow-auto" style={maxHeight ? { maxHeight } : undefined}>
+        <table className="w-full border-collapse text-[12px] [&_tbody_tr:nth-child(even)]:bg-surface-translucent [&_tbody_tr]:border-b [&_tbody_tr]:border-border/60 [&_td]:px-3 [&_td]:py-2" style={{ minWidth }}>
+          <thead className="sticky top-0 z-10 bg-card">
+            <tr className="text-left">
+              {head.map((h, i) => (
+                <th key={i} scope="col" className="whitespace-nowrap border-b border-border px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>{children}</tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/** Banner for honest notes (synthetic data, preview only, starter score). */
+export function NoteBanner({ children, tone = "neutral", className }: { children: ReactNode; tone?: "neutral" | "attention" | "failed"; className?: string }) {
+  return (
+    <div
+      role="note"
+      className={cn(
+        "rounded-card border px-4 py-2.5 text-[13px]",
+        tone === "attention" ? "border-attention/40 bg-attention/10 text-foreground" : tone === "failed" ? "border-failed/50 bg-failed/10 text-foreground" : "border-brand-tint-border bg-brand-tint text-foreground",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
