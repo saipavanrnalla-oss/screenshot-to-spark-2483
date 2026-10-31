@@ -73,8 +73,8 @@ function PersonaSwitcher() {
       <Select
         value={persona.id}
         onValueChange={(id) => {
-          if (id === "head") navigate({ to: "/persistency", search: (prev) => ({ ...prev, as: id }) });
-          else navigate({ to: "/persistency/queues/$persona", params: { persona: id }, search: (prev) => ({ ...prev, as: id }) });
+          if (id === "head") navigate({ to: "/persistency", search: (prev) => ({ as: id, product: prev.product }) });
+          else navigate({ to: "/persistency/queues/$persona", params: { persona: id }, search: (prev) => ({ as: id, product: prev.product }) });
         }}
       >
         <SelectTrigger aria-label="Viewing as persona" className="h-8 w-[210px] rounded-input border-border bg-surface-translucent text-xs font-semibold">
