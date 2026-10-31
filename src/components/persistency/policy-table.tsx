@@ -37,7 +37,7 @@ export function PolicyTable({
           <thead className="sticky top-0 z-10 bg-card">
             <tr className="text-left">
               {["Policy", "Product", "Premium", "Mode", "State", "Cohort", "Last touch", "Next action", "Executor"].map((h) => (
-                <th key={h} scope="col" className="border-b border-border px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+                <th key={h} scope="col" className="whitespace-nowrap border-b border-border px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
                   {h}
                 </th>
               ))}
@@ -57,20 +57,20 @@ export function PolicyTable({
                     (i % 2 === 1 ? "bg-surface-translucent" : "")
                   }
                 >
-                  <td className="px-3 py-2 font-semibold text-foreground tabular">{p.policyId}</td>
-                  <td className="px-3 py-2 text-subtle">{p.product}</td>
-                  <td className="px-3 py-2 text-subtle tabular">{inr(p.annualisedPremium)}</td>
-                  <td className="px-3 py-2 text-subtle">{p.paymentMode}</td>
+                  <td className="whitespace-nowrap px-3 py-2 font-semibold text-foreground tabular">{p.policyId}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-subtle">{p.product}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-subtle tabular">{inr(p.annualisedPremium)}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-subtle">{p.paymentMode}</td>
                   <td className="px-3 py-2"><StateBadge state={p.state} /></td>
-                  <td className="px-3 py-2 text-subtle">{cohortLabel(p, activeCohortSet[p.product])}</td>
-                  <td className="px-3 py-2 text-subtle tabular">{p.lastTouch ? date(p.lastTouch) : "None"}</td>
-                  <td className="px-3 py-2 text-foreground">
+                  <td className="whitespace-nowrap px-3 py-2 text-subtle">{cohortLabel(p, activeCohortSet[p.product])}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-subtle tabular">{p.lastTouch ? date(p.lastTouch) : "None"}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-foreground">
                     <span className="mr-1 text-[10px] font-bold text-primary">{d.ruleId}</span>
                     {d.action}
                     {d.cancelledReason && <StatusPill status="attention" className="ml-1.5">{d.cancelledReason}</StatusPill>}
                     {d.frozen && <StatusPill status="failed" className="ml-1.5">Frozen</StatusPill>}
                   </td>
-                  <td className="px-3 py-2 text-subtle">{d.executor}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-subtle">{d.executor}</td>
                 </tr>
               );
             })}
