@@ -4,7 +4,7 @@
 
 Source: uploaded "Persistency release 1: modules, depth and hidden pages" (1 Nov 2026). It replaces the earlier brief where they differ. The brief asks to stop after each step.
 
-- [ ] 1. Module registry and flags, wording and look, five test users, shell and sidebar by role
+- [x] 1. Module registry and flags, wording and look, five test users, shell and sidebar by role
 - [ ] 2. Policy stages, Policies, Policy page with Activity, Stage settings
 - [ ] 3. Approvals and the shared version model
 - [ ] 4. Rules
