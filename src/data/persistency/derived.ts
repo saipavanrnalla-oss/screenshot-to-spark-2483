@@ -244,9 +244,9 @@ export function peopleByRole(people: Person[], role: Person["role"]): Person[] {
 
 export const UNIT_COSTS: Record<string, { unit: string; cost: number }> = {
   "Call-centre vendor (fixed payout)": { unit: "per call", cost: 38 },
-  Call-centre vendor (variable payout): { unit: "per call", cost: 45 },
-  WhatsApp vendor: { unit: "per message", cost: 1 },
-  Voice bot vendor: { unit: "per call", cost: 6 },
+  "Call-centre vendor (variable payout)": { unit: "per call", cost: 45 },
+  "WhatsApp vendor": { unit: "per message", cost: 1 },
+  "Voice bot vendor": { unit: "per call", cost: 6 },
   Desible: { unit: "per action", cost: 12 },
 };
 
