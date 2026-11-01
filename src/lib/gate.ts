@@ -1,5 +1,5 @@
 import { redirect } from "@tanstack/react-router";
-import { MODULES, moduleVisible, overrideFromSearch, type ModuleId } from "@/config/modules";
+import { MODULES, moduleVisible, overrideFromSearch } from "@/config/modules";
 import { userById, type NavKey, type TestUser } from "@/config/users";
 import { useSession } from "@/store/session";
 import { NAV_BY_KEY } from "@/components/shell/nav";
@@ -37,7 +37,3 @@ export function gate(key: NavKey, search: unknown) {
   throw redirect({ to: landingRoute(user) as "/persistency/stages", search: keepOverride(search) as never });
 }
 
-export function gateModule(id: ModuleId, search: unknown) {
-  const key = (Object.keys(NAV_BY_KEY) as NavKey[]).find((k) => NAV_BY_KEY[k].module === id && NAV_BY_KEY[k].route === MODULES[id].route);
-  if (key) gate(key, search);
-}
