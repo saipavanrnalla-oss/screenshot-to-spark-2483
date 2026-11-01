@@ -5,7 +5,7 @@ import { TierBadge } from "@/components/ds/tier-badge";
 import { VendorCoexistenceTable } from "@/components/persistency/vendor-modes";
 import { useScopedPolicies } from "@/hooks/use-shell";
 
-export const Route = createFileRoute("/persistency/where-we-sit")({
+export const Route = createFileRoute("/persistency/where-desible-sits")({
   head: () => ({
     meta: [
       { title: "Where Desible sits · Persistency · desible.ai" },

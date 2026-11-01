@@ -14,7 +14,7 @@ import { usePersistencyStore, type PendingChange, type ProofMethod } from "@/sto
 import { croreValue, inr, money, num, pct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/persistency/measurement")({
+export const Route = createFileRoute("/persistency/reports")({
   head: () => ({
     meta: [
       { title: "Measurement · Persistency · desible.ai" },

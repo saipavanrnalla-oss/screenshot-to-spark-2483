@@ -12,7 +12,7 @@ import { cohortLabel } from "@/engine/persistency";
 import { useDecisions, usePersistencyStore } from "@/store/persistency";
 import { croreValue, num, pct } from "@/lib/format";
 
-export const Route = createFileRoute("/persistency/war-room")({
+export const Route = createFileRoute("/persistency/collections")({
   head: () => ({
     meta: [
       { title: "Month-end war room · Persistency · desible.ai" },

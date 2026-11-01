@@ -75,7 +75,7 @@ function PersonaSwitcher() {
         value={persona.id}
         onValueChange={(id) => {
           if (id === "head") navigate({ to: "/persistency", search: (prev) => ({ as: id, product: prev.product }) });
-          else navigate({ to: "/persistency/queues/$persona", params: { persona: id }, search: (prev) => ({ as: id, product: prev.product }) });
+          else navigate({ to: "/persistency/work/$persona", params: { persona: id }, search: (prev) => ({ as: id, product: prev.product }) });
         }}
       >
         <SelectTrigger aria-label="Viewing as persona" className="h-8 w-[210px] rounded-input border-border bg-surface-translucent text-xs font-semibold">
@@ -119,7 +119,7 @@ function TopBar() {
           <PersonaSwitcher />
           <SegmentedControl label="Product" value={product} options={PRODUCT_FILTERS} onChange={setProduct} />
           <Link
-            to="/persistency/setup"
+            to="/persistency/admin"
             className="inline-flex items-center gap-1.5 rounded-pill border border-border px-3 py-1 text-xs font-semibold text-subtle hover:border-brand-tint-border hover:text-foreground"
           >
             <Building2 className="size-3.5" aria-hidden />
@@ -182,7 +182,7 @@ function Sidebar() {
             return (
               <li key={item.key}>
                 {item.key === "queues" ? (
-                  <Link to="/persistency/queues/$persona" params={{ persona: persona.id }} className={cls} title={collapsed ? item.label : undefined}>
+                  <Link to="/persistency/work/$persona" params={{ persona: persona.id }} className={cls} title={collapsed ? item.label : undefined}>
                     <Icon className="size-4 shrink-0" aria-hidden />
                     {!collapsed && item.label}
                   </Link>

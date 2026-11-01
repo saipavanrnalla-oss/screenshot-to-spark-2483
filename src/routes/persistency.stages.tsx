@@ -21,7 +21,7 @@ const lifecycleSearch = z.object({
   q: fallback(z.string().optional(), undefined),
 });
 
-export const Route = createFileRoute("/persistency/lifecycle")({
+export const Route = createFileRoute("/persistency/stages")({
   validateSearch: zodValidator(lifecycleSearch),
   head: () => ({
     meta: [
@@ -45,7 +45,7 @@ function LifecyclePage() {
   const search = Route.useSearch();
   const sub = search.sub ?? "";
   const q = search.q ?? "";
-  const navigate = useNavigate({ from: "/persistency/lifecycle" });
+  const navigate = useNavigate({ from: "/persistency/stages" });
   const { scoped } = useScopedPolicies();
   const activeCohortSet = usePersistencyStore((s) => s.activeCohortSet);
   const stationLabel = useStationLabel();

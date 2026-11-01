@@ -154,7 +154,7 @@ function MonthEndGap() {
   return (
     <div className="space-y-3">
       <Kpis items={[["Gap to plan", croreValue(m.gap)], ["Run-rate per day", croreValue(m.runRate, 2)], ["Needed per day", croreValue(m.required, 2)], ["Days left after today", String(m.daysLeft)], ["Month-end at run-rate", croreValue(m.projected)], ["Short at run-rate", croreValue(Math.max(0, m.col.planCr - m.projected))]]} />
-      <Link to="/persistency/war-room" className="text-xs font-semibold text-primary hover:underline">Open the war room</Link>
+      <Link to="/persistency/collections" className="text-xs font-semibold text-primary hover:underline">Open the war room</Link>
     </div>
   );
 }
@@ -231,7 +231,7 @@ function LifecycleMap() {
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {stages.map((s) => (
-        <Link key={s.column} to="/persistency/lifecycle" search={(prev) => ({ ...prev, sub: `stage:${s.column}` })} className="rounded-input border border-border bg-surface-translucent p-3 hover:border-brand-tint-border">
+        <Link key={s.column} to="/persistency/stages" search={(prev) => ({ ...prev, sub: `stage:${s.column}` })} className="rounded-input border border-border bg-surface-translucent p-3 hover:border-brand-tint-border">
           <p className="text-[11px] text-muted-foreground">{s.column}</p>
           <p className="text-lg font-extrabold text-foreground tabular">{num(s.count)}</p>
           <p className="text-[11px] text-subtle tabular">{money(s.premium)} at stake</p>
@@ -273,7 +273,7 @@ function Approvals() {
   const approve = usePersistencyStore((s) => s.approve);
   const reject = usePersistencyStore((s) => s.reject);
   const { persona } = useShell();
-  if (pending.length === 0) return <EmptyState title="No approvals waiting." action={<Link to="/persistency/configuration" className="text-xs font-semibold text-primary hover:underline">Change a rule</Link>} />;
+  if (pending.length === 0) return <EmptyState title="No approvals waiting." action={<Link to="/persistency/rules" className="text-xs font-semibold text-primary hover:underline">Change a rule</Link>} />;
   return (
     <ul className="space-y-2">
       {pending.map((c) => (

@@ -34,7 +34,7 @@ export function SendTestButton({ what, size = "sm" }: { what: string; size?: "sm
             <div className="space-y-3">
               <StatusPill status="attention">Needs a registered test number</StatusPill>
               <p className="text-sm text-subtle">Test sends only go to a number registered in Setup. Customers are never contacted from a test.</p>
-              <Link to="/persistency/setup" className="text-xs font-semibold text-primary hover:underline">Register a test number in Setup</Link>
+              <Link to="/persistency/admin" className="text-xs font-semibold text-primary hover:underline">Register a test number in Setup</Link>
             </div>
           ) : queued ? (
             <div className="space-y-3">

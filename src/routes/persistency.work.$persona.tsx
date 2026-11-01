@@ -3,7 +3,7 @@ import { EmptyState, PageHeader } from "@/components/ds/primitives";
 import { PersonaHome } from "@/components/persistency/persona-home";
 import { PERSONAS, panelTitles } from "@/config/personas";
 
-export const Route = createFileRoute("/persistency/queues/$persona")({
+export const Route = createFileRoute("/persistency/work/$persona")({
   head: ({ params }) => {
     const p = PERSONAS.find((x) => x.id === params.persona);
     const title = p ? `${p.landsOn} · ${p.label} · desible.ai` : "Work queue · desible.ai";

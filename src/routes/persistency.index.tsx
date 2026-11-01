@@ -151,14 +151,14 @@ function ControlTower() {
         eyebrow="Lifecycle"
         title="All four stages, live"
         tiers={["live-engine"]}
-        actions={<Link to="/persistency/lifecycle" className="text-xs font-semibold text-primary hover:underline">Open lifecycle</Link>}
+        actions={<Link to="/persistency/stages" className="text-xs font-semibold text-primary hover:underline">Open lifecycle</Link>}
         bodyClassName="p-0"
       >
         <div className="grid grid-cols-2 lg:grid-cols-4">
           {stages.map((s, i) => (
             <Link
               key={s.column}
-              to="/persistency/lifecycle"
+              to="/persistency/stages"
               search={(prev) => ({ ...prev, sub: `stage:${s.column}` })}
               className="group relative border-border px-5 py-4 transition-colors hover:bg-brand-tint max-lg:border-b lg:border-r lg:last:border-r-0"
             >

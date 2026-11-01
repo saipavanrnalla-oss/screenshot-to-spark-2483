@@ -9,7 +9,7 @@ import { CONDUCT_CHECKS, qaSamples } from "@/data/persistency";
 import { useDecisions, usePersistencyStore } from "@/store/persistency";
 import { date, dateTime, num, pct } from "@/lib/format";
 
-export const Route = createFileRoute("/persistency/guardrails")({
+export const Route = createFileRoute("/persistency/contact-policy")({
   head: () => ({
     meta: [
       { title: "Guardrails · Persistency · desible.ai" },

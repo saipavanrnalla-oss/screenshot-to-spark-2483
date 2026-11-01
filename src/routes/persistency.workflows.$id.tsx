@@ -136,7 +136,7 @@ function WorkflowDetail() {
                       <li key={r} className="flex items-center gap-2 text-[13px] text-foreground"><FileText className="size-3.5 text-muted-foreground" /> {r}</li>
                     ))}
                   </ul>
-                  <Link to="/persistency/configuration" className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">Open Configuration</Link>
+                  <Link to="/persistency/rules" className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">Open Configuration</Link>
                 </section>
                 {node.liveChannel && (
                   <section className="space-y-2">

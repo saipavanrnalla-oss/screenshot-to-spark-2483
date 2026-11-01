@@ -13,7 +13,7 @@ import { PERSONAS } from "@/config/personas";
 import { EARLY_LAPSE_MAX_DAYS, GRACE_DAYS, INSURER_NAME, LANGUAGES, PAYMENT_MODES, PRODUCTS, WARMING_STATIONS, type CohortSet } from "@/data/persistency";
 import { useAdapters, usePersistencyStore } from "@/store/persistency";
 
-export const Route = createFileRoute("/persistency/setup")({
+export const Route = createFileRoute("/persistency/admin")({
   head: () => ({
     meta: [
       { title: "Setup · Persistency · desible.ai" },

@@ -28,7 +28,7 @@ import { useEngineContext, usePersistencyStore } from "@/store/persistency";
 import { date, num, pct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/persistency/configuration")({
+export const Route = createFileRoute("/persistency/rules")({
   head: () => ({
     meta: [
       { title: "Configuration · Persistency · desible.ai" },
