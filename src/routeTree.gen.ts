@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PersistencyRouteImport } from './routes/persistency'
 import { Route as PersistencyIndexRouteImport } from './routes/persistency.index'
 import { Route as PersistencyAdminRouteImport } from './routes/persistency.admin'
@@ -36,6 +37,11 @@ import { Route as PersistencyWorkflowsIdRouteImport } from './routes/persistency
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PersistencyRoute = PersistencyRouteImport.update({
@@ -156,6 +162,7 @@ const PersistencyWorkflowsIdRoute = PersistencyWorkflowsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/persistency': typeof PersistencyRouteWithChildren
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/cohorts': typeof PersistencyCohortsRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/cohorts': typeof PersistencyCohortsRoute
   '/persistency/collections': typeof PersistencyCollectionsRoute
@@ -206,6 +214,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/persistency': typeof PersistencyRouteWithChildren
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/cohorts': typeof PersistencyCohortsRoute
@@ -233,6 +242,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/persistency'
     | '/persistency/admin'
     | '/persistency/cohorts'
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
     | '/persistency/admin'
     | '/persistency/cohorts'
     | '/persistency/collections'
@@ -282,6 +293,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/login'
     | '/persistency'
     | '/persistency/admin'
     | '/persistency/cohorts'
@@ -308,6 +320,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
   PersistencyRoute: typeof PersistencyRouteWithChildren
 }
 
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/persistency': {
@@ -531,6 +551,7 @@ const PersistencyRouteWithChildren = PersistencyRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
   PersistencyRoute: PersistencyRouteWithChildren,
 }
 export const routeTree = rootRouteImport
