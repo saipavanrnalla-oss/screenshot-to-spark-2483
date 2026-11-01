@@ -252,10 +252,6 @@ function LifecyclePage() {
           </form>
         }
       >
-        <div className="mb-3 flex items-center gap-2 text-[11px] text-muted-foreground">
-          Next action and executor come from the live engine <TierBadge tiers={["live-engine"]} />
-          <StatusPill status="simulated" className="ml-1">Payments simulated</StatusPill>
-        </div>
         <PolicyTable key={`${sub}|${q}`} policies={filtered} onOpen={setOpenPolicy} emptyAction={
           <Button variant="outline" size="sm" onClick={() => navigate({ search: (prev) => ({ ...prev, sub: undefined, q: undefined }) })}>Show all policies</Button>
         } />
