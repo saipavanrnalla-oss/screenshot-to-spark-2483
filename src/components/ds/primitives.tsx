@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, CircleDashed, Radio, Sparkles, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Tier } from "@/data/persistency/workflows";
+import { useChrome } from "@/hooks/use-chrome";
 import { TierBadge } from "./tier-badge";
 
 export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
@@ -14,23 +15,29 @@ export function PageHeader({
   description,
   tiers,
   actions,
+  meta,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: ReactNode;
+  /** Old intro lines; shown only with CHROME.showTaglines. */
   description?: ReactNode;
-  tiers: Tier[];
+  tiers?: Tier[];
   actions?: ReactNode;
+  /** One plain line under the title (counts, last updated). */
+  meta?: ReactNode;
 }) {
+  const showTaglines = useChrome("showTaglines");
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0 max-w-3xl">
-        <Eyebrow>{eyebrow}</Eyebrow>
-        <h1 className="mt-1 text-[28px] font-extrabold leading-tight tracking-tight text-foreground">{title}</h1>
-        {description && <p className="mt-1.5 text-sm text-subtle">{description}</p>}
+        {showTaglines && eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+        <h1 className="text-[20px] font-semibold leading-tight text-foreground">{title}</h1>
+        {meta && <p className="mt-1 text-[12px] text-muted-foreground">{meta}</p>}
+        {showTaglines && description && <p className="mt-1.5 text-[13px] text-subtle">{description}</p>}
       </div>
       <div className="flex items-center gap-3">
         {actions}
-        <TierBadge tiers={tiers} />
+        {tiers && <TierBadge tiers={tiers} />}
       </div>
     </div>
   );
@@ -48,10 +55,10 @@ export function StatCard({
   className?: string;
 }) {
   return (
-    <div className={cn("panel accent-left px-4 py-3.5", className)}>
-      <div className="stat-number">{value}</div>
-      <div className="stat-label mt-1">{label}</div>
-      {sub && <div className="mt-1.5 text-[11px] text-dim">{sub}</div>}
+    <div className={cn("panel px-4 py-3", className)}>
+      <div className="stat-label">{label}</div>
+      <div className="stat-number mt-1">{value}</div>
+      {sub && <div className="mt-1 text-[12px] text-muted-foreground">{sub}</div>}
     </div>
   );
 }
@@ -75,11 +82,10 @@ export function Panel({
 }) {
   return (
     <section className={cn("panel flex flex-col", className)}>
-      {(title || eyebrow || tiers || actions) && (
-        <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
+      {(title || eyebrow || actions) && (
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
           <div className="min-w-0">
-            {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-            {title && <h2 className="mt-0.5 text-[15px] font-bold text-foreground">{title}</h2>}
+            <h2 className="text-[14px] font-semibold text-foreground">{title ?? eyebrow}</h2>
           </div>
           <div className="flex items-center gap-2">
             {actions}
@@ -87,7 +93,7 @@ export function Panel({
           </div>
         </header>
       )}
-      <div className={cn("flex-1 p-5", bodyClassName)}>{children}</div>
+      <div className={cn("flex-1 p-4", bodyClassName)}>{children}</div>
     </section>
   );
 }
@@ -230,7 +236,7 @@ export function PillTabs<T extends string>({
   );
 }
 
-/** Dense 12px data table with sticky header and translucent zebra rows. */
+/** 13px data table with sticky header and row hover. */
 export function DataTable({
   head,
   children,
@@ -247,11 +253,11 @@ export function DataTable({
   return (
     <div className={cn("overflow-hidden rounded-card border border-border", className)}>
       <div className="scrollbar-prism overflow-auto" style={maxHeight ? { maxHeight } : undefined}>
-        <table className="w-full border-collapse text-[12px] [&_tbody_tr:nth-child(even)]:bg-surface-translucent [&_tbody_tr]:border-b [&_tbody_tr]:border-border/60 [&_td]:px-3 [&_td]:py-2" style={{ minWidth }}>
+        <table className="w-full border-collapse text-[13px] [&_tbody_tr]:border-b [&_tbody_tr]:border-border/60 [&_tbody_tr:hover]:bg-surface-translucent [&_td]:px-3 [&_td]:py-2" style={{ minWidth }}>
           <thead className="sticky top-0 z-10 bg-card">
             <tr className="text-left">
               {head.map((h, i) => (
-                <th key={i} scope="col" className="whitespace-nowrap border-b border-border px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+                <th key={i} scope="col" className="whitespace-nowrap border-b border-border px-3 py-2 text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
                   {h}
                 </th>
               ))}
@@ -264,14 +270,14 @@ export function DataTable({
   );
 }
 
-/** Banner for honest notes (synthetic data, preview only, starter score). */
+/** Inline note above or below a section. */
 export function NoteBanner({ children, tone = "neutral", className }: { children: ReactNode; tone?: "neutral" | "attention" | "failed"; className?: string }) {
   return (
     <div
       role="note"
       className={cn(
         "rounded-card border px-4 py-2.5 text-[13px]",
-        tone === "attention" ? "border-attention/40 bg-attention/10 text-foreground" : tone === "failed" ? "border-failed/50 bg-failed/10 text-foreground" : "border-brand-tint-border bg-brand-tint text-foreground",
+        tone === "attention" ? "border-attention/40 bg-attention/10 text-foreground" : tone === "failed" ? "border-failed/50 bg-failed/10 text-foreground" : "border-border bg-card text-foreground",
         className,
       )}
     >
