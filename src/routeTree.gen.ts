@@ -15,6 +15,7 @@ import { Route as PersistencyRouteImport } from './routes/persistency'
 import { Route as PersistencyIndexRouteImport } from './routes/persistency.index'
 import { Route as PersistencyAdminRouteImport } from './routes/persistency.admin'
 import { Route as PersistencyAgentsRouteImport } from './routes/persistency.agents'
+import { Route as PersistencyApprovalsRouteImport } from './routes/persistency.approvals'
 import { Route as PersistencyCohortsRouteImport } from './routes/persistency.cohorts'
 import { Route as PersistencyCollectionsRouteImport } from './routes/persistency.collections'
 import { Route as PersistencyConfigurationRouteImport } from './routes/persistency.configuration'
@@ -64,6 +65,11 @@ const PersistencyAdminRoute = PersistencyAdminRouteImport.update({
 const PersistencyAgentsRoute = PersistencyAgentsRouteImport.update({
   id: '/agents',
   path: '/agents',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyApprovalsRoute = PersistencyApprovalsRouteImport.update({
+  id: '/approvals',
+  path: '/approvals',
   getParentRoute: () => PersistencyRoute,
 } as any)
 const PersistencyCohortsRoute = PersistencyCohortsRouteImport.update({
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/persistency': typeof PersistencyRouteWithChildren
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
+  '/persistency/approvals': typeof PersistencyApprovalsRoute
   '/persistency/cohorts': typeof PersistencyCohortsRoute
   '/persistency/collections': typeof PersistencyCollectionsRoute
   '/persistency/configuration': typeof PersistencyConfigurationRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
+  '/persistency/approvals': typeof PersistencyApprovalsRoute
   '/persistency/cohorts': typeof PersistencyCohortsRoute
   '/persistency/collections': typeof PersistencyCollectionsRoute
   '/persistency/configuration': typeof PersistencyConfigurationRoute
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/persistency': typeof PersistencyRouteWithChildren
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
+  '/persistency/approvals': typeof PersistencyApprovalsRoute
   '/persistency/cohorts': typeof PersistencyCohortsRoute
   '/persistency/collections': typeof PersistencyCollectionsRoute
   '/persistency/configuration': typeof PersistencyConfigurationRoute
@@ -264,6 +273,7 @@ export interface FileRouteTypes {
     | '/persistency'
     | '/persistency/admin'
     | '/persistency/agents'
+    | '/persistency/approvals'
     | '/persistency/cohorts'
     | '/persistency/collections'
     | '/persistency/configuration'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/persistency/admin'
     | '/persistency/agents'
+    | '/persistency/approvals'
     | '/persistency/cohorts'
     | '/persistency/collections'
     | '/persistency/configuration'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/persistency'
     | '/persistency/admin'
     | '/persistency/agents'
+    | '/persistency/approvals'
     | '/persistency/cohorts'
     | '/persistency/collections'
     | '/persistency/configuration'
@@ -390,6 +402,13 @@ declare module '@tanstack/react-router' {
       path: '/agents'
       fullPath: '/persistency/agents'
       preLoaderRoute: typeof PersistencyAgentsRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/approvals': {
+      id: '/persistency/approvals'
+      path: '/approvals'
+      fullPath: '/persistency/approvals'
+      preLoaderRoute: typeof PersistencyApprovalsRouteImport
       parentRoute: typeof PersistencyRoute
     }
     '/persistency/cohorts': {
@@ -538,6 +557,7 @@ declare module '@tanstack/react-router' {
 interface PersistencyRouteChildren {
   PersistencyAdminRoute: typeof PersistencyAdminRoute
   PersistencyAgentsRoute: typeof PersistencyAgentsRoute
+  PersistencyApprovalsRoute: typeof PersistencyApprovalsRoute
   PersistencyCohortsRoute: typeof PersistencyCohortsRoute
   PersistencyCollectionsRoute: typeof PersistencyCollectionsRoute
   PersistencyConfigurationRoute: typeof PersistencyConfigurationRoute
@@ -564,6 +584,7 @@ interface PersistencyRouteChildren {
 const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyAdminRoute: PersistencyAdminRoute,
   PersistencyAgentsRoute: PersistencyAgentsRoute,
+  PersistencyApprovalsRoute: PersistencyApprovalsRoute,
   PersistencyCohortsRoute: PersistencyCohortsRoute,
   PersistencyCollectionsRoute: PersistencyCollectionsRoute,
   PersistencyConfigurationRoute: PersistencyConfigurationRoute,
