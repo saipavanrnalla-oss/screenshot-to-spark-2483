@@ -22,7 +22,7 @@ export const Route = createFileRoute("/persistency/workflows/$id")({
   head: ({ params }) => {
     const wf = workflowById(params.id);
     const title = wf ? `${wf.id} ${wf.name} · Workflows · desible.ai` : "Workflow not found · desible.ai";
-    const description = wf ? `${wf.name}: trigger, steps, executor and tier.` : "Persistency workflow detail.";
+    const description = wf ? `${wf.name}: trigger, steps and executor.` : "Persistency workflow detail.";
     return {
       meta: [
         { title },

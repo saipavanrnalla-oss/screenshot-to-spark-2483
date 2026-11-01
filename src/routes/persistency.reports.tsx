@@ -19,10 +19,10 @@ export const Route = createFileRoute("/persistency/reports")({
   beforeLoad: ({ search }) => gate("reports", search),
   head: () => ({
     meta: [
-      { title: "Measurement · Persistency · desible.ai" },
-      { name: "description", content: "Premium-weighted persistency, collection funnel and the proof method behind any claimed uplift." },
-      { property: "og:title", content: "Measurement · Persistency · desible.ai" },
-      { property: "og:description", content: "Premium-weighted persistency, collection funnel and the proof method behind any claimed uplift." },
+      { title: "Reports · Persistency · desible.ai" },
+      { name: "description", content: "Premium-weighted persistency, collection against plan, funnel and experiments." },
+      { property: "og:title", content: "Reports · Persistency · desible.ai" },
+      { property: "og:description", content: "Premium-weighted persistency, collection against plan, funnel and experiments." },
     ],
   }),
   component: MeasurementPage,
@@ -126,7 +126,7 @@ function MeasurementPage() {
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">
-      <PageHeader eyebrow="Measurement" title="Measurement and proof" description="What is happening, computed from the seeded book, and how any uplift would be proven." tiers={["live-engine", "simulated"]} />
+      <PageHeader eyebrow="Reports" title="Reports" description="What is happening, computed from the seeded book, and how any uplift would be proven." tiers={["live-engine", "simulated"]} />
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1.2fr]">
         <Panel eyebrow="Persistency" title="Premium-weighted, 13M to 61M" tiers={["live-engine"]}>

@@ -16,9 +16,9 @@ export const Route = createFileRoute("/persistency/workflows/")({
   head: () => ({
     meta: [
       { title: "Workflows · Persistency · desible.ai" },
-      { name: "description", content: "Eighteen persistency workflows from sourcing to revival, with the executor and tier of every step." },
+      { name: "description", content: "Eighteen persistency workflows grouped by stage, with the trigger and executor of every step." },
       { property: "og:title", content: "Workflows · Persistency · desible.ai" },
-      { property: "og:description", content: "Eighteen persistency workflows from sourcing to revival, with the executor and tier of every step." },
+      { property: "og:description", content: "Eighteen persistency workflows grouped by stage, with the trigger and executor of every step." },
     ],
   }),
   component: WorkflowsPage,
@@ -40,7 +40,8 @@ function WorkflowsPage() {
     <div className="mx-auto max-w-[1400px] space-y-6">
       <PageHeader
         eyebrow="Workflows"
-        title="18 workflows"
+        title="Workflows"
+        meta={product === "All" ? "18 workflows" : `${visible.length} of 18 workflows apply to ${product}`}
         description={product === "All" ? "Grouped by stage. Open one to see each step and how it runs." : `${visible.length} of 18 workflows apply to ${product}. Counts show ${product} policies only.`}
         tiers={["live-engine", "live-channels", "simulated"]}
       />

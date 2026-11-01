@@ -15,10 +15,10 @@ export const Route = createFileRoute("/persistency/data")({
   beforeLoad: ({ search }) => gate("data", search),
   head: () => ({
     meta: [
-      { title: "Data and integrations · Persistency · desible.ai" },
-      { name: "description", content: "File adapters, freshness, rejects and paid-since-the-list checks for the persistency engine." },
-      { property: "og:title", content: "Data and integrations · Persistency · desible.ai" },
-      { property: "og:description", content: "File adapters, freshness, rejects and paid-since-the-list checks for the persistency engine." },
+      { title: "Data files · Persistency · desible.ai" },
+      { name: "description", content: "Incoming and outgoing files, freshness, rejects and payments received since the list was cut." },
+      { property: "og:title", content: "Data files · Persistency · desible.ai" },
+      { property: "og:description", content: "Incoming and outgoing files, freshness, rejects and payments received since the list was cut." },
     ],
   }),
   component: DataPage,
@@ -89,7 +89,7 @@ function DataPage() {
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">
-      <PageHeader eyebrow="Data and integrations" title="Files in, actions out" description="Every decision depends on one or more of these files. A late file pauses only the stages that need it." tiers={["simulated"]} />
+      <PageHeader eyebrow="Data files" title="Data files" description="Every decision depends on one or more of these files. A late file pauses only the stages that need it." tiers={["simulated"]} />
 
       {adapters.some((a) => a.stale) && (
         <NoteBanner tone="attention">

@@ -27,10 +27,10 @@ export const Route = createFileRoute("/persistency/stages")({
   validateSearch: zodValidator(lifecycleSearch),
   head: () => ({
     meta: [
-      { title: "Lifecycle · Persistency · desible.ai" },
-      { name: "description", content: "Sourcing, warming, renewal window, lapse and revival: counts, money at stake and every sub-step, with the policy list underneath." },
-      { property: "og:title", content: "Policy lifecycle · Persistency control tower" },
-      { property: "og:description", content: "Four stages, nine warming stations, grace and revival, with the rule behind every next action." },
+      { title: "Policy stages · Persistency · desible.ai" },
+      { name: "description", content: "Sourcing, warming, renewal window, early and late lapse: policies, premium due and every sub-step, with the policy list underneath." },
+      { property: "og:title", content: "Policy stages · Persistency · desible.ai" },
+      { property: "og:description", content: "Policies and premium due by stage, nine warming stations and grace, with the rule behind every next step." },
     ],
   }),
   component: LifecyclePage,
@@ -89,8 +89,7 @@ function LifecyclePage() {
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">
       <PageHeader
-        eyebrow="Lifecycle"
-        title="Every policy, four stages"
+        title="Policy stages"
         description="Click a stage or sub-step to filter the policy list. Click a policy to see why it is where it is."
         tiers={["live-engine"]}
       />

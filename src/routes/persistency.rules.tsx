@@ -33,10 +33,10 @@ export const Route = createFileRoute("/persistency/rules")({
   beforeLoad: ({ search }) => gate("rules", search),
   head: () => ({
     meta: [
-      { title: "Configuration · Persistency · desible.ai" },
-      { name: "description", content: "Configure every rule by product, policy year, payment mode, channel, cohort and more, with precedence and conflicts visible." },
-      { property: "og:title", content: "Configuration · Persistency · desible.ai" },
-      { property: "og:description", content: "Configure every rule by product, policy year, payment mode, channel, cohort and more, with precedence and conflicts visible." },
+      { title: "Rules · Persistency · desible.ai" },
+      { name: "description", content: "Rules by product, policy year, payment mode, channel, cohort and more, with precedence and conflicts." },
+      { property: "og:title", content: "Rules · Persistency · desible.ai" },
+      { property: "og:description", content: "Rules by product, policy year, payment mode, channel, cohort and more, with precedence and conflicts." },
     ],
   }),
   component: ConfigurationPage,
@@ -149,8 +149,7 @@ function ConfigurationPage() {
   return (
     <div className="mx-auto max-w-[1500px] space-y-6">
       <PageHeader
-        eyebrow="Configuration"
-        title="The dimension console"
+        title="Rules"
         description="Every rule matches on any of 17 dimensions and sets any of 9 settings. The rule that fired is always shown on the policy."
         tiers={["live-engine"]}
       />
