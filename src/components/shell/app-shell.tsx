@@ -5,12 +5,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SegmentedControl } from "@/components/ds/primitives";
 import { TierBadge } from "@/components/ds/tier-badge";
 import { PERSONAS } from "@/config/personas";
+import { userById } from "@/config/users";
 import { INSURER_NAME, PRODUCT_FILTERS } from "@/data/persistency";
+import { useChrome, useModulesOverride } from "@/hooks/use-chrome";
 import { useShell } from "@/hooks/use-shell";
+import { navVisible } from "@/lib/gate";
 import { usePersistencyStore } from "@/store/persistency";
+import { useSession } from "@/store/session";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS, pageLabelForPath } from "./nav";
+import { NAV, navForPath } from "./nav";
 import { Wordmark } from "./wordmark";
+import { GlobalSearch } from "./global-search";
+import { HelpMenu, NotificationBell, UserMenu } from "./top-menus";
 
 const BANNER_KEY = "pct-demo-banner-dismissed";
 const SIDEBAR_KEY = "pct-sidebar-collapsed";
@@ -30,12 +36,14 @@ function writeStorage(store: "local" | "session", key: string, value: string) {
   }
 }
 
+/** Old first-brief banner. Hidden unless CHROME.showDemoBanner. */
 function DemoBanner() {
+  const show = useChrome("showDemoBanner");
   const [hidden, setHidden] = useState(false);
   useEffect(() => {
     if (readStorage("session", BANNER_KEY) === "1") setHidden(true);
   }, []);
-  if (hidden) return null;
+  if (!show || hidden) return null;
   return (
     <div className="flex items-center justify-center gap-3 border-b border-border bg-surface px-4 py-1.5 text-[12px] text-subtle">
       <span>Demo data. Policies are synthetic. Payments, mandates and bureau responses are simulated.</span>
@@ -46,7 +54,7 @@ function DemoBanner() {
           setHidden(true);
         }}
         className="cursor-pointer rounded-sm p-0.5 text-muted-foreground hover:text-foreground"
-        aria-label="Dismiss demo banner for this session"
+        aria-label="Dismiss banner for this session"
       >
         <X className="size-3.5" />
       </button>
@@ -54,28 +62,31 @@ function DemoBanner() {
   );
 }
 
-function KillSwitchBanner() {
+function PauseBanner() {
   const on = usePersistencyStore((s) => s.killSwitchGlobal);
   if (!on) return null;
   return (
     <div role="alert" className="border-b border-failed/50 bg-failed/15 px-4 py-2 text-center text-[13px] font-semibold text-failed">
-      Kill switch is on. The engine has stopped acting on every workflow. Decisions are logged but not sent.
+      All outreach is paused. Decisions are recorded and nothing is sent.
     </div>
   );
 }
 
-function PersonaSwitcher() {
-  const { persona } = useShell();
+/** Old persona switcher, product switch and insurer chip. Hidden unless CHROME.showPersonaBar. */
+function PersonaBar() {
+  const show = useChrome("showPersonaBar");
+  const { persona, product, setProduct } = useShell();
   const navigate = useNavigate();
   const enabled = usePersistencyStore((s) => s.enabledPersonas);
+  if (!show) return null;
   return (
-    <div className="flex items-center gap-2">
-      <span className="hidden text-[11px] text-muted-foreground xl:inline">Viewing as</span>
+    <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-2">
+      <TierBadge tiers={["live-engine", "live-channels", "simulated"]} />
       <Select
         value={persona.id}
         onValueChange={(id) => {
-          if (id === "head") navigate({ to: "/persistency", search: (prev) => ({ as: id, product: prev.product }) });
-          else navigate({ to: "/persistency/work/$persona", params: { persona: id }, search: (prev) => ({ as: id, product: prev.product }) });
+          if (id === "head") navigate({ to: "/persistency", search: (prev) => ({ ...prev, as: id }) });
+          else navigate({ to: "/persistency/work/$persona", params: { persona: id }, search: (prev) => ({ ...prev, as: id }) });
         }}
       >
         <SelectTrigger aria-label="Viewing as persona" className="h-8 w-[210px] rounded-input border-border bg-surface-translucent text-xs font-semibold">
@@ -90,55 +101,70 @@ function PersonaSwitcher() {
           ))}
         </SelectContent>
       </Select>
+      <SegmentedControl label="Product" value={product} options={PRODUCT_FILTERS} onChange={setProduct} />
+      <Link
+        to="/persistency/admin"
+        className="inline-flex items-center gap-1.5 rounded-pill border border-border px-3 py-1 text-xs font-semibold text-subtle hover:text-foreground"
+      >
+        <Building2 className="size-3.5" aria-hidden />
+        {INSURER_NAME}
+      </Link>
     </div>
   );
 }
 
 function TopBar() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const page = pageLabelForPath(pathname);
-  const { product, setProduct } = useShell();
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-2.5">
-        <Wordmark />
-        <nav aria-label="Breadcrumb" className="hidden items-center gap-1 text-xs text-muted-foreground lg:flex">
-          <ChevronRight className="size-3.5 text-dim" aria-hidden />
-          <span>Insurance</span>
-          <ChevronRight className="size-3.5 text-dim" aria-hidden />
-          <Link to="/persistency" className="hover:text-foreground">Persistency</Link>
-          {page && page !== "Control Tower" && (
-            <>
-              <ChevronRight className="size-3.5 text-dim" aria-hidden />
-              <span className="text-subtle">{page}</span>
-            </>
-          )}
-        </nav>
-        <TierBadge tiers={["live-engine", "live-channels", "simulated"]} className="hidden 2xl:inline-flex" />
-        <div className="ml-auto flex flex-wrap items-center gap-3">
-          <PersonaSwitcher />
-          <SegmentedControl label="Product" value={product} options={PRODUCT_FILTERS} onChange={setProduct} />
-          <Link
-            to="/persistency/admin"
-            className="inline-flex items-center gap-1.5 rounded-pill border border-border px-3 py-1 text-xs font-semibold text-subtle hover:border-brand-tint-border hover:text-foreground"
-          >
-            <Building2 className="size-3.5" aria-hidden />
-            {INSURER_NAME}
-          </Link>
+      <div className="flex h-14 items-center gap-4 px-5">
+        <div className="flex shrink-0 items-center gap-2">
+          <Wordmark />
+          <span className="text-[13px] text-muted-foreground">Persistency</span>
+        </div>
+        <GlobalSearch />
+        <div className="ml-auto flex items-center gap-1">
+          <NotificationBell />
+          <HelpMenu />
+          <UserMenu />
         </div>
       </div>
+      <PersonaBar />
     </header>
+  );
+}
+
+function Breadcrumb() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const override = useModulesOverride();
+  const user = userById(useSession((s) => s.userId));
+  const entry = navForPath(pathname);
+  if (!entry || !navVisible(entry.key, user, override)) return null;
+  const deeper = pathname.replace(/\/$/, "") !== entry.route;
+  return (
+    <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1 text-[12px] text-muted-foreground">
+      <span>Persistency</span>
+      <ChevronRight className="size-3.5 text-dim" aria-hidden />
+      {deeper ? (
+        <Link to={entry.route as "/persistency/stages"} className="hover:text-foreground">
+          {entry.label}
+        </Link>
+      ) : (
+        <span className="text-subtle">{entry.label}</span>
+      )}
+    </nav>
   );
 }
 
 function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { persona } = useShell();
+  const override = useModulesOverride();
+  const user = userById(useSession((s) => s.userId));
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
     if (readStorage("local", SIDEBAR_KEY) === "1") setCollapsed(true);
   }, []);
-  const items = NAV_ITEMS.filter((n) => persona.nav.includes(n.key));
+  const items = NAV.filter((n) => navVisible(n.key, user, override));
+  const current = navForPath(pathname);
 
   return (
     <aside
@@ -148,8 +174,7 @@ function Sidebar() {
       )}
       aria-label="Persistency navigation"
     >
-      <div className={cn("flex h-[53px] items-center border-b border-sidebar-border px-4", collapsed ? "justify-center" : "justify-between")}>
-        {!collapsed && <span className="eyebrow">Persistency</span>}
+      <div className={cn("flex h-14 items-center border-b border-sidebar-border px-4", collapsed ? "justify-center" : "justify-end")}>
         <button
           type="button"
           onClick={() => {
@@ -164,46 +189,32 @@ function Sidebar() {
           {collapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
         </button>
       </div>
-      <nav className="scrollbar-prism flex-1 overflow-y-auto py-3">
-        <ul className="space-y-0.5">
+      <nav className="scrollbar-prism flex-1 overflow-y-auto py-2">
+        <ul className="space-y-0.5 px-2">
           {items.map((item) => {
-            const active =
-              item.key === "control-tower"
-                ? pathname === "/persistency" || pathname === "/persistency/"
-                : pathname.startsWith(item.to);
+            const active = current?.key === item.key;
             const Icon = item.icon;
-            const cls = cn(
-              "flex items-center gap-3 border-l-[3px] py-2 text-[13px] font-semibold transition-colors",
-              collapsed ? "justify-center px-0" : "px-4",
-              active
-                ? "border-primary bg-brand-tint text-foreground"
-                : "border-transparent text-sidebar-foreground hover:bg-surface-translucent hover:text-foreground",
-            );
             return (
               <li key={item.key}>
-                {item.key === "queues" ? (
-                  <Link to="/persistency/work/$persona" params={{ persona: persona.id }} className={cls} title={collapsed ? item.label : undefined}>
-                    <Icon className="size-4 shrink-0" aria-hidden />
-                    {!collapsed && item.label}
-                  </Link>
-                ) : (
-                  <Link to={item.to as "/persistency"} className={cls} title={collapsed ? item.label : undefined}>
-                    <Icon className="size-4 shrink-0" aria-hidden />
-                    {!collapsed && item.label}
-                  </Link>
-                )}
+                <Link
+                  to={item.route as "/persistency/stages"}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md py-2 text-[13px] font-medium transition-colors",
+                    collapsed ? "justify-center px-0" : "px-3",
+                    active ? "bg-brand-tint text-primary" : "text-sidebar-foreground hover:bg-surface-translucent hover:text-foreground",
+                  )}
+                  aria-current={active ? "page" : undefined}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <Icon className="size-4 shrink-0" aria-hidden />
+                  {!collapsed && item.label}
+                </Link>
               </li>
             );
           })}
         </ul>
       </nav>
-      {!collapsed && (
-        <div className="border-t border-sidebar-border px-4 py-3 text-[11px] text-dim">
-          Viewing as <span className="font-semibold text-subtle">{persona.label}</span>
-          <br />
-          Today: 28 Oct 2026
-        </div>
-      )}
+      {!collapsed && <div className="border-t border-sidebar-border px-4 py-3 text-[12px] text-muted-foreground">Sample data</div>}
     </aside>
   );
 }
@@ -214,9 +225,10 @@ export function AppShell() {
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <DemoBanner />
-        <KillSwitchBanner />
+        <PauseBanner />
         <TopBar />
-        <main className="flex-1 px-6 py-6 xl:px-8">
+        <main className="flex-1 px-6 py-5 xl:px-8">
+          <Breadcrumb />
           <Outlet />
         </main>
       </div>
