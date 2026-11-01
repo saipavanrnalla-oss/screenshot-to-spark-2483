@@ -20,7 +20,7 @@ export const Route = createFileRoute("/persistency/agents")({
 
 const DOT: Record<AgentStatus, string> = { Active: "bg-healthy", Paused: "bg-failed", "Not enabled": "bg-simulated" };
 
-export function StatusChip({ status }: { status: AgentStatus }) {
+function StatusChip({ status }: { status: AgentStatus }) {
   return (
     <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[12px] text-foreground">
       <span className={cn("size-2 rounded-full", DOT[status])} aria-hidden />
