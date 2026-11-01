@@ -76,7 +76,7 @@ function ApprovalsPage() {
         (pending.length === 0 ? (
           <EmptyState title="Nothing is waiting for approval." />
         ) : (
-          <DataTable head={["Type", "Object", "Requested by", "What changes", "Reach (policies)", "Age", ""]} minWidth={1000}>
+          <DataTable head={["Type", "Object", "Requested by", "What changes", "Reach (policies)", "Age", ""]} minWidth={880}>
             {pending.map((c) => (
               <tr key={c.id}>
                 <td className="whitespace-nowrap">{TYPE_LABEL[c.source]}</td>
