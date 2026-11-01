@@ -195,7 +195,7 @@ export function qaSamples(policies: Policy[]): QaSample[] {
       id: `QA-${String(1201 + i)}`,
       policyId: p.policyId,
       at: addDays(NOW, -(i % 6)).toISOString(),
-      executor: p.lastTouchChannel === "Voice bot" ? "Ubona" : p.assignedVendor === "Paylocal" ? "Pace Setters" : p.assignedVendor,
+      executor: p.lastTouchChannel === "Voice bot" ? "Voice bot vendor" : p.assignedVendor === "WhatsApp vendor" ? "Call-centre vendor (fixed payout)" : p.assignedVendor,
       channel: p.lastTouchChannel ?? "Telecall",
       results,
       note: failed.length === 0 ? "All checks passed" : `Failed: ${failed.join(", ")}. Sent to vendor quality lead.`,
@@ -243,10 +243,10 @@ export function peopleByRole(people: Person[], role: Person["role"]): Person[] {
 /* ---------- Illustrative unit costs (labelled illustrative wherever shown) ---------- */
 
 export const UNIT_COSTS: Record<string, { unit: string; cost: number }> = {
-  "Pace Setters": { unit: "per call", cost: 38 },
-  ATS: { unit: "per call", cost: 45 },
-  Paylocal: { unit: "per message", cost: 1 },
-  Ubona: { unit: "per call", cost: 6 },
+  "Call-centre vendor (fixed payout)": { unit: "per call", cost: 38 },
+  Call-centre vendor (variable payout): { unit: "per call", cost: 45 },
+  WhatsApp vendor: { unit: "per message", cost: 1 },
+  Voice bot vendor: { unit: "per call", cost: 6 },
   Desible: { unit: "per action", cost: 12 },
 };
 

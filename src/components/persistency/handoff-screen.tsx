@@ -23,7 +23,7 @@ function callable(p: Policy): boolean {
   if (p.state === "Renewal window open") return !!p.monthDue;
   return true;
 }
-const TELECALL = new Set(["Pace Setters", "ATS", "Desible", "Ubona"]);
+const TELECALL = new Set(["Call-centre vendor (fixed payout)", "Call-centre vendor (variable payout)", "Desible", "Voice bot vendor"]);
 
 function summary(p: Policy): string {
   const touches = baseTimeline(p).filter((t) => t.kind === "touch").slice(0, 3);

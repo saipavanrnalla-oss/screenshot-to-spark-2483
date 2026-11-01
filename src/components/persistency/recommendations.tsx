@@ -49,10 +49,10 @@ export function useRecommendations(): Rec[] {
       return due.reduce((s, p) => s + (p.monthDue?.amount ?? 0), 0) / Math.max(due.length, 1);
     })();
 
-    // 1. Move grace calls for the high-risk cohort with the most Pace Setters calls.
+    // 1. Move grace calls for the high-risk cohort with the most Call-centre vendor (fixed payout) calls.
     const byCohort = new Map<string, Policy[]>();
     for (const p of policies) {
-      if (p.state !== "Grace" || p.assignedVendor !== "Pace Setters") continue;
+      if (p.state !== "Grace" || p.assignedVendor !== "Call-centre vendor (fixed payout)") continue;
       const c = cohortLabel(p, activeCohortSet[p.product]);
       if (!HIGH.has(c)) continue;
       byCohort.set(c, [...(byCohort.get(c) ?? []), p]);
@@ -61,23 +61,23 @@ export function useRecommendations(): Rec[] {
     if (top) {
       const [cohort, list] = top;
       const same = policies.filter((p) => cohortLabel(p, activeCohortSet[p.product]) === cohort);
-      const rP = paidRate(same.filter((p) => p.assignedVendor === "Pace Setters"));
+      const rP = paidRate(same.filter((p) => p.assignedVendor === "Call-centre vendor (fixed payout)"));
       const rD = paidRate(same.filter((p) => p.assignedVendor === "Desible"));
       const lift = Math.max(0, rD.rate - rP.rate);
       const lo = Math.round(list.length * lift * 0.5), hi = Math.round(list.length * lift);
       out.push({
         id: "WR1",
-        title: `Move ${num(list.length)} grace calls from Pace Setters to Desible for cohort ${cohort}`,
-        why: `${num(list.length)} ${cohort} policies in grace sit with Pace Setters. This month ${cohort} paid at ${pct(rP.rate)} with Pace Setters (${num(rP.n)} due) and ${pct(rD.rate)} with Desible (${num(rD.n)} due).`,
+        title: `Move ${num(list.length)} grace calls from Call-centre vendor (fixed payout) to Desible for cohort ${cohort}`,
+        why: `${num(list.length)} ${cohort} policies in grace sit with Call-centre vendor (fixed payout). This month ${cohort} paid at ${pct(rP.rate)} with Call-centre vendor (fixed payout) (${num(rP.n)} due) and ${pct(rD.rate)} with Desible (${num(rD.n)} due).`,
         count: list.length,
         effect: lift > 0 && hi === 0 ? "Less than one more policy paid on these numbers; too few calls to matter" : lift > 0 ? `Between ${num(lo)} and ${num(hi)} more policies paid (${money(lo * avgInstalment * m.col.scale)} to ${money(hi * avgInstalment * m.col.scale)})` : "No gain expected from this month's rates; approve only to test",
         assumption: "Assumes moved calls convert somewhere between half of and the full gap between the two vendors' paid rates on the same cohort this month.",
         editable: true,
         executor: "Desible",
         rule: {
-          id: "R-WR1", name: `Grace ${cohort}: ${"Desible"} voice instead of Pace Setters`, stage: "Renewal window", level: "rule", priority: 17,
+          id: "R-WR1", name: `Grace ${cohort}: ${"Desible"} voice instead of Call-centre vendor (fixed payout)`, stage: "Renewal window", level: "rule", priority: 17,
           source: "Proposed by Desible, insurer to confirm",
-          when: { state: ["Grace"], cohort: [cohort], executor: ["Pace Setters"] },
+          when: { state: ["Grace"], cohort: [cohort], executor: ["Call-centre vendor (fixed payout)"] },
           then: { workflowId: "R2", action: "Desible voice call, telecall fallback", executor: "Desible", delayHours: 1, target: `Move up to ${list.length} calls` },
           effectiveFrom: "2026-10-28", needsApprovalFrom: "Head of Persistency",
         },
@@ -231,7 +231,7 @@ export function RecommendationsList({ compact }: { compact?: boolean }) {
               <Select value={draft.executor} onValueChange={(v) => setDraft((d) => ({ ...d, executor: v }))}>
                 <SelectTrigger className="mt-1 h-8 rounded-input border-border bg-surface-translucent text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent className="border-border bg-card">
-                  {["Desible", "ATS", "Ubona"].map((x) => <SelectItem key={x} value={x} className="text-xs">{x}</SelectItem>)}
+                  {["Desible", "Call-centre vendor (variable payout)", "Voice bot vendor"].map((x) => <SelectItem key={x} value={x} className="text-xs">{x}</SelectItem>)}
                 </SelectContent>
               </Select>
             </label>

@@ -218,7 +218,7 @@ function VendorSpend() {
           </tr>
         ))}
       </DataTable>
-      <p className="mt-2 text-[11px] text-dim">Illustrative unit costs (for example Pace Setters ₹38 per call). Edit them in Measurement. Collected is not caused by the vendor alone.</p>
+      <p className="mt-2 text-[11px] text-dim">Illustrative unit costs (for example Call-centre vendor (fixed payout) ₹38 per call). Edit them in Measurement. Collected is not caused by the vendor alone.</p>
     </div>
   );
 }
@@ -639,7 +639,7 @@ function RmNudges() {
   const actions = usePersistencyStore((s) => s.personaActions);
   const { list } = useBank();
   const sent = Object.keys(actions).filter((k) => k.startsWith("nudge:"));
-  const seeded = list.filter((p) => p.lastTouchChannel === "Bank RM").length;
+  const seeded = list.filter((p) => p.lastTouchChannel === "Bank relationship manager").length;
   return (
     <div className="space-y-2">
       <Kpis items={[["RM touches in last 30 days", num(seeded)], ["Nudges queued this session", num(sent.length)]]} />
@@ -701,16 +701,16 @@ function RelationshipNotes() {
 
 function OutreachDrafts() {
   const rows = useHni().slice(0, 3);
-  const me = first("HNI desk");
+  const me = first("High-value desk");
   return (
     <ul className="space-y-2">
       {rows.map(({ p }) => (
         <li key={p.policyId} className="rounded-input border border-border bg-surface-translucent p-3 text-xs">
           <div className="flex items-center justify-between"><span className="font-semibold text-foreground">{p.customerName} · {p.policyId}</span><AiMarker /></div>
           <p className="mt-1.5 text-subtle">
-            Dear {p.customerName.split(" ")[0]}, your {p.product} policy renews on {date(p.dueDate)} for {inr(p.annualisedPremium)}. I would be glad to walk you through your {p.product === "ULIP" ? "fund performance" : "benefits"} and the payment options at a time that suits you. Regards, {me?.name ?? "HNI desk"}, Sample Life Insurance.
+            Dear {p.customerName.split(" ")[0]}, your {p.product} policy renews on {date(p.dueDate)} for {inr(p.annualisedPremium)}. I would be glad to walk you through your {p.product === "ULIP" ? "fund performance" : "benefits"} and the payment options at a time that suits you. Regards, {me?.name ?? "High-value desk"}, Sample Life Insurance.
           </p>
-          <div className="mt-2"><ActionButton actKey={`outreach:${p.policyId}`} label="Approve outreach" done="Approved, queued (simulated)" actor={me?.name ?? "HNI desk"} policyId={p.policyId} detail={`Outreach approved for ${p.customerName}`} /></div>
+          <div className="mt-2"><ActionButton actKey={`outreach:${p.policyId}`} label="Approve outreach" done="Approved, queued (simulated)" actor={me?.name ?? "High-value desk"} policyId={p.policyId} detail={`Outreach approved for ${p.customerName}`} /></div>
         </li>
       ))}
       {rows.length === 0 && <EmptyState title="No drafts. Nothing high-ticket is due in this view." />}

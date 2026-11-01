@@ -339,14 +339,14 @@ export function generatePolicies(): Policy[] {
 
     const touches = stage === "Warming" ? r.int(0, 2) : stage === "Sourcing" ? r.int(0, 3) : r.weighted([[0, 10], [1, 20], [2, 22], [3, 18], [4, 12], [5, 8], [6, 5], [8, 3], [9, 2]] as const);
     const lastTouchDays = touches > 0 ? r.int(0, 12) : null;
-    const lastTouchChannel = touches > 0 ? r.weighted([["WhatsApp", 45], ["Telecall", 30], ["Voice bot", 15], ["Field visit", 5], ["Bank RM", 5]] as const) : null;
+    const lastTouchChannel = touches > 0 ? r.weighted([["WhatsApp", 45], ["Telecall", 30], ["Voice bot", 15], ["Field visit", 5], ["Bank relationship manager", 5]] as const) : null;
 
     const assignedVendor =
       stage === "Early lapse" || stage === "Late lapse"
-        ? r.weighted([["ATS", 60], ["Pace Setters", 25], ["Desible", 15]] as const)
+        ? r.weighted([["Call-centre vendor (variable payout)", 60], ["Call-centre vendor (fixed payout)", 25], ["Desible", 15]] as const)
         : stage === "Renewal window"
-          ? r.weighted([["Pace Setters", 50], ["Paylocal", 20], ["Ubona", 15], ["Desible", 15]] as const)
-          : r.weighted([["Paylocal", 60], ["Desible", 40]] as const);
+          ? r.weighted([["Call-centre vendor (fixed payout)", 50], ["WhatsApp vendor", 20], ["Voice bot vendor", 15], ["Desible", 15]] as const)
+          : r.weighted([["WhatsApp vendor", 60], ["Desible", 40]] as const);
 
     const { noise: _noise, ...rest } = d;
     void _noise;

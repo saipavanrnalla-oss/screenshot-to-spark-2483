@@ -25,18 +25,18 @@ const SYSTEMS: [string, string][] = [
   ["Mandate / NACH", "mandate_status daily 05:30 · bounce_returns daily 07:00"],
   ["CRM", "complaints and DND daily 06:30"],
   ["Dialer and telecalling vendors", "vendor_dispositions daily 08:00"],
-  ["WhatsApp vendor (Paylocal)", "delivery read-back daily 08:00"],
-  ["Voice bot (Ubona)", "call outcomes daily 08:00"],
+  ["WhatsApp vendor (WhatsApp vendor)", "delivery read-back daily 08:00"],
+  ["Voice bot (Voice bot vendor)", "call outcomes daily 08:00"],
   ["Bank partner feeds", "bank branch list weekly Mon 04:00"],
   ["MIS", "risk_cohorts monthly · advisor_master weekly Mon 04:00"],
 ];
 
 const EXECUTORS: [string, string][] = [
-  ["call list daily 09:00", "Telecalling vendors (Pace Setters, ATS)"],
-  ["message batch hourly", "WhatsApp (Paylocal)"],
-  ["call list hourly", "Voice (Ubona, Desible voice)"],
+  ["call list daily 09:00", "Telecalling vendors (Call-centre vendor (fixed payout), Call-centre vendor (variable payout))"],
+  ["message batch hourly", "WhatsApp (WhatsApp vendor)"],
+  ["call list hourly", "Voice (Voice bot vendor, Desible voice)"],
   ["visit list daily 08:30", "Field (sales officers)"],
-  ["RM nudge list daily 10:00", "Bank RMs"],
+  ["RM nudge list daily 10:00", "Bank relationship manager"],
   ["handoff screen, live", "Agents and desks"],
 ];
 

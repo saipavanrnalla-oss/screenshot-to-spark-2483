@@ -42,7 +42,7 @@ export const Route = createFileRoute("/persistency/rules")({
   component: ConfigurationPage,
 });
 
-const EXECUTORS = ["Pace Setters", "ATS", "Paylocal", "Ubona", "Desible", "Sales officer", "Bank RM", "HNI desk", "Retention desk", "Pace Setters + Underwriting", "None"];
+const EXECUTORS = ["Call-centre vendor (fixed payout)", "Call-centre vendor (variable payout)", "WhatsApp vendor", "Voice bot vendor", "Desible", "Sales officer", "Bank relationship manager", "High-value desk", "Retention desk", "Call-centre vendor (fixed payout) + Underwriting", "None"];
 const APPROVERS = ["Head of Persistency", "Compliance", "Regional lead", "Underwriting", "Ops / remittance", "Bank partner manager"];
 const GROUPS: (StageColumn | "Any")[] = ["Any", ...STAGE_COLUMNS];
 const LEVEL_STATUS: Record<RuleLevel, "failed" | "attention" | "live"> = { guardrail: "failed", insurer: "attention", rule: "live" };
@@ -192,7 +192,7 @@ function ConfigurationPage() {
                     level: "rule",
                     priority: 50,
                     when: { stage: ["Renewal window"] },
-                    then: { workflowId: "R1", action: "WhatsApp reminder with payment link", executor: "Paylocal", delayHours: 4 },
+                    then: { workflowId: "R1", action: "WhatsApp reminder with payment link", executor: "WhatsApp vendor", delayHours: 4 },
                     effectiveFrom: "2026-11-01",
                     needsApprovalFrom: "Head of Persistency",
                     source: "Insurer rule",

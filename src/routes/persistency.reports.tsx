@@ -66,7 +66,7 @@ const LEARN: LearnProposal[] = [
     match: (p) => p.language === "Bengali" && p.lastTouchChannel === "Voice bot" && !!p.monthDue && p.monthDue.status !== "upcoming",
     outcome: (p) => p.monthDue?.status === "paid" || p.monthDue?.status === "promised",
     evidenceLabel: "paid or promised after a voice-bot call",
-    rule: { id: "R21", name: "Bengali, grace: Bengali voice bot first", stage: "Renewal window", level: "rule", priority: 22, source: "Proposed by Desible, insurer to confirm", when: { language: ["Bengali"], state: ["Grace"] }, then: { workflowId: "R2", action: "Voice bot in Bengali, then telecall", executor: "Ubona", delayHours: 2 }, effectiveFrom: "2026-11-01", needsApprovalFrom: "Head of Persistency" },
+    rule: { id: "R21", name: "Bengali, grace: Bengali voice bot first", stage: "Renewal window", level: "rule", priority: 22, source: "Proposed by Desible, insurer to confirm", when: { language: ["Bengali"], state: ["Grace"] }, then: { workflowId: "R2", action: "Voice bot in Bengali, then telecall", executor: "Voice bot vendor", delayHours: 2 }, effectiveFrom: "2026-11-01", needsApprovalFrom: "Head of Persistency" },
   },
 ];
 

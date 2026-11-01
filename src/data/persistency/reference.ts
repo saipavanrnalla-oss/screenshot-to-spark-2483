@@ -65,10 +65,10 @@ export type VendorMode = "Observe" | "Direct" | "Replace-in-slice";
 export const VENDOR_MODES: VendorMode[] = ["Observe", "Direct", "Replace-in-slice"];
 
 export const VENDORS: Vendor[] = [
-  { id: "pace-setters", name: "Pace Setters", does: "Telecalling for renewals and grace", payout: "Fixed", channel: "Telecalling", defaultMode: "Observe" },
-  { id: "ats", name: "ATS", does: "Telecalling for lapse recovery", payout: "Variable", channel: "Telecalling", defaultMode: "Direct" },
-  { id: "paylocal", name: "Paylocal", does: "WhatsApp reminders and payment links", payout: "Per message", channel: "WhatsApp", defaultMode: "Direct" },
-  { id: "ubona", name: "Ubona", does: "Outbound voice bot", payout: "Per minute", channel: "Voice bot", defaultMode: "Observe" },
+  { id: "pace-setters", name: "Call-centre vendor (fixed payout)", does: "Telecalling for renewals and grace", payout: "Fixed", channel: "Telecalling", defaultMode: "Observe" },
+  { id: "ats", name: "Call-centre vendor (variable payout)", does: "Telecalling for lapse recovery", payout: "Variable", channel: "Telecalling", defaultMode: "Direct" },
+  { id: "paylocal", name: "WhatsApp vendor", does: "WhatsApp reminders and payment links", payout: "Per message", channel: "WhatsApp", defaultMode: "Direct" },
+  { id: "ubona", name: "Voice bot vendor", does: "Outbound voice bot", payout: "Per minute", channel: "Voice bot", defaultMode: "Observe" },
   { id: "desible", name: "Desible", does: "Decisions, voice and WhatsApp in agreed slices", payout: "Platform", channel: "Voice and WhatsApp", defaultMode: "Replace-in-slice" },
 ];
 
