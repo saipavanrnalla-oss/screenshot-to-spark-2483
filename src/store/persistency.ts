@@ -167,8 +167,8 @@ interface PersistencyState {
 
   simulate: (policyId: string, event: SimulatedEvent) => void;
   tick: () => void;
-  approve: (changeId: string) => void;
-  reject: (changeId: string) => void;
+  approve: (changeId: string, actor?: string, effectiveFrom?: string) => void;
+  reject: (changeId: string, actor?: string, reason?: string) => void;
   propose: (change: PendingChange) => void;
   applyNow: (change: PendingChange, actor: string) => void;
   setKillSwitch: (on: boolean) => void;
@@ -351,22 +351,23 @@ export const usePersistencyStore = create<PersistencyState>()(
       });
     },
 
-    approve: (changeId) => {
+    approve: (changeId, actor = "Head of Persistency", effectiveFrom) => {
       const s = get();
       const change = s.pending.find((c) => c.id === changeId);
       if (!change) return;
-      const exists = s.rules.some((r) => r.id === change.rule.id);
-      const rules = exists ? s.rules.map((r) => (r.id === change.rule.id ? change.rule : r)) : [...s.rules, change.rule];
+      const rule = effectiveFrom ? { ...change.rule, effectiveFrom } : change.rule;
+      const exists = s.rules.some((r) => r.id === rule.id);
+      const rules = exists ? s.rules.map((r) => (r.id === rule.id ? rule : r)) : [...s.rules, rule];
       set({ rules, rulesVersion: s.rulesVersion + 1, pending: s.pending.filter((c) => c.id !== changeId) });
-      pushAudit(entry({ actor: "Head of Persistency", kind: "approval", ruleId: change.rule.id, detail: `Approved: ${change.title}` }));
+      pushAudit(entry({ actor, kind: "approval", ruleId: rule.id, detail: `Approved: ${change.title}${effectiveFrom ? ` (from ${effectiveFrom})` : ""}` }));
     },
 
-    reject: (changeId) => {
+    reject: (changeId, actor = "Head of Persistency", reason) => {
       const s = get();
       const change = s.pending.find((c) => c.id === changeId);
       if (!change) return;
       set({ pending: s.pending.filter((c) => c.id !== changeId) });
-      pushAudit(entry({ actor: "Head of Persistency", kind: "rule-change", ruleId: change.rule.id, detail: `Rejected: ${change.title}` }));
+      pushAudit(entry({ actor, kind: "rule-change", ruleId: change.rule.id, detail: `Returned: ${change.title}${reason ? ` (${reason})` : ""}` }));
     },
 
     propose: (change) => {
