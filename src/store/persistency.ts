@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { useMemo } from "react";
 import {
   BASE_POLICIES,
@@ -284,7 +285,12 @@ function initialData() {
   };
 }
 
-export const usePersistencyStore = create<PersistencyState>((set, get) => {
+/** localStorage key for saved work. Bump the version when the saved shape changes. */
+export const STORE_KEY = "pct-store-v1";
+
+export const usePersistencyStore = create<PersistencyState>()(
+  persist(
+  (set, get) => {
   const now = () => new Date(NOW.getTime() + get().tickCount * TICK_MS);
   const entry = (e: Omit<AuditEntry, "id" | "at">): AuditEntry => ({ id: auditSeq++, at: now().toISOString(), ...e });
   const pushAudit = (...entries: AuditEntry[]) => set((s) => ({ audit: [...entries, ...s.audit].slice(0, 600) }));
@@ -468,10 +474,26 @@ export const usePersistencyStore = create<PersistencyState>((set, get) => {
 
     resetDemo: () => {
       auditSeq = 1;
+      usePersistencyStore.persist.clearStorage();
       set(initialData());
     },
   };
-});
+  },
+  {
+    name: STORE_KEY,
+    version: 1,
+    storage: createJSONStorage(() => localStorage),
+    // The ticker is rebuilt on load; everything a user changes is kept.
+    partialize: (s) => {
+      const { ticker: _t, tickCount: _c, ...rest } = s;
+      return Object.fromEntries(Object.entries(rest).filter(([, v]) => typeof v !== "function")) as Partial<PersistencyState>;
+    },
+    onRehydrateStorage: () => (state) => {
+      if (state?.audit.length) auditSeq = Math.max(...state.audit.map((a) => a.id)) + 1;
+    },
+  },
+  ),
+);
 
 /** All policies with in-session changes applied. */
 export function usePolicies(): Policy[] {
