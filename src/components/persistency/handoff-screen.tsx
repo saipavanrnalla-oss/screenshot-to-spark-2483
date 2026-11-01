@@ -151,13 +151,13 @@ export function HandoffScreen() {
 
         {/* Outcomes */}
         <div className="space-y-4">
-          <Panel eyebrow="Before you dial" title="Paid meanwhile?" tiers={["simulated"]}>
+          <Panel eyebrow="Before you dial" title="Paid since the list?" tiers={["simulated"]}>
             <Button variant="tint" size="sm" onClick={() => setChecked((c) => ({ ...c, [p.policyId]: true }))}>
               <ReceiptText /> Re-read latest receipts
             </Button>
             {checked[p.policyId] && (
               <div className="mt-2 space-y-1">
-                {paidMeanwhile ? <StatusPill status="healthy">Paid meanwhile. Do not call.</StatusPill> : <StatusPill status="attention">No receipt found. Go ahead.</StatusPill>}
+                {paidMeanwhile ? <StatusPill status="healthy">Paid since the list. Do not call.</StatusPill> : <StatusPill status="attention">No receipt found. Go ahead.</StatusPill>}
                 <p className="text-[11px] text-muted-foreground">Checked receipts file received 28 Oct 2026, 07:05. Branch payments can arrive a day late.</p>
               </div>
             )}

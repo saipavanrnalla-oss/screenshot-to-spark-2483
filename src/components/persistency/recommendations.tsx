@@ -75,7 +75,7 @@ export function useRecommendations(): Rec[] {
         editable: true,
         executor: "Desible",
         rule: {
-          id: "R-WR1", name: `Grace ${cohort}: ${"Desible"} voice instead of Call-centre vendor (fixed payout)`, stage: "Renewal window", level: "rule", priority: 17,
+          id: "R-WR1", name: `Grace ${cohort}: ${"Desible"} voice before the call-centre vendor`, stage: "Renewal window", level: "rule", priority: 17,
           source: "Proposed by Desible, insurer to confirm",
           when: { state: ["Grace"], cohort: [cohort], executor: ["Call-centre vendor (fixed payout)"] },
           then: { workflowId: "R2", action: "Desible voice call, telecall fallback", executor: "Desible", delayHours: 1, target: `Move up to ${list.length} calls` },

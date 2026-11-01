@@ -199,7 +199,7 @@ function MeasurementPage() {
               <div className="space-y-2 text-xs text-subtle">
                 <Eyebrow>How to read this</Eyebrow>
                 <p>Bars show the share of this month's due instalments paid so far, for the treatment group and the fixed 15% holdout. The whisker is the 95% range.</p>
-                <p>In this demo nothing has been run against the holdout yet, so any gap is noise in synthetic data. The first real read is due on 30 Nov 2026.</p>
+                <p>Nothing has been run against the holdout yet, so any gap is noise. The first read is due on 30 Nov 2026.</p>
               </div>
             </div>
           ) : (
@@ -226,7 +226,7 @@ function MeasurementPage() {
                   <p className="text-[13px] font-semibold text-foreground">{l.title}</p>
                   {live && <StatusPill status="healthy">Live</StatusPill>}
                 </div>
-                <p className="mt-1 text-xs text-subtle">Evidence: {num(hits)} of {num(base)} matching policies {l.evidenceLabel} this month (synthetic). {base < 30 ? "Too few to act on yet." : ""}</p>
+                <p className="mt-1 text-xs text-subtle">Evidence: {num(hits)} of {num(base)} matching policies {l.evidenceLabel} this month. {base < 30 ? "Too few to act on yet." : ""}</p>
                 <Button
                   size="sm"
                   className="mt-2"

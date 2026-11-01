@@ -39,7 +39,7 @@ export function SendTestButton({ what, size = "sm" }: { what: string; size?: "sm
           ) : queued ? (
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <StatusPill status="simulated">Queued (simulated in this build)</StatusPill>
+                <StatusPill status="simulated">Queued for the test number</StatusPill>
                 <TierBadge tiers={["simulated"]} />
               </div>
               <p className="text-sm text-subtle">Queued for {mask(testNumber)}. This build does not send, so there is no delivered or answered state.</p>
@@ -52,7 +52,7 @@ export function SendTestButton({ what, size = "sm" }: { what: string; size?: "sm
               <Button
                 onClick={() => {
                   setQueued(true);
-                  log({ actor: "Test send", kind: "setting", detail: `Test queued (simulated): ${what}` });
+                  log({ actor: "Test send", kind: "setting", detail: `Test queued: ${what}` });
                 }}
               >
                 Queue test

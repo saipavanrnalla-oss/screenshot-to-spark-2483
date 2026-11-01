@@ -486,7 +486,7 @@ function VisitList() {
               <td className="text-subtle tabular">{inr(p.monthDue?.amount ?? p.instalmentAmount)}</td>
               <td className="text-subtle tabular">{date(p.dueDate)}</td>
               <td><StateBadge state={p.state} /></td>
-              <td>{paid ? <StatusPill status="healthy">Paid meanwhile, skip</StatusPill> : p.paymentMethod === "Bank branch" ? <StatusPill status="simulated">Branch payer: receipt may lag</StatusPill> : null}</td>
+              <td>{paid ? <StatusPill status="healthy">Paid since the list, skip</StatusPill> : p.paymentMethod === "Bank branch" ? <StatusPill status="simulated">Branch payer: receipt may lag</StatusPill> : null}</td>
               <td><ActionButton actKey={`visit:${p.policyId}`} label="Mark visited" done="Visited" actor={me?.name ?? "Sales officer"} policyId={p.policyId} detail={`Visit logged for ${p.policyId}`} /></td>
             </tr>
           );
@@ -501,7 +501,7 @@ function PaidMeanwhileFlags() {
   const branchPayers = list.filter((p) => p.paymentMethod === "Bank branch").length;
   return (
     <div className="space-y-3">
-      <Kpis items={[["Paid meanwhile, visit skipped", num(flagged.length)], ["Branch payers on the list", num(branchPayers)], ["Stops left", num(list.length - flagged.length)]]} />
+      <Kpis items={[["Paid since the list, visit skipped", num(flagged.length)], ["Branch payers on the list", num(branchPayers)], ["Stops left", num(list.length - flagged.length)]]} />
       <p className="text-xs text-subtle">The receipts file is re-read before each visit. Payments at a bank branch reach the file a day later, so those stops show a caution flag.</p>
     </div>
   );

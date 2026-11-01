@@ -111,11 +111,11 @@ export function PolicyDrawer({ policyId, onClose }: { policyId: string | null; o
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="tint" size="sm" className="mt-3">
-                    <Zap /> Simulate event <ChevronDown />
+                    <Zap /> Record event <ChevronDown />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-56 border-border bg-card">
-                  <DropdownMenuLabel className="text-[11px] text-muted-foreground">Moves the state machine (simulated)</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-[11px] text-muted-foreground">Record an event</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {SIMULATED_EVENTS.map((ev) => (
                     <DropdownMenuItem
@@ -123,7 +123,7 @@ export function PolicyDrawer({ policyId, onClose }: { policyId: string | null; o
                       className="cursor-pointer text-xs"
                       onSelect={() => {
                         simulate(policy.policyId, ev);
-                        toast(`${ev} simulated on ${policy.policyId}`, { description: "State, next action and audit log updated." });
+                        toast(` recorded on `, { description: "State, next action and audit log updated." });
                       }}
                     >
                       {ev}

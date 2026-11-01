@@ -43,7 +43,7 @@ export function PersistencyTable({ policies, compact }: { policies: Policy[]; co
       </DataTable>
       <div className="mt-2 flex items-center justify-between">
         <ModeRuleFootnote />
-        <span className="text-[11px] text-dim">Synthetic book of {num(policies.length)} policies</span>
+        <span className="text-[11px] text-dim">Book of {num(policies.length)} policies</span>
       </div>
     </div>
   );
