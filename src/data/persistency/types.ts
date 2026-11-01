@@ -234,7 +234,7 @@ export interface Decision {
   executor: string;
   scheduledAt: string;
   frozen: boolean;
-  cancelledReason?: "Paid meanwhile" | "Kill switch on" | "Stale input" | undefined;
+  cancelledReason?: "Paid since the list" | "Kill switch on" | "Stale input" | undefined;
   conflictWith?: string[] | undefined;
 }
 

@@ -13,6 +13,9 @@
 
 @theme {
   --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Release 1 type scale: 600 is the heaviest weight in use. */
+  --font-weight-bold: 600;
+  --font-weight-extrabold: 600;
 }
 
 @theme inline {
@@ -21,8 +24,8 @@
   --radius-lg: 10px;
   --radius-xl: 12px;
   --radius-2xl: 16px;
-  --radius-input: 10px;
-  --radius-card: 16px;
+  --radius-input: 6px;
+  --radius-card: 8px;
   --radius-pill: 20px;
 
   --color-background: var(--background);
@@ -131,6 +134,51 @@
   --sidebar-ring: #ff4f01;
 }
 
+/* Light theme: same token names, values from the release 1 brief. */
+html.light {
+  --background: #f8f4ec;
+  --foreground: #211e19;
+  --card: #ffffff;
+  --card-foreground: #211e19;
+  --popover: #ffffff;
+  --popover-foreground: #211e19;
+  --primary: #e8501a;
+  --primary-foreground: #ffffff;
+  --secondary: #f8f4ec;
+  --secondary-foreground: #211e19;
+  --muted: #f8f4ec;
+  --muted-foreground: #6b6154;
+  --accent: rgba(232, 80, 26, 0.1);
+  --accent-foreground: #211e19;
+  --destructive-foreground: #ffffff;
+  --border: #e3dacb;
+  --input: #e3dacb;
+  --ring: #e8501a;
+
+  --surface: #ffffff;
+  --surface-translucent: rgba(248, 244, 236, 0.6);
+  --text-secondary: #4a4238;
+  --text-dim: #9a8f7e;
+  --brand-tint: rgba(232, 80, 26, 0.1);
+  --brand-tint-border: rgba(232, 80, 26, 0.3);
+  --strip: #211e19;
+  --status-live: #e8501a;
+
+  --chart-1: #e8501a;
+  --chart-2: #4a4238;
+  --chart-3: #9a8f7e;
+
+  --sidebar: #f8f4ec;
+  --sidebar-foreground: #4a4238;
+  --sidebar-primary: #e8501a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(232, 80, 26, 0.1);
+  --sidebar-accent-foreground: #211e19;
+  --sidebar-border: #e3dacb;
+  --sidebar-ring: #e8501a;
+  color-scheme: light;
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -138,6 +186,10 @@
 
   html {
     color-scheme: dark;
+  }
+
+  body {
+    font-size: 13px;
   }
 
   body {
@@ -153,26 +205,25 @@
   }
 }
 
-/* Section eyebrow: 10-11px, 700, uppercase, 0.08em, muted */
+/* Label: 12px / 500 muted. Release 1 has no uppercase eyebrows. */
 @utility eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--color-muted-foreground);
 }
 
-/* Stat numbers: 22px / 800 accent; labels 11px muted */
+/* KPI value: 24px / 600 in the primary text colour */
 @utility stat-number {
-  font-size: 22px;
-  line-height: 1.15;
-  font-weight: 800;
-  color: var(--color-primary);
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--color-foreground);
   font-variant-numeric: tabular-nums;
 }
 
 @utility stat-label {
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--color-muted-foreground);
 }
 
@@ -188,8 +239,9 @@
   border-radius: var(--radius-card);
 }
 
+/* Release 1 cards carry no left accent bar; the utility stays so old markup compiles. */
 @utility accent-left {
-  border-left: 3px solid var(--color-primary);
+  border-left-width: 1px;
 }
 
 @utility dashed-simulated {

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,12 +12,13 @@ import { useAdapters, useDecisions, usePersistencyStore } from "@/store/persiste
 import { date, num } from "@/lib/format";
 
 export const Route = createFileRoute("/persistency/data")({
+  beforeLoad: ({ search }) => gate("data", search),
   head: () => ({
     meta: [
-      { title: "Data and integrations · Persistency · desible.ai" },
-      { name: "description", content: "File adapters, freshness, rejects and paid-meanwhile suppression for the persistency engine." },
-      { property: "og:title", content: "Data and integrations · Persistency · desible.ai" },
-      { property: "og:description", content: "File adapters, freshness, rejects and paid-meanwhile suppression for the persistency engine." },
+      { title: "Data files · Persistency · desible.ai" },
+      { name: "description", content: "Incoming and outgoing files, freshness, rejects and payments received since the list was cut." },
+      { property: "og:title", content: "Data files · Persistency · desible.ai" },
+      { property: "og:description", content: "Incoming and outgoing files, freshness, rejects and payments received since the list was cut." },
     ],
   }),
   component: DataPage,
@@ -80,14 +82,14 @@ function DataPage() {
 
   const paidMeanwhile = useMemo(() => {
     let suppressed = 0;
-    for (const d of decisions.values()) if (d.cancelledReason === "Paid meanwhile") suppressed++;
+    for (const d of decisions.values()) if (d.cancelledReason === "Paid since the list") suppressed++;
     const slipped = scoped.filter((p) => p.monthDue?.branchPayment && (p.monthDue.paidOn === NOW_ISO || p.monthDue.paidOn === YESTERDAY_ISO) && !receipts.includes(p.policyId)).length;
     return { suppressed, slipped };
   }, [decisions, scoped, receipts]);
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">
-      <PageHeader eyebrow="Data and integrations" title="Files in, actions out" description="Every decision depends on one or more of these files. A late file pauses only the stages that need it." tiers={["simulated"]} />
+      <PageHeader eyebrow="Data files" title="Data files" description="Every decision depends on one or more of these files. A late file pauses only the stages that need it." tiers={["simulated"]} />
 
       {adapters.some((a) => a.stale) && (
         <NoteBanner tone="attention">
@@ -108,7 +110,7 @@ function DataPage() {
               <td className="text-[11px] text-subtle">{a.feeds.join(", ") || "Cohorts"}</td>
               <td>{status(a)}</td>
               <td className="whitespace-nowrap">
-                {a.stale && <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => { markReceived(a.id); toast(`${a.name} marked as received`, { description: "Paused decisions resume from the next run." }); }}>Simulate arrival</Button>}
+                {a.stale && <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => { markReceived(a.id); toast(`${a.name} marked as received`, { description: "Paused decisions resume from the next run." }); }}>Mark received</Button>}
                 {a.optional && <Switch aria-label={`Turn ${a.name} ${a.enabled ? "off" : "on"}`} checked={a.enabled} onCheckedChange={(on) => { setEnabled(a.id, on); if (a.id === "bureau_fields") toast(on ? "Bureau fields on" : "Bureau fields off", { description: on ? "Bureau signals can now be weighted in the starter score." : "Bureau signals are greyed out in the starter score." }); }} />}
               </td>
             </tr>
@@ -157,7 +159,7 @@ function DataPage() {
         </Panel>
       </div>
 
-      <Panel eyebrow="Paid meanwhile" title="Receipts checked before every action" tiers={["live-engine", "simulated"]}>
+      <Panel eyebrow="Paid since the list" title="Receipts checked before every action" tiers={["live-engine", "simulated"]}>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="panel accent-left px-4 py-3">
             <div className="stat-number">{num(paidMeanwhile.suppressed)}</div>

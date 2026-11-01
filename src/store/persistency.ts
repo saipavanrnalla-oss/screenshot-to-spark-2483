@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { useMemo } from "react";
 import {
   BASE_POLICIES,
@@ -110,14 +111,14 @@ const SEED_PENDING: PendingChange[] = [
       priority: 28,
       source: "Proposed by Desible, insurer to confirm",
       when: { stage: ["Renewal window"], product: ["ULIP"], paymentMode: ["Quarterly"], policyYear: ["2"] },
-      then: { workflowId: "R1", action: "WhatsApp with fund value, call two days later", executor: "Paylocal", delayHours: 2 },
+      then: { workflowId: "R1", action: "WhatsApp with fund value, call two days later", executor: "WhatsApp vendor", delayHours: 2 },
       effectiveFrom: "2026-10-29",
       needsApprovalFrom: "Head of Persistency",
     },
   },
   {
     id: "PC-102",
-    title: "Grace, A4 cohort: move from Pace Setters to Desible voice",
+    title: "Grace, A4 cohort: move from Call-centre vendor (fixed payout) to Desible voice",
     source: "War-room recommendation",
     proposedBy: "Month-end war room (rule-based)",
     at: "2026-10-28T08:15:00.000Z",
@@ -166,8 +167,8 @@ interface PersistencyState {
 
   simulate: (policyId: string, event: SimulatedEvent) => void;
   tick: () => void;
-  approve: (changeId: string) => void;
-  reject: (changeId: string) => void;
+  approve: (changeId: string, actor?: string, effectiveFrom?: string) => void;
+  reject: (changeId: string, actor?: string, reason?: string) => void;
   propose: (change: PendingChange) => void;
   applyNow: (change: PendingChange, actor: string) => void;
   setKillSwitch: (on: boolean) => void;
@@ -284,7 +285,12 @@ function initialData() {
   };
 }
 
-export const usePersistencyStore = create<PersistencyState>((set, get) => {
+/** localStorage key for saved work. Bump the version when the saved shape changes. */
+export const STORE_KEY = "pct-store-v1";
+
+export const usePersistencyStore = create<PersistencyState>()(
+  persist(
+  (set, get) => {
   const now = () => new Date(NOW.getTime() + get().tickCount * TICK_MS);
   const entry = (e: Omit<AuditEntry, "id" | "at">): AuditEntry => ({ id: auditSeq++, at: now().toISOString(), ...e });
   const pushAudit = (...entries: AuditEntry[]) => set((s) => ({ audit: [...entries, ...s.audit].slice(0, 600) }));
@@ -345,22 +351,23 @@ export const usePersistencyStore = create<PersistencyState>((set, get) => {
       });
     },
 
-    approve: (changeId) => {
+    approve: (changeId, actor = "Head of Persistency", effectiveFrom) => {
       const s = get();
       const change = s.pending.find((c) => c.id === changeId);
       if (!change) return;
-      const exists = s.rules.some((r) => r.id === change.rule.id);
-      const rules = exists ? s.rules.map((r) => (r.id === change.rule.id ? change.rule : r)) : [...s.rules, change.rule];
+      const rule = effectiveFrom ? { ...change.rule, effectiveFrom } : change.rule;
+      const exists = s.rules.some((r) => r.id === rule.id);
+      const rules = exists ? s.rules.map((r) => (r.id === rule.id ? rule : r)) : [...s.rules, rule];
       set({ rules, rulesVersion: s.rulesVersion + 1, pending: s.pending.filter((c) => c.id !== changeId) });
-      pushAudit(entry({ actor: "Head of Persistency", kind: "approval", ruleId: change.rule.id, detail: `Approved: ${change.title}` }));
+      pushAudit(entry({ actor, kind: "approval", ruleId: rule.id, detail: `Approved: ${change.title}${effectiveFrom ? ` (from ${effectiveFrom})` : ""}` }));
     },
 
-    reject: (changeId) => {
+    reject: (changeId, actor = "Head of Persistency", reason) => {
       const s = get();
       const change = s.pending.find((c) => c.id === changeId);
       if (!change) return;
       set({ pending: s.pending.filter((c) => c.id !== changeId) });
-      pushAudit(entry({ actor: "Head of Persistency", kind: "rule-change", ruleId: change.rule.id, detail: `Rejected: ${change.title}` }));
+      pushAudit(entry({ actor, kind: "rule-change", ruleId: change.rule.id, detail: `Returned: ${change.title}${reason ? ` (${reason})` : ""}` }));
     },
 
     propose: (change) => {
@@ -468,10 +475,26 @@ export const usePersistencyStore = create<PersistencyState>((set, get) => {
 
     resetDemo: () => {
       auditSeq = 1;
+      usePersistencyStore.persist.clearStorage();
       set(initialData());
     },
   };
-});
+  },
+  {
+    name: STORE_KEY,
+    version: 1,
+    storage: createJSONStorage(() => localStorage),
+    // The ticker is rebuilt on load; everything a user changes is kept.
+    partialize: (s) => {
+      const { ticker: _t, tickCount: _c, ...rest } = s;
+      return Object.fromEntries(Object.entries(rest).filter(([, v]) => typeof v !== "function")) as Partial<PersistencyState>;
+    },
+    onRehydrateStorage: () => (state) => {
+      if (state?.audit.length) auditSeq = Math.max(...state.audit.map((a) => a.id)) + 1;
+    },
+  },
+  ),
+);
 
 /** All policies with in-session changes applied. */
 export function usePolicies(): Policy[] {

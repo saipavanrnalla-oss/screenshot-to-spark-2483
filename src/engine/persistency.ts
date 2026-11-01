@@ -155,7 +155,7 @@ export function evaluate(p: Policy, rules: Rule[], ctx: EngineContext): Decision
     if (ctx.killSwitchGlobal || ctx.killedWorkflows.has(decision.workflowId)) decision.cancelledReason = "Kill switch on";
     else if (ctx.staleWorkflows.has(decision.workflowId)) decision.cancelledReason = "Stale input";
     else if (!NON_PAYMENT_WORKFLOWS.has(decision.workflowId) && ctx.receipts.has(p.policyId) && p.state !== "Paid" && p.state !== "Revived")
-      decision.cancelledReason = "Paid meanwhile";
+      decision.cancelledReason = "Paid since the list";
   }
   return decision;
 }
@@ -181,13 +181,13 @@ export function applyEvent(p: Policy, event: SimulatedEvent, at: Date = NOW): Ev
               monthDue: p.monthDue ? { ...p.monthDue, status: "paid", paidOn: toIso(at) } : undefined,
             },
         addReceipt: true,
-        timeline: { at: stamp, kind: "event", title: lapsed ? "Revival premium received" : "Payment received", detail: "Receipt matched in receipts file (simulated)" },
+        timeline: { at: stamp, kind: "event", title: lapsed ? "Revival premium received" : "Payment received", detail: "Receipt matched in receipts file" },
       };
     case "Bounce":
       return {
         patch: { state: "Grace", lifecycleStage: lapsed ? p.lifecycleStage : "Renewal window", reasonCode: "Mandate bounce" },
         addReceipt: false,
-        timeline: { at: stamp, kind: "event", title: "Mandate bounce returned", detail: "Bounce code: insufficient funds (simulated)" },
+        timeline: { at: stamp, kind: "event", title: "Mandate bounce returned", detail: "Bounce code: insufficient funds" },
       };
     case "Mandate failed":
       return {
@@ -196,7 +196,7 @@ export function applyEvent(p: Policy, event: SimulatedEvent, at: Date = NOW): Ev
           ...(p.lifecycleStage === "Renewal window" ? { state: "Grace" as const } : {}),
         },
         addReceipt: false,
-        timeline: { at: stamp, kind: "event", title: "Mandate registration failed", detail: "Mandate status file: rejected by bank (simulated)" },
+        timeline: { at: stamp, kind: "event", title: "Mandate registration failed", detail: "Mandate status file: rejected by bank" },
       };
     case "Customer says wants out":
       return {

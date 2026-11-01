@@ -56,10 +56,10 @@ function PrimaryAction({ persona }: { persona: PersonaConfig }) {
   const kind = persona.primaryAction.kind;
   const label = persona.primaryAction.label;
 
-  if (kind === "open-war-room") return <Button asChild><Link to="/persistency/war-room">{label} <ArrowRight /></Link></Button>;
-  if (kind === "approve-rule") return <Button asChild><Link to="/persistency/configuration">{label} <ArrowRight /></Link></Button>;
+  if (kind === "open-war-room") return <Button asChild><Link to="/persistency/collections">{label} <ArrowRight /></Link></Button>;
+  if (kind === "approve-rule") return <Button asChild><Link to="/persistency/rules">{label} <ArrowRight /></Link></Button>;
   if (kind === "upload-cohort") return <Button asChild><Link to="/persistency/cohorts">{label} <ArrowRight /></Link></Button>;
-  if (kind === "pause-workflow") return <Button asChild><Link to="/persistency/guardrails">{label} <ArrowRight /></Link></Button>;
+  if (kind === "pause-workflow") return <Button asChild><Link to="/persistency/contact-policy">{label} <ArrowRight /></Link></Button>;
   if (kind === "log-outcome") return null;
 
   const act = () => {

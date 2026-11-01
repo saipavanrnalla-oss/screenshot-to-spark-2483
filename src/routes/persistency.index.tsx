@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
+import { useChrome } from "@/hooks/use-chrome";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, Check, FileWarning, GitMerge, ShieldAlert, X } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +18,7 @@ import { croreValue, money, num, pct, time } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/persistency/")({
+  beforeLoad: ({ search }) => gate("overview", search),
   head: () => ({
     meta: [
       { title: "Control Tower · Persistency · desible.ai" },
@@ -49,12 +52,15 @@ function ControlTower() {
   const activeCohortSet = usePersistencyStore((s) => s.activeCohortSet);
   const killedWorkflows = usePersistencyStore((s) => s.killedWorkflows);
   const tick = usePersistencyStore((s) => s.tick);
+  const showSpine = useChrome("showSpinePanel");
+  const showTicker = useChrome("showTicker");
   const ticker = usePersistencyStore((s) => s.ticker);
 
   useEffect(() => {
+    if (!showTicker) return;
     const id = window.setInterval(tick, TICK_MS);
     return () => window.clearInterval(id);
-  }, [tick]);
+  }, [tick, showTicker]);
 
   const stats = useMemo(() => headline(scoped), [scoped]);
   const col = useMemo(() => collection(all, product), [all, product]);
@@ -127,8 +133,8 @@ function ControlTower() {
         <StatCard label="Held" value={num(stats.held)} sub="Complaint, bereavement or do-not-contact" />
       </div>
 
-      {/* Six-step spine */}
-      <Panel eyebrow="How it runs" title="Six-step spine" tiers={["live-engine"]} bodyClassName="p-0">
+      {/* Six-step spine (CHROME.showSpinePanel) */}
+      {showSpine && <Panel eyebrow="How it runs" title="Six-step spine" tiers={["live-engine"]} bodyClassName="p-0">
         <ol className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
           {spine.steps.map((s, i) => (
             <li key={s.key} className="relative border-border max-xl:border-b xl:border-r xl:last:border-r-0">
@@ -144,21 +150,21 @@ function ControlTower() {
             </li>
           ))}
         </ol>
-      </Panel>
+      </Panel>}
 
       {/* Lifecycle strip */}
       <Panel
         eyebrow="Lifecycle"
         title="All four stages, live"
         tiers={["live-engine"]}
-        actions={<Link to="/persistency/lifecycle" className="text-xs font-semibold text-primary hover:underline">Open lifecycle</Link>}
+        actions={<Link to="/persistency/stages" className="text-xs font-semibold text-primary hover:underline">Open lifecycle</Link>}
         bodyClassName="p-0"
       >
         <div className="grid grid-cols-2 lg:grid-cols-4">
           {stages.map((s, i) => (
             <Link
               key={s.column}
-              to="/persistency/lifecycle"
+              to="/persistency/stages"
               search={(prev) => ({ ...prev, sub: `stage:${s.column}` })}
               className="group relative border-border px-5 py-4 transition-colors hover:bg-brand-tint max-lg:border-b lg:border-r lg:last:border-r-0"
             >
@@ -242,7 +248,7 @@ function ControlTower() {
           </ul>
         </Panel>
 
-        <Panel
+        {showTicker && <Panel
           eyebrow="Today's decisions"
           title={
             <span className="flex items-center gap-2">
@@ -283,7 +289,7 @@ function ControlTower() {
               ))}
             </ul>
           )}
-        </Panel>
+        </Panel>}
       </div>
 
       <Sheet open={!!spineOpen} onOpenChange={(o) => !o && setSpineOpen(null)}>

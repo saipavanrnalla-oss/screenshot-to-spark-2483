@@ -1,15 +1,19 @@
-# Persistency Control Tower roadmap
+# Persistency roadmap
 
-Source brief: uploaded "Persistency Control Tower: Lovable Build Prompt". The user first asked to pause after each step, then (31 Oct 2026) asked to build all remaining steps in one go.
+## Release 1 (current brief)
 
-- [x] 0. Scaffold: design tokens, font, routing, entry page
-- [x] 1. Shell: top bar, persona switcher, product switch, sidebar, tier badge, demo banner
-- [x] 2. Mock data module and engine
-- [x] 3. Control Tower, Lifecycle, Policy drawer
-- [x] 4. Cohorts (all four tabs)
-- [x] 5. Configuration console with product matrix
-- [x] 6. Workflows library plus six canvases
-- [x] 7. Persona homes (all 14), agent handoff first
-- [x] 8. Month-end war room, Guardrails, Measurement
-- [x] 9. Where Desible sits, Data and integrations, Setup
-- [x] 10. Polish: empty states, stale-file and kill-switch states, accessibility, 1024 check
+Source: uploaded "Persistency release 1: modules, depth and hidden pages" (1 Nov 2026). It replaces the earlier brief where they differ. The brief asks to stop after each step.
+
+- [x] 1. Module registry and flags, wording and look, five test users, shell and sidebar by role
+- [ ] 2. Policy stages, Policies, Policy page with Activity, Stage settings
+- [ ] 3. Approvals and the shared version model
+- [ ] 4. Rules
+- [ ] 5. Workflows, canvases, Builder, Prompt builder, Simulation, Versions
+- [ ] 6. Agents, Configure, Versions, Tasks, Test, Handoffs, Task queue, Orchestration settings
+- [ ] 7. Data files, import wizard, Outbound lists, Executors, Paid since the list
+- [ ] 8. Reports
+- [ ] 9. Pass over copy, layout and flags
+
+## Earlier build (first brief, done)
+
+Steps 0 to 10 of "Persistency Control Tower: Lovable Build Prompt" are built. Pages that release 1 hides stay in the code behind the module registry.

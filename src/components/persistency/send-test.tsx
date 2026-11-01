@@ -34,12 +34,12 @@ export function SendTestButton({ what, size = "sm" }: { what: string; size?: "sm
             <div className="space-y-3">
               <StatusPill status="attention">Needs a registered test number</StatusPill>
               <p className="text-sm text-subtle">Test sends only go to a number registered in Setup. Customers are never contacted from a test.</p>
-              <Link to="/persistency/setup" className="text-xs font-semibold text-primary hover:underline">Register a test number in Setup</Link>
+              <Link to="/persistency/admin" className="text-xs font-semibold text-primary hover:underline">Register a test number in Setup</Link>
             </div>
           ) : queued ? (
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <StatusPill status="simulated">Queued (simulated in this build)</StatusPill>
+                <StatusPill status="simulated">Queued for the test number</StatusPill>
                 <TierBadge tiers={["simulated"]} />
               </div>
               <p className="text-sm text-subtle">Queued for {mask(testNumber)}. This build does not send, so there is no delivered or answered state.</p>
@@ -52,7 +52,7 @@ export function SendTestButton({ what, size = "sm" }: { what: string; size?: "sm
               <Button
                 onClick={() => {
                   setQueued(true);
-                  log({ actor: "Test send", kind: "setting", detail: `Test queued (simulated): ${what}` });
+                  log({ actor: "Test send", kind: "setting", detail: `Test queued: ${what}` });
                 }}
               >
                 Queue test

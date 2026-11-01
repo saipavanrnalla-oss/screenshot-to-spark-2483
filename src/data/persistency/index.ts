@@ -21,3 +21,4 @@ export const FILE_ADAPTERS = buildAdapters(BASE_POLICIES);
 export const STALE_WORKFLOWS = new Set(FILE_ADAPTERS.filter((a) => a.stale).flatMap((a) => a.feeds));
 
 export const POLICY_INDEX = new Map(BASE_POLICIES.map((p, i) => [p.policyId, i]));
+export * from "./agents";

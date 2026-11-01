@@ -84,7 +84,7 @@ describe("engine precedence", () => {
   it("cancels a payment action when the receipt arrived meanwhile", () => {
     const p = find((x) => x.state === "Grace" && x.channel !== "Bancassurance" && x.touchesLast30d < 8);
     const d = evaluate(p, SEED_RULES, { ...ctx, receipts: new Set([p.policyId]) });
-    expect(d.cancelledReason).toBe("Paid meanwhile");
+    expect(d.cancelledReason).toBe("Paid since the list");
   });
 
   it("the kill switch stops actions", () => {

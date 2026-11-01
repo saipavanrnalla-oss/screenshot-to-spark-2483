@@ -16,7 +16,7 @@ export const DIMENSIONS: { key: DimensionKey; label: string; values: string[] }[
   { key: "reasonCode", label: "Reason code", values: ["Money problem", "Forgot", "Lost interest", "Mis-sold", "Wants to surrender", "Will pay later", "Not reached", "Mandate bounce", "Mandate failed"] },
   { key: "calendar", label: "Calendar", values: ["Month-end (last 5 days)", "Mid-month", "Festival window"] },
   { key: "touchHistory", label: "Touch history", values: ["No touches in 30 days", "1 to 3 touches in 30 days", "4 to 7 touches in 30 days", "8 or more touches in 30 days"] },
-  { key: "executor", label: "Executor", values: ["Pace Setters", "ATS", "Paylocal", "Ubona", "Desible"] },
+  { key: "executor", label: "Executor", values: ["Call-centre vendor (fixed payout)", "Call-centre vendor (variable payout)", "WhatsApp vendor", "Voice bot vendor", "Desible"] },
   { key: "insurer", label: "Insurer", values: ["Sample Life Insurance"] },
 ];
 
@@ -69,7 +69,7 @@ export const SEED_RULES: Rule[] = [
   {
     id: "G5", name: "Paid policies receive no payment outreach", stage: "Any", level: "guardrail", priority: 5, locked: true, source: INSURER,
     when: { state: ["Paid", "Revived"] },
-    then: { workflowId: "X2", action: "Send receipt confirmation only", executor: "Paylocal", delayHours: 2 },
+    then: { workflowId: "X2", action: "Send receipt confirmation only", executor: "WhatsApp vendor", delayHours: 2 },
     effectiveFrom: EFF, needsApprovalFrom: "Compliance",
   },
 
@@ -77,19 +77,19 @@ export const SEED_RULES: Rule[] = [
   {
     id: "D1", name: "Bank-sourced: RM nudge before any direct call", stage: "Renewal window", level: "insurer", priority: 10, source: INSURER,
     when: { channel: ["Bancassurance"], stage: ["Renewal window"] },
-    then: { workflowId: "R6", action: "Nudge bank RM with customer list", executor: "Bank RM", delayHours: 6, approvals: "Bank partner manager" },
+    then: { workflowId: "R6", action: "Nudge bank RM with customer list", executor: "Bank relationship manager", delayHours: 6, approvals: "Bank partner manager" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
-    id: "D2", name: "Premium ₹5,00,000 and above goes to HNI desk", stage: "Renewal window", level: "insurer", priority: 11, source: INSURER,
+    id: "D2", name: "Premium ₹5,00,000 and above goes to High-value desk", stage: "Renewal window", level: "insurer", priority: 11, source: INSURER,
     when: { ticketBand: ["₹5,00,000 and above"], stage: ["Renewal window", "Early lapse"] },
-    then: { workflowId: "R7", action: "Personal outreach by relationship manager", executor: "HNI desk", delayHours: 8 },
+    then: { workflowId: "R7", action: "Personal outreach by relationship manager", executor: "High-value desk", delayHours: 8 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
     id: "D3", name: "Term late revival needs health declaration", stage: "Lapse and revival", level: "insurer", priority: 12, source: INSURER,
     when: { product: ["Term"], stage: ["Late lapse"] },
-    then: { workflowId: "L2", action: "Revival offer with good-health declaration", executor: "Pace Setters + Underwriting", delayHours: 24 },
+    then: { workflowId: "L2", action: "Revival offer with good-health declaration", executor: "Call-centre vendor (fixed payout) + Underwriting", delayHours: 24 },
     effectiveFrom: EFF, needsApprovalFrom: "Underwriting",
   },
 
@@ -97,19 +97,19 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R01", name: "Renewal window: pre-due WhatsApp reminders", stage: "Renewal window", level: "rule", priority: 50, source: PROPOSED,
     when: { stage: ["Renewal window"] },
-    then: { workflowId: "R1", action: "WhatsApp reminder with payment link", executor: "Paylocal", delayHours: 3, script: "Pre-due reminder" },
+    then: { workflowId: "R1", action: "WhatsApp reminder with payment link", executor: "WhatsApp vendor", delayHours: 3, script: "Pre-due reminder" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
     id: "R02", name: "Grace: telecall on due-date collection", stage: "Renewal window", level: "rule", priority: 40, source: PROPOSED,
     when: { state: ["Grace"] },
-    then: { workflowId: "R2", action: "Collection call", executor: "Pace Setters", delayHours: 2, script: "Due-date collection" },
+    then: { workflowId: "R2", action: "Collection call", executor: "Call-centre vendor (fixed payout)", delayHours: 2, script: "Due-date collection" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
     id: "R03", name: "Grace, high-risk cohort: voice bot first", stage: "Renewal window", level: "rule", priority: 20, source: PROPOSED,
     when: { state: ["Grace"], cohort: ["A4", "A5", "High", "Band 4", "Band 5"] },
-    then: { workflowId: "R2", action: "Voice bot call, then telecall if no answer", executor: "Ubona", delayHours: 1, script: "Due-date collection (short)" },
+    then: { workflowId: "R2", action: "Voice bot call, then telecall if no answer", executor: "Voice bot vendor", delayHours: 1, script: "Due-date collection (short)" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
@@ -121,19 +121,19 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R05", name: "Promise to pay: reminder the day before", stage: "Renewal window", level: "rule", priority: 30, source: PROPOSED,
     when: { state: ["Promised"] },
-    then: { workflowId: "R3", action: "WhatsApp reminder a day before promised date", executor: "Paylocal", delayHours: 20 },
+    then: { workflowId: "R3", action: "WhatsApp reminder a day before promised date", executor: "WhatsApp vendor", delayHours: 20 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
     id: "R06", name: "Mandate bounce: re-present and call", stage: "Renewal window", level: "rule", priority: 15, source: PROPOSED,
     when: { state: ["Grace"], paymentMethod: ["NACH/ECS mandate", "UPI autopay"], reasonCode: ["Mandate bounce", "Mandate failed"] },
-    then: { workflowId: "R4", action: "Re-present mandate and voice-bot call", executor: "Ubona", delayHours: 4 },
+    then: { workflowId: "R4", action: "Re-present mandate and voice-bot call", executor: "Voice bot vendor", delayHours: 4 },
     effectiveFrom: EFF, needsApprovalFrom: "Ops / remittance",
   },
   {
     id: "R07", name: "Warming: nine-station content", stage: "Warming", level: "rule", priority: 60, source: PROPOSED,
     when: { stage: ["Warming"] },
-    then: { workflowId: "W1", action: "Station message", executor: "Paylocal", delayHours: 24 },
+    then: { workflowId: "W1", action: "Station message", executor: "WhatsApp vendor", delayHours: 24 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
@@ -157,7 +157,7 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R11", name: "Term in window: short, low-touch reminders", stage: "Renewal window", level: "rule", priority: 45, source: PROPOSED,
     when: { stage: ["Renewal window"], product: ["Term"] },
-    then: { workflowId: "R1", action: "One short WhatsApp, no call", executor: "Paylocal", delayHours: 6, contactRule: "Max 2 touches in window" },
+    then: { workflowId: "R1", action: "One short WhatsApp, no call", executor: "WhatsApp vendor", delayHours: 6, contactRule: "Max 2 touches in window" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
@@ -169,13 +169,13 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R13", name: "Early lapse, high-risk cohort: telecall", stage: "Lapse and revival", level: "rule", priority: 30, source: PROPOSED,
     when: { stage: ["Early lapse"], cohort: ["A4", "A5", "High", "Band 4", "Band 5"] },
-    then: { workflowId: "L1", action: "Recovery telecall", executor: "ATS", delayHours: 4 },
+    then: { workflowId: "L1", action: "Recovery telecall", executor: "Call-centre vendor (variable payout)", delayHours: 4 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
     id: "R14", name: "Late lapse: revival with health declaration", stage: "Lapse and revival", level: "rule", priority: 50, source: PROPOSED,
     when: { stage: ["Late lapse"] },
-    then: { workflowId: "L2", action: "Revival offer, good-health declaration or medicals", executor: "Pace Setters", delayHours: 24 },
+    then: { workflowId: "L2", action: "Revival offer, good-health declaration or medicals", executor: "Call-centre vendor (fixed payout)", delayHours: 24 },
     effectiveFrom: EFF, needsApprovalFrom: "Underwriting",
   },
   {
@@ -187,7 +187,7 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R16", name: "Month-end, grace, middle cohort: extra call", stage: "Renewal window", level: "rule", priority: 25, source: PROPOSED,
     when: { calendar: ["Month-end (last 5 days)"], state: ["Grace"], cohort: ["A3", "Medium", "Band 3"] },
-    then: { workflowId: "R2", action: "Extra month-end call", executor: "Pace Setters", delayHours: 2, target: "Close before month-end" },
+    then: { workflowId: "R2", action: "Extra month-end call", executor: "Call-centre vendor (fixed payout)", delayHours: 2, target: "Close before month-end" },
     effectiveFrom: EFF, needsApprovalFrom: "Regional lead",
   },
 ];

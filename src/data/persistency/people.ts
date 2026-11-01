@@ -10,7 +10,7 @@ export type PersonRole =
   | "Sales officer"
   | "Zonal manager"
   | "Bank partner manager"
-  | "HNI desk"
+  | "High-value desk"
   | "Surrender retention"
   | "Underwriter"
   | "Ops / remittance"
@@ -33,7 +33,7 @@ const COUNTS: [PersonRole, number][] = [
   ["Sales officer", 40],
   ["Zonal manager", 8],
   ["Bank partner manager", 6],
-  ["HNI desk", 4],
+  ["High-value desk", 4],
   ["Surrender retention", 5],
   ["Underwriter", 4],
   ["Ops / remittance", 4],

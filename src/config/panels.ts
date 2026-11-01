@@ -20,7 +20,7 @@ export const PANEL_META = {
   "vendor-split": { title: "Vendor split", tiers: ["live-engine"] },
   handoff: { title: "Handoff screen", tiers: ["live-engine", "live-channels"] },
   "visit-list": { title: "Visit list in route order", tiers: ["live-engine"] },
-  "paid-meanwhile-flags": { title: "Paid meanwhile flags", tiers: ["simulated"] },
+  "paid-meanwhile-flags": { title: "Paid since the list flags", tiers: ["simulated"] },
   "branch-comparison": { title: "Branch comparison", tiers: ["live-engine"] },
   backlog: { title: "Backlog", tiers: ["live-engine"] },
   "visit-completion": { title: "Visit completion", tiers: ["live-engine"] },

@@ -1,6 +1,7 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Tier } from "@/data/persistency/workflows";
 import { cn } from "@/lib/utils";
+import { useChrome } from "@/hooks/use-chrome";
 import { Activity, Radio, FlaskConical } from "lucide-react";
 
 export const TIER_INFO: Record<Tier, { label: string; description: string; icon: typeof Activity; className: string }> = {
@@ -24,7 +25,10 @@ export const TIER_INFO: Record<Tier, { label: string; description: string; icon:
   },
 };
 
+/** Old tier badges. Hidden unless CHROME.showTierBadges (or ?modules=all). */
 export function TierBadge({ tiers, className }: { tiers: Tier[]; className?: string }) {
+  const show = useChrome("showTierBadges");
+  if (!show) return null;
   return (
     <Popover>
       <PopoverTrigger asChild>

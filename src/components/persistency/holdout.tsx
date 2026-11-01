@@ -35,7 +35,7 @@ export function HoldoutCompare({ policies, height = 200 }: { policies: Policy[];
   const lo = Math.max(0, Math.floor(Math.min(s.t.low, s.h.low) * 100) - 3);
   return (
     <div className="space-y-2">
-      <StatusPill status="simulated">Synthetic data</StatusPill>
+      <StatusPill status="simulated">Sample data</StatusPill>
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>

@@ -13,7 +13,7 @@ export function useShell() {
     : "All";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   // On a work queue page, the queue's persona wins so the sidebar and switcher match the screen.
-  const queuePersona = /^\/persistency\/queues\/([^/]+)/.exec(pathname)?.[1];
+  const queuePersona = /^\/persistency\/work\/([^/]+)/.exec(pathname)?.[1];
   const persona = personaById(queuePersona ?? search.as);
   const setProduct = useCallback(
     (p: ProductFilter) => navigate({ to: ".", search: (prev: Record<string, unknown>) => ({ ...prev, product: p }) } as never),

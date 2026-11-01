@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense, useMemo, useState } from "react";
 import { ArrowLeft, FileText } from "lucide-react";
@@ -17,10 +18,11 @@ import { num } from "@/lib/format";
 const WorkflowCanvas = lazy(() => import("@/components/persistency/workflow-canvas"));
 
 export const Route = createFileRoute("/persistency/workflows/$id")({
+  beforeLoad: ({ search }) => gate("workflows", search),
   head: ({ params }) => {
     const wf = workflowById(params.id);
     const title = wf ? `${wf.id} ${wf.name} · Workflows · desible.ai` : "Workflow not found · desible.ai";
-    const description = wf ? `${wf.name}: trigger, steps, executor and tier.` : "Persistency workflow detail.";
+    const description = wf ? `${wf.name}: trigger, steps and executor.` : "Persistency workflow detail.";
     return {
       meta: [
         { title },
@@ -136,7 +138,7 @@ function WorkflowDetail() {
                       <li key={r} className="flex items-center gap-2 text-[13px] text-foreground"><FileText className="size-3.5 text-muted-foreground" /> {r}</li>
                     ))}
                   </ul>
-                  <Link to="/persistency/configuration" className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">Open Configuration</Link>
+                  <Link to="/persistency/rules" className="mt-2 inline-block text-xs font-semibold text-primary hover:underline">Open Configuration</Link>
                 </section>
                 {node.liveChannel && (
                   <section className="space-y-2">

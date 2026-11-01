@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
+import { useChrome } from "@/hooks/use-chrome";
 import { PauseCircle, Workflow as WorkflowIcon } from "lucide-react";
 import { Chip, Eyebrow, PageHeader, StatusPill } from "@/components/ds/primitives";
 import { TierBadge } from "@/components/ds/tier-badge";
@@ -10,12 +12,13 @@ import { usePersistencyStore, useAdapters, staleWorkflowsFor } from "@/store/per
 import { num, time } from "@/lib/format";
 
 export const Route = createFileRoute("/persistency/workflows/")({
+  beforeLoad: ({ search }) => gate("workflows", search),
   head: () => ({
     meta: [
       { title: "Workflows · Persistency · desible.ai" },
-      { name: "description", content: "Eighteen persistency workflows from sourcing to revival, with the executor and tier of every step." },
+      { name: "description", content: "Eighteen persistency workflows grouped by stage, with the trigger and executor of every step." },
       { property: "og:title", content: "Workflows · Persistency · desible.ai" },
-      { property: "og:description", content: "Eighteen persistency workflows from sourcing to revival, with the executor and tier of every step." },
+      { property: "og:description", content: "Eighteen persistency workflows grouped by stage, with the trigger and executor of every step." },
     ],
   }),
   component: WorkflowsPage,
@@ -30,25 +33,27 @@ function WorkflowsPage() {
   const killAll = usePersistencyStore((s) => s.killSwitchGlobal);
   const adapters = useAdapters();
   const stale = staleWorkflowsFor(adapters.filter((a) => a.stale).map((a) => a.id));
+  const showLegend = useChrome("showHowAStepRuns");
   const visible = WORKFLOWS.filter((w) => product === "All" || w.products.includes(product));
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-6">
       <PageHeader
         eyebrow="Workflows"
-        title="18 workflows"
+        title="Workflows"
+        meta={product === "All" ? "18 workflows" : `${visible.length} of 18 workflows apply to ${product}`}
         description={product === "All" ? "Grouped by stage. Open one to see each step and how it runs." : `${visible.length} of 18 workflows apply to ${product}. Counts show ${product} policies only.`}
         tiers={["live-engine", "live-channels", "simulated"]}
       />
 
-      <div className="flex flex-wrap items-center gap-3 rounded-card border border-border bg-surface-translucent px-4 py-2.5">
+      {showLegend && <div className="flex flex-wrap items-center gap-3 rounded-card border border-border bg-surface-translucent px-4 py-2.5">
         <Eyebrow>How a step runs</Eyebrow>
         {(Object.keys(NODE_KIND_HELP) as NodeKind[]).map((k) => (
           <span key={k} className="flex items-center gap-1.5 text-[11px] text-subtle" title={NODE_KIND_HELP[k]}>
             <NodeChip kind={k} /> <span className="hidden xl:inline">{NODE_KIND_HELP[k]}</span>
           </span>
         ))}
-      </div>
+      </div>}
 
       {GROUPS.map((g) => {
         const list = visible.filter((w) => w.stage === g);
