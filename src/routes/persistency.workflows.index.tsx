@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { PauseCircle, Workflow as WorkflowIcon } from "lucide-react";
 import { Chip, Eyebrow, PageHeader, StatusPill } from "@/components/ds/primitives";
 import { TierBadge } from "@/components/ds/tier-badge";
@@ -10,6 +11,7 @@ import { usePersistencyStore, useAdapters, staleWorkflowsFor } from "@/store/per
 import { num, time } from "@/lib/format";
 
 export const Route = createFileRoute("/persistency/workflows/")({
+  beforeLoad: ({ search }) => gate("workflows", search),
   head: () => ({
     meta: [
       { title: "Workflows · Persistency · desible.ai" },

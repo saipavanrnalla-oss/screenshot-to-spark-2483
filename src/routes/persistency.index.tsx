@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, Check, FileWarning, GitMerge, ShieldAlert, X } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +17,7 @@ import { croreValue, money, num, pct, time } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/persistency/")({
+  beforeLoad: ({ search }) => gate("overview", search),
   head: () => ({
     meta: [
       { title: "Control Tower · Persistency · desible.ai" },

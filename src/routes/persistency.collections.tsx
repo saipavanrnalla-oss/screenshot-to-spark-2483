@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { NoteBanner, PageHeader, Panel, DataTable } from "@/components/ds/primitives";
@@ -13,6 +14,7 @@ import { useDecisions, usePersistencyStore } from "@/store/persistency";
 import { croreValue, num, pct } from "@/lib/format";
 
 export const Route = createFileRoute("/persistency/collections")({
+  beforeLoad: ({ search }) => gate("collections", search),
   head: () => ({
     meta: [
       { title: "Month-end war room · Persistency · desible.ai" },

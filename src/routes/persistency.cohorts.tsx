@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useRef, useState } from "react";
@@ -48,6 +49,7 @@ type TabId = (typeof TABS)[number]["id"];
 const cohortSearch = z.object({ tab: fallback(z.enum(["byo", "rules", "starter", "compare"]).optional(), undefined) });
 
 export const Route = createFileRoute("/persistency/cohorts")({
+  beforeLoad: ({ search }) => gate("cohorts", search),
   validateSearch: zodValidator(cohortSearch),
   head: () => ({
     meta: [

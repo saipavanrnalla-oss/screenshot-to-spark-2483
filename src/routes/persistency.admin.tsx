@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { useState } from "react";
 import { toast } from "sonner";
 import { RotateCcw } from "lucide-react";
@@ -14,6 +15,7 @@ import { EARLY_LAPSE_MAX_DAYS, GRACE_DAYS, INSURER_NAME, LANGUAGES, PAYMENT_MODE
 import { useAdapters, usePersistencyStore } from "@/store/persistency";
 
 export const Route = createFileRoute("/persistency/admin")({
+  beforeLoad: ({ search }) => gate("admin", search),
   head: () => ({
     meta: [
       { title: "Setup · Persistency · desible.ai" },

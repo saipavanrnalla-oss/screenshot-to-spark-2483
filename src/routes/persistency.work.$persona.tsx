@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { EmptyState, PageHeader } from "@/components/ds/primitives";
 import { PersonaHome } from "@/components/persistency/persona-home";
 import { PERSONAS, panelTitles } from "@/config/personas";
 
 export const Route = createFileRoute("/persistency/work/$persona")({
+  beforeLoad: ({ search }) => gate("work", search),
   head: ({ params }) => {
     const p = PERSONAS.find((x) => x.id === params.persona);
     const title = p ? `${p.landsOn} · ${p.label} · desible.ai` : "Work queue · desible.ai";

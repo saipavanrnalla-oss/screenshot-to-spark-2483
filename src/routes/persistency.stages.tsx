@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
@@ -22,6 +23,7 @@ const lifecycleSearch = z.object({
 });
 
 export const Route = createFileRoute("/persistency/stages")({
+  beforeLoad: ({ search }) => gate("stages", search),
   validateSearch: zodValidator(lifecycleSearch),
   head: () => ({
     meta: [

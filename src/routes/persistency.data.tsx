@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { useAdapters, useDecisions, usePersistencyStore } from "@/store/persiste
 import { date, num } from "@/lib/format";
 
 export const Route = createFileRoute("/persistency/data")({
+  beforeLoad: ({ search }) => gate("data", search),
   head: () => ({
     meta: [
       { title: "Data and integrations · Persistency · desible.ai" },

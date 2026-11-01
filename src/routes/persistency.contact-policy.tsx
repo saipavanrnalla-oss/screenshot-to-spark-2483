@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { useMemo } from "react";
 import { Lock } from "lucide-react";
 import { DataTable, PageHeader, Panel, StatusPill } from "@/components/ds/primitives";
@@ -10,6 +11,7 @@ import { useDecisions, usePersistencyStore } from "@/store/persistency";
 import { date, dateTime, num, pct } from "@/lib/format";
 
 export const Route = createFileRoute("/persistency/contact-policy")({
+  beforeLoad: ({ search }) => gate("contact-policy", search),
   head: () => ({
     meta: [
       { title: "Guardrails · Persistency · desible.ai" },

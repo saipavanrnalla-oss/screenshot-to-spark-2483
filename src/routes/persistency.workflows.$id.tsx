@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense, useMemo, useState } from "react";
 import { ArrowLeft, FileText } from "lucide-react";
@@ -17,6 +18,7 @@ import { num } from "@/lib/format";
 const WorkflowCanvas = lazy(() => import("@/components/persistency/workflow-canvas"));
 
 export const Route = createFileRoute("/persistency/workflows/$id")({
+  beforeLoad: ({ search }) => gate("workflows", search),
   head: ({ params }) => {
     const wf = workflowById(params.id);
     const title = wf ? `${wf.id} ${wf.name} · Workflows · desible.ai` : "Workflow not found · desible.ai";

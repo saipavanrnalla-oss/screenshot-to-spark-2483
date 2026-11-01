@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { gate } from "@/lib/gate";
 import { ArrowRight } from "lucide-react";
 import { Eyebrow, NoteBanner, PageHeader, Panel } from "@/components/ds/primitives";
 import { TierBadge } from "@/components/ds/tier-badge";
@@ -6,6 +7,7 @@ import { VendorCoexistenceTable } from "@/components/persistency/vendor-modes";
 import { useScopedPolicies } from "@/hooks/use-shell";
 
 export const Route = createFileRoute("/persistency/where-desible-sits")({
+  beforeLoad: ({ search }) => gate("positioning", search),
   head: () => ({
     meta: [
       { title: "Where Desible sits · Persistency · desible.ai" },
