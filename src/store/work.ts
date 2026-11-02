@@ -97,6 +97,7 @@ interface WorkState {
   orchestration: Orchestration;
   newWorkflows: { code: string; name: string; stage: string; createdBy: string; archived?: boolean | undefined }[];
   archived: string[];
+  wfNames: Record<string, string>;
   bannerSeen: Record<string, boolean>;
 
   stamp: () => string;
@@ -143,6 +144,7 @@ interface WorkState {
   decideProposal: (id: string, s: Omit<ProposalState, "at">) => void;
   createWorkflow: (name: string, stage: string, by: string) => string;
   archiveWorkflow: (code: string) => void;
+  renameWorkflow: (code: string, name: string) => void;
   log: (by: string, text: string) => void;
   reset: () => void;
 }
@@ -189,6 +191,7 @@ function initial() {
     } as Orchestration,
     newWorkflows: [] as { code: string; name: string; stage: string; createdBy: string; archived?: boolean | undefined }[],
     archived: [] as string[],
+    wfNames: {} as Record<string, string>,
     bannerSeen: {} as Record<string, boolean>,
   };
 }
@@ -240,7 +243,7 @@ export const useWork = create<WorkState>()(
 
         addActivity: (row) => {
           const at = row.at ?? tick();
-          pushRow({ ...row, at, id: `U-${row.policyId}-${at}-${Math.random().toString(36).slice(2, 6)}` });
+          pushRow({ ...row, at, id: `U-${row.policyId}-${at}-${eventSeq++}` });
         },
 
         placeHold: (policyId, reason, note, by) => {
@@ -463,6 +466,7 @@ export const useWork = create<WorkState>()(
           return code;
         },
         archiveWorkflow: (code) => set((s) => ({ archived: [...new Set([...s.archived, code])] })),
+        renameWorkflow: (code, name) => set((s) => ({ wfNames: { ...s.wfNames, [code]: name }, newWorkflows: s.newWorkflows.map((w) => (w.code === code ? { ...w, name } : w)) })),
         log: event,
 
         reset: () => {
@@ -574,7 +578,7 @@ export function useVersions<T>(key: string): Version<T>[] {
 }
 
 export function activeVersion<T>(list: Version<T>[]): Version<T> | undefined {
-  return [...list].reverse().find((v) => v.status === "Active") ?? list[list.length - 1];
+  return [...list].reverse().find((v) => v.status === "Active") ?? [...list].reverse().find((v) => v.status === "Retired") ?? list[0];
 }
 
 export function useStageSettings(): StageSettings {

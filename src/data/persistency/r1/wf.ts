@@ -93,6 +93,8 @@ export interface WfNodeConfig {
   share?: number | undefined;
   ruleId?: string | undefined;
   condition?: string | undefined;
+  /** Routed-out outcomes: the workflow the policy moves to. */
+  workflow?: string | undefined;
   /** Dispositions this node returns (outreach nodes). */
   dispositions?: string[] | undefined;
 }

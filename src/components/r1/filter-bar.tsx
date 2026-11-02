@@ -24,7 +24,8 @@ export function rangeOf(v: string | undefined): [string, string] {
 }
 
 /** Filter bar with removable chips and saved views. Values live with the page (usually in the URL). */
-export function FilterBar({ page, fields, values, onChange }: { page: string; fields: FilterField[]; values: Filters; onChange: (v: Filters) => void }) {
+export function FilterBar({ page, fields, values: raw, onChange }: { page: string; fields: FilterField[]; values: object; onChange: (v: Filters) => void }) {
+  const values = raw as Filters;
   const views = useWork((s) => s.savedViews.filter((v) => v.page === page));
   const saveView = useWork((s) => s.saveView);
   const deleteView = useWork((s) => s.deleteView);

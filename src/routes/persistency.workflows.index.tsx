@@ -1,111 +1,190 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { gate } from "@/lib/gate";
-import { useChrome } from "@/hooks/use-chrome";
-import { PauseCircle, Workflow as WorkflowIcon } from "lucide-react";
-import { Chip, Eyebrow, PageHeader, StatusPill } from "@/components/ds/primitives";
-import { TierBadge } from "@/components/ds/tier-badge";
-import { NodeChip, NODE_KIND_HELP } from "@/components/persistency/node-chip";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Archive, Copy, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PageHeader } from "@/components/ds/primitives";
+import { StatusChip, versionTone } from "@/components/r1/status-chip";
+import { ConfirmDialog } from "@/components/r1/confirm";
+import { inputCls, selectCls } from "@/components/r1/tabs";
+import { WF_STAGES, blankGraph, useWorkflowRows, wfVersions, type WfRow } from "@/components/r1/wf-model";
 import { useScopedPolicies } from "@/hooks/use-shell";
 import { useWorkflowStats } from "@/hooks/use-workflow-stats";
-import { STAGE_COLUMNS, WORKFLOWS, type NodeKind } from "@/data/persistency";
-import { usePersistencyStore, useAdapters, staleWorkflowsFor } from "@/store/persistency";
+import { useCan, useUser } from "@/hooks/use-user";
+import { gate } from "@/lib/gate";
 import { num, time } from "@/lib/format";
+import { useWork } from "@/store/work";
+import type { WfGraph } from "@/data/persistency/r1/wf";
 
 export const Route = createFileRoute("/persistency/workflows/")({
   beforeLoad: ({ search }) => gate("workflows", search),
   head: () => ({
     meta: [
       { title: "Workflows · Persistency · desible.ai" },
-      { name: "description", content: "Eighteen persistency workflows grouped by stage, with the trigger and executor of every step." },
+      { name: "description", content: "Workflow library grouped by stage, with executors, versions, status and policies in each workflow." },
       { property: "og:title", content: "Workflows · Persistency · desible.ai" },
-      { property: "og:description", content: "Eighteen persistency workflows grouped by stage, with the trigger and executor of every step." },
+      { property: "og:description", content: "Workflow library grouped by stage, with executors, versions, status and policies in each workflow." },
     ],
   }),
-  component: WorkflowsPage,
+  component: WorkflowLibrary,
 });
 
-const GROUPS = [...STAGE_COLUMNS, "Cross-cutting"] as const;
-
-function WorkflowsPage() {
-  const { scoped, product } = useScopedPolicies();
+function WorkflowLibrary() {
+  const navigate = useNavigate();
+  const rows = useWorkflowRows();
+  const { scoped } = useScopedPolicies();
   const stats = useWorkflowStats(scoped);
-  const killed = usePersistencyStore((s) => s.killedWorkflows);
-  const killAll = usePersistencyStore((s) => s.killSwitchGlobal);
-  const adapters = useAdapters();
-  const stale = staleWorkflowsFor(adapters.filter((a) => a.stale).map((a) => a.id));
-  const showLegend = useChrome("showHowAStepRuns");
-  const visible = WORKFLOWS.filter((w) => product === "All" || w.products.includes(product));
+  const mayEdit = useCan("workflows.edit");
+  const user = useUser();
+  const saved = useWork((s) => s.versions);
+  const createWorkflow = useWork((s) => s.createWorkflow);
+  const saveDraft = useWork((s) => s.saveDraft);
+  const archive = useWork((s) => s.archiveWorkflow);
+  const [selected, setSelected] = useState<WfRow | null>(null);
+  const [newOpen, setNewOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [stage, setStage] = useState<string>("Renewal window");
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const author = user?.name ?? "User";
+
+  const create = (n: string, st: string, graph: WfGraph, note: string) => {
+    const code = createWorkflow(n, st, author);
+    saveDraft(`workflow:${code}`, graph, author, note);
+    return code;
+  };
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-6">
+    <div className="mx-auto max-w-[1600px] space-y-4">
       <PageHeader
-        eyebrow="Workflows"
         title="Workflows"
-        meta={product === "All" ? "18 workflows" : `${visible.length} of 18 workflows apply to ${product}`}
-        description={product === "All" ? "Grouped by stage. Open one to see each step and how it runs." : `${visible.length} of 18 workflows apply to ${product}. Counts show ${product} policies only.`}
-        tiers={["live-engine", "live-channels", "simulated"]}
-      />
-
-      {showLegend && <div className="flex flex-wrap items-center gap-3 rounded-card border border-border bg-surface-translucent px-4 py-2.5">
-        <Eyebrow>How a step runs</Eyebrow>
-        {(Object.keys(NODE_KIND_HELP) as NodeKind[]).map((k) => (
-          <span key={k} className="flex items-center gap-1.5 text-[11px] text-subtle" title={NODE_KIND_HELP[k]}>
-            <NodeChip kind={k} /> <span className="hidden xl:inline">{NODE_KIND_HELP[k]}</span>
-          </span>
-        ))}
-      </div>}
-
-      {GROUPS.map((g) => {
-        const list = visible.filter((w) => w.stage === g);
-        if (!list.length) return null;
-        return (
-          <section key={g} className="space-y-3">
-            <Eyebrow>{g}</Eyebrow>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {list.map((w) => {
-                const paused = killAll || killed.includes(w.id);
-                const isStale = stale.has(w.id);
-                const last = stats.lastRun.get(w.id);
-                return (
-                  <Link
-                    key={w.id}
-                    to="/persistency/workflows/$id"
-                    params={{ id: w.id }}
-                    className="panel group flex flex-col gap-3 p-4 transition-colors hover:border-brand-tint-border"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="rounded-sm bg-brand-tint px-1.5 text-[11px] font-bold text-primary">{w.id}</span>
-                          {w.hasCanvas && <WorkflowIcon className="size-3.5 text-muted-foreground" aria-label="Has a full canvas" />}
-                        </div>
-                        <h3 className="mt-1 text-[14px] font-bold text-foreground group-hover:text-primary">{w.name}</h3>
-                      </div>
-                      <TierBadge tiers={[w.tier]} />
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      <Chip active>{w.stage}</Chip>
-                      {w.products.map((p) => <Chip key={p}>{p}</Chip>)}
-                    </div>
-                    <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-                      <dt className="text-muted-foreground">Trigger</dt><dd className="text-subtle">{w.trigger}</dd>
-                      <dt className="text-muted-foreground">Executor</dt><dd className="text-subtle">{w.executor}</dd>
-                      <dt className="text-muted-foreground">Last run</dt><dd className="text-subtle tabular">{last ? `Today ${time(last, false)}` : "Not run this session"}</dd>
-                      <dt className="text-muted-foreground">Policies in it now</dt><dd className="font-semibold text-foreground tabular">{num(stats.count.get(w.id) ?? 0)}</dd>
-                    </dl>
-                    {(paused || isStale) && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {paused && <StatusPill status="failed"><PauseCircle className="size-3" /> Paused by kill switch</StatusPill>}
-                        {isStale && <StatusPill status="attention">Paused for stale input</StatusPill>}
-                      </div>
-                    )}
-                  </Link>
-                );
-              })}
+        meta={`${rows.filter((r) => !r.archived).length} workflows`}
+        actions={
+          mayEdit && (
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!selected}
+                onClick={() => {
+                  if (!selected) return;
+                  const list = wfVersions(saved, selected.code);
+                  const g = (list.find((v) => v.status === "Active") ?? list[list.length - 1])?.data;
+                  const code = create(`${selected.name} copy`, selected.stage, structuredClone(g ?? blankGraph()), `Duplicated from ${selected.code}`);
+                  toast.success(`${code} created as a draft`);
+                  navigate({ to: "/persistency/workflows/$id/edit", params: { id: code } });
+                }}
+              >
+                <Copy /> Duplicate
+              </Button>
+              <Button size="sm" variant="outline" disabled={!selected || selected.archived} onClick={() => setArchiveOpen(true)}>
+                <Archive /> Archive
+              </Button>
+              <Button size="sm" onClick={() => setNewOpen(true)}>
+                <Plus /> New workflow
+              </Button>
             </div>
-          </section>
-        );
-      })}
+          )
+        }
+      />
+      <div className="overflow-x-auto rounded-card border border-border">
+        <table className="w-full min-w-[1100px] text-[13px]">
+          <thead className="bg-card">
+            <tr className="text-left text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
+              {mayEdit && <th className="w-8 border-b border-border px-3 py-2" aria-label="Select" />}
+              {["Code", "Name", "Stage", "Products", "Trigger", "Executors used", "Version", "Status", "Policies in it now", "Last run"].map((h) => (
+                <th key={h} className={`border-b border-border px-3 py-2 font-medium ${h === "Policies in it now" || h === "Version" ? "text-right" : ""}`}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {WF_STAGES.map((st) => {
+              const list = rows.filter((r) => r.stage === st);
+              if (!list.length) return null;
+              return [
+                <tr key={st}>
+                  <td colSpan={mayEdit ? 11 : 10} className="bg-surface-translucent px-3 py-1.5 text-[12px] font-semibold text-subtle">{st}</td>
+                </tr>,
+                ...list.map((r) => {
+                  const last = stats.lastRun.get(r.code);
+                  return (
+                    <tr key={r.code} onClick={() => navigate({ to: "/persistency/workflows/$id", params: { id: r.code } })} className={`cursor-pointer border-b border-border/60 hover:bg-surface-translucent ${r.archived ? "opacity-50" : ""}`}>
+                      {mayEdit && (
+                        <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                          <input type="radio" name="wf" aria-label={`Select ${r.code}`} checked={selected?.code === r.code} onChange={() => setSelected(r)} className="accent-[var(--primary)]" />
+                        </td>
+                      )}
+                      <td className="px-3 py-2 font-semibold text-primary">{r.code}</td>
+                      <td className="px-3 py-2 font-medium text-foreground">{r.name}</td>
+                      <td className="px-3 py-2 text-subtle">{r.stage}</td>
+                      <td className="px-3 py-2 text-subtle">{r.products.join(", ")}</td>
+                      <td className="px-3 py-2 text-subtle">{r.trigger}</td>
+                      <td className="px-3 py-2 text-subtle">{r.executors.join(", ") || "None"}</td>
+                      <td className="px-3 py-2 text-right tabular">{r.version ? `v${r.version}` : "None"}</td>
+                      <td className="px-3 py-2">
+                        <span className="flex flex-wrap gap-1">
+                          <StatusChip tone={versionTone(r.status)}>{r.status}</StatusChip>
+                          {r.inReview && <StatusChip tone="risk">v{r.inReview} in review</StatusChip>}
+                          {r.draft && <StatusChip tone="neutral">Draft v{r.draft}</StatusChip>}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-right tabular">{num(stats.count.get(r.code) ?? 0)}</td>
+                      <td className="px-3 py-2 text-subtle tabular">{last ? `Today ${time(last, false)}` : "Not run this session"}</td>
+                    </tr>
+                  );
+                }),
+              ];
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <Dialog open={newOpen} onOpenChange={setNewOpen}>
+        <DialogContent className="max-w-md rounded-card border-border bg-card">
+          <DialogHeader>
+            <DialogTitle className="text-[14px] font-semibold">New workflow</DialogTitle>
+          </DialogHeader>
+          <label className="block text-[12px] font-medium text-muted-foreground">
+            Name
+            <input value={name} onChange={(e) => setName(e.target.value)} className={`${inputCls} mt-1`} aria-label="Workflow name" autoFocus />
+          </label>
+          <label className="block text-[12px] font-medium text-muted-foreground">
+            Stage
+            <select value={stage} onChange={(e) => setStage(e.target.value)} className={`${selectCls} mt-1 w-full`}>
+              {WF_STAGES.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setNewOpen(false)}>Cancel</Button>
+            <Button
+              disabled={!name.trim()}
+              onClick={() => {
+                const code = create(name.trim(), stage, blankGraph(), "New workflow");
+                setNewOpen(false);
+                setName("");
+                navigate({ to: "/persistency/workflows/$id/edit", params: { id: code } });
+              }}
+            >
+              Create and open the builder
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <ConfirmDialog
+        open={archiveOpen}
+        onOpenChange={setArchiveOpen}
+        title={`Archive ${selected?.code ?? ""}`}
+        body="The workflow stays in the library, marked Archived. Its versions and history are kept."
+        confirmLabel="Archive"
+        onConfirm={() => {
+          if (!selected) return;
+          archive(selected.code);
+          toast.success(`${selected.code} archived`);
+          setSelected(null);
+        }}
+      />
     </div>
   );
 }

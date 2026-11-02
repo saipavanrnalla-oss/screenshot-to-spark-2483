@@ -3,7 +3,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo } from "react";
 import { PageHeader } from "@/components/ds/primitives";
-import { FilterBar, type Filters } from "@/components/r1/filter-bar";
+import { FilterBar } from "@/components/r1/filter-bar";
 import { PageTabs } from "@/components/r1/tabs";
 import { LastUpdated } from "@/components/r1/kpi";
 import { BOARD_COLUMNS, COHORTS, matchesFilters, useStagedPolicies, useStageSettingsInForce, type BoardColumn } from "@/components/r1/policy-model";
@@ -50,7 +50,7 @@ function StagesPage() {
   const s = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const tab = s.tab ?? "board";
-  const filters: Filters = { product: s.product, channel: s.channel, region: s.region, cohort: s.cohort };
+  const filters = { product: s.product, channel: s.channel, region: s.region, cohort: s.cohort };
   const staged = useStagedPolicies();
   const { settings, pending } = useStageSettingsInForce();
 
@@ -64,6 +64,7 @@ function StagesPage() {
       c.cohorts[bp.p.insurerCohort] = (c.cohorts[bp.p.insurerCohort] ?? 0) + 1;
     }
     return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [staged, s.product, s.channel, s.region, s.cohort]);
 
   const open = (stage: string, cohort?: string) =>
@@ -92,7 +93,7 @@ function StagesPage() {
               { id: "cohort", label: "Cohort", options: COHORTS },
             ]}
             values={filters}
-            onChange={(v) => navigate({ search: (p) => ({ ...p, product: v.product, channel: v.channel, region: v.region, cohort: v.cohort }) })}
+            onChange={(v) => navigate({ search: (p) => ({ ...p, product: v["product"], channel: v["channel"], region: v["region"], cohort: v["cohort"] }) })}
           />
           {pending && <NoteBanner tone="attention">Stage settings version {pending.no} applies from {date(pending.from)}. Counts below use the settings in force today.</NoteBanner>}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">

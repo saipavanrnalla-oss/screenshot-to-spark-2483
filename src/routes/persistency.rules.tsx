@@ -1,571 +1,244 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { gate } from "@/lib/gate";
-import { useDeferredValue, useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Check, Lock, Plus, Send, X } from "lucide-react";
+import { Info, Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Chip, Eyebrow, NoteBanner, PageHeader, Panel, StatusPill } from "@/components/ds/primitives";
-import { useScopedPolicies, useShell } from "@/hooks/use-shell";
-import {
-  DIMENSIONS,
-  DIMENSION_LABEL,
-  PRODUCTS,
-  RULE_SETTINGS,
-  STAGE_COLUMNS,
-  WORKFLOWS,
-  stageColumn,
-  workflowById,
-  type DimensionKey,
-  type Policy,
-  type Product,
-  type Rule,
-  type RuleLevel,
-  type StageColumn,
-} from "@/data/persistency";
-import { LEVEL_LABEL, dimensionCount, evaluate, policyDimensions, ruleMatches } from "@/engine/persistency";
-import { useEngineContext, usePersistencyStore } from "@/store/persistency";
-import { date, num, pct } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { NoteBanner, PageHeader, Panel } from "@/components/ds/primitives";
+import { DataGrid, type Column } from "@/components/r1/data-grid";
+import { StatusChip, versionTone } from "@/components/r1/status-chip";
+import { PageTabs, inputCls } from "@/components/r1/tabs";
+import { ConfirmDialog } from "@/components/r1/confirm";
+import { GUARDRAIL_LINES, decisionTrace, dimLabel, ruleDiff } from "@/components/r1/rule-model";
+import { ruleConditionText } from "@/components/r1/rule-text";
+import { PRODUCTS, type Product, type Rule, type RuleThen } from "@/data/persistency";
+import { policyDimensions, policyNumbers, ruleMatches, evaluate } from "@/engine/persistency";
+import { useCan, useUser } from "@/hooks/use-user";
+import { gate } from "@/lib/gate";
+import { date, dateTime, num } from "@/lib/format";
+import { useEngineContext, usePersistencyStore, usePolicies } from "@/store/persistency";
+import { seedVersions, useWork } from "@/store/work";
+import type { Version } from "@/data/persistency/r1/types";
+
+const search = z.object({
+  view: fallback(z.enum(["list", "matrix", "history", "test"]).optional(), undefined),
+  policy: fallback(z.string().optional(), undefined),
+  cell: fallback(z.string().optional(), undefined),
+});
 
 export const Route = createFileRoute("/persistency/rules")({
+  validateSearch: zodValidator(search),
   beforeLoad: ({ search }) => gate("rules", search),
   head: () => ({
     meta: [
       { title: "Rules · Persistency · desible.ai" },
-      { name: "description", content: "Rules by product, policy year, payment mode, channel, cohort and more, with precedence and conflicts." },
+      { name: "description", content: "Rules with conditions, actions, executors, priority, status, versions and policies matched." },
       { property: "og:title", content: "Rules · Persistency · desible.ai" },
-      { property: "og:description", content: "Rules by product, policy year, payment mode, channel, cohort and more, with precedence and conflicts." },
+      { property: "og:description", content: "Rules with conditions, actions, executors, priority, status, versions and policies matched." },
     ],
   }),
-  component: ConfigurationPage,
+  component: RulesPage,
 });
 
-const EXECUTORS = ["Call-centre vendor (fixed payout)", "Call-centre vendor (variable payout)", "WhatsApp vendor", "Voice bot vendor", "Desible", "Sales officer", "Bank relationship manager", "High-value desk", "Retention desk", "Call-centre vendor (fixed payout) + Underwriting", "None"];
-const APPROVERS = ["Head of Persistency", "Compliance", "Regional lead", "Underwriting", "Ops / remittance", "Bank partner manager"];
-const GROUPS: (StageColumn | "Any")[] = ["Any", ...STAGE_COLUMNS];
-const LEVEL_STATUS: Record<RuleLevel, "failed" | "attention" | "live"> = { guardrail: "failed", insurer: "attention", rule: "live" };
-const LEVEL_SHORT: Record<RuleLevel, string> = { guardrail: "Guardrail", insurer: "Insurer default", rule: "Rule" };
+const PRECEDENCE = ["Guardrails", "Insurer defaults", "The rule that matches the most dimensions", "The lower priority number"];
 
-type SettingKey = "action" | "script" | "offer" | "approvals" | "contactRule" | "executor" | "handoff" | "target" | "exclusions";
-const SETTING_FIELDS: { setting: (typeof RULE_SETTINGS)[number]; key: SettingKey }[] = [
-  { setting: "Treatment", key: "action" },
-  { setting: "Scripts and templates", key: "script" },
-  { setting: "Offers", key: "offer" },
-  { setting: "Approvals required", key: "approvals" },
-  { setting: "Contact rules", key: "contactRule" },
-  { setting: "Executor routing", key: "executor" },
-  { setting: "Handoff rules", key: "handoff" },
-  { setting: "Targets and alerts", key: "target" },
-  { setting: "Exclusions", key: "exclusions" },
-];
-
-const MATRIX_NOTES: Record<Product, Partial<Record<StageColumn, string>>> = {
-  ULIP: { Warming: "Fund value and lock-in content; starts a month earlier", "Renewal window": "Fund value in every reminder", "Lapse and revival": "Partial withdrawal shown as an alternative" },
-  Traditional: { Warming: "Mandate readiness for cash and branch payers", "Renewal window": "Field visits for cheque and cash", "Lapse and revival": "Bonus loss explained" },
-  Term: { Warming: "Short, low-touch messages", "Renewal window": "One WhatsApp, no call", "Lapse and revival": "Health declaration path on late revival" },
-};
-
-function nextRuleId(rules: Rule[], pendingIds: string[]): string {
-  const nums = [...rules.map((r) => r.id), ...pendingIds].map((id) => Number(id.replace(/\D/g, ""))).filter((n) => !Number.isNaN(n));
-  return `R${Math.max(18, ...nums) + 1}`;
+function useMatchCounts(rules: Rule[]) {
+  const policies = usePolicies();
+  const ctx = useEngineContext();
+  return useMemo(() => {
+    const counts = new Map<string, number>(rules.map((r) => [r.id, 0]));
+    for (const p of policies) {
+      const d = policyDimensions(p, ctx);
+      const n = policyNumbers(p);
+      for (const r of rules) if (ruleMatches(r, d, n)) counts.set(r.id, (counts.get(r.id) ?? 0) + 1);
+    }
+    return counts;
+  }, [policies, rules, ctx]);
 }
 
-function ConfigurationPage() {
-  const { scoped } = useScopedPolicies();
-  const { persona } = useShell();
-  const rules = usePersistencyStore((s) => s.rules);
-  const pending = usePersistencyStore((s) => s.pending);
-  const propose = usePersistencyStore((s) => s.propose);
-  const approve = usePersistencyStore((s) => s.approve);
-  const reject = usePersistencyStore((s) => s.reject);
-  const ctx = useEngineContext();
+function RulesPage() {
+  const s = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const rules = usePersistencyStore((st) => st.rules);
+  const mayEdit = useCan("rules.edit");
+  const view = s.view ?? "list";
+  const counts = useMatchCounts(rules);
+  const versions = useWork((st) => st.versions);
 
-  const [selectedId, setSelectedId] = useState<string>("R03");
-  const selected = rules.find((r) => r.id === selectedId) ?? pending.find((p) => p.rule.id === selectedId)?.rule ?? null;
-  const [draft, setDraft] = useState<Rule | null>(selected);
-  const [addDim, setAddDim] = useState<DimensionKey | "">("");
-
-  const select = (r: Rule) => { setSelectedId(r.id); setDraft(structuredClone(r)); };
-
-  const deferredDraft = useDeferredValue(draft);
-
-  // Who this affects: winners under current rules vs with the draft applied.
-  const impact = useMemo(() => {
-    if (!deferredDraft) return null;
-    const withDraft = rules.some((r) => r.id === deferredDraft.id) ? rules.map((r) => (r.id === deferredDraft.id ? deferredDraft : r)) : [...rules, deferredDraft];
-    let nowWins = 0, draftWins = 0, matches = 0;
-    const byProduct: Record<Product, number> = { ULIP: 0, Traditional: 0, Term: 0 };
-    const overlap = new Map<string, number>();
-    const peers = withDraft.filter((r) => r.id !== deferredDraft.id && r.level === deferredDraft.level && dimensionCount(r) === dimensionCount(deferredDraft) && r.priority === deferredDraft.priority);
-    for (const p of scoped) {
-      const dims = policyDimensions(p, ctx);
-      const m = ruleMatches(deferredDraft, dims);
-      if (m) {
-        matches++;
-        for (const peer of peers) if (ruleMatches(peer, dims)) overlap.set(peer.id, (overlap.get(peer.id) ?? 0) + 1);
-      }
-      if (evaluate(p, rules, ctx).ruleId === deferredDraft.id) nowWins++;
-      if (m && evaluate(p, withDraft, ctx).ruleId === deferredDraft.id) {
-        draftWins++;
-        byProduct[p.product]++;
-      }
-    }
-    return { nowWins, draftWins, matches, byProduct, conflicts: [...overlap.entries()].map(([id, n]) => ({ id, n })) };
-  }, [deferredDraft, rules, scoped, ctx]);
-
-  const changed = !!draft && !!selected && JSON.stringify(draft) !== JSON.stringify(selected);
-  const isNew = !!draft && !rules.some((r) => r.id === draft.id);
-
-  const saveDraft = () => {
-    if (!draft) return;
-    propose({
-      id: `PC-${draft.id}-${Date.now() % 100000}`,
-      title: `${isNew ? "New rule" : "Edit"} ${draft.id}: ${draft.name}`,
-      source: "Rule edit",
-      proposedBy: persona.label,
-      at: new Date().toISOString(),
-      rule: draft,
-      effect: impact ? `Would decide ${num(impact.draftWins)} policies in this view (now ${num(impact.nowWins)})` : undefined,
-    });
-    toast("Sent for approval", { description: `${draft.id} waits for ${draft.needsApprovalFrom}. Nothing changes until it is approved.` });
+  const draftOf = (id: string) => {
+    const list = versions[`rule:${id}`];
+    const last = list?.[list.length - 1];
+    return last && (last.status === "Draft" || last.status === "In review") ? last : undefined;
   };
 
-  const setWhen = (k: DimensionKey, vals: string[] | undefined) =>
-    setDraft((d) => {
-      if (!d) return d;
-      const when = { ...d.when };
-      if (vals === undefined) delete when[k];
-      else when[k] = vals;
-      return { ...d, when };
-    });
-
-  const setThen = (k: SettingKey, v: string) =>
-    setDraft((d) => (d ? { ...d, then: { ...d.then, [k]: v || undefined, ...(k === "action" || k === "executor" ? { [k]: v } : {}) } } : d));
-
-  const pendingIds = pending.map((p) => p.rule.id);
+  const cols: Column<Rule>[] = [
+    { id: "name", label: "Name", value: (r) => r.name, render: (r) => <span className="font-medium text-foreground"><span className="mr-1.5 text-primary">{r.id}</span>{r.name}</span> },
+    { id: "cond", label: "Condition summary", value: (r) => ruleConditionText(r), render: (r) => <span className="text-subtle">{ruleConditionText(r)}</span> },
+    { id: "action", label: "Action", value: (r) => r.then.action },
+    { id: "executor", label: "Executor", value: (r) => r.then.executor },
+    { id: "priority", label: "Priority", align: "right", value: (r) => r.priority },
+    {
+      id: "status",
+      label: "Status",
+      value: (r) => r.status ?? "Active",
+      render: (r) => {
+        const d = draftOf(r.id);
+        return (
+          <span className="flex flex-col items-start gap-1">
+            <StatusChip tone={versionTone(r.status ?? "Active")}>{r.status ?? "Active"}</StatusChip>
+            {d && (r.status ?? "Active") === "Active" && <span className="text-[11px] text-attention">v{d.no} {d.status.toLowerCase()}</span>}
+          </span>
+        );
+      },
+    },
+    { id: "version", label: "Version", align: "right", value: (r) => r.version ?? 1, render: (r) => `v${r.version ?? 1}` },
+    { id: "matched", label: "Policies matched now", align: "right", value: (r) => counts.get(r.id) ?? 0, render: (r) => num(counts.get(r.id) ?? 0) },
+    { id: "changed", label: "Last changed", value: (r) => r.lastChanged ?? r.effectiveFrom, render: (r) => date(r.lastChanged ?? r.effectiveFrom) },
+    { id: "level", label: "Level", hidden: true, value: (r) => r.level },
+  ];
 
   return (
-    <div className="mx-auto max-w-[1500px] space-y-6">
+    <div className="mx-auto max-w-[1600px] space-y-4">
       <PageHeader
         title="Rules"
-        description="Every rule matches on any of 17 dimensions and sets any of 9 settings. The rule that fired is always shown on the policy."
-        tiers={["live-engine"]}
-      />
-
-      <Panel eyebrow="Precedence" title="How the engine picks one rule" tiers={["live-engine"]} bodyClassName="p-0">
-        <ol className="grid md:grid-cols-4">
-          {[
-            ["Guardrails always win", "Locked. Holds, contact caps, free-look, wants-out and paid policies."],
-            ["Insurer defaults", "Your standing rules, for example bank-sourced policies go to the RM first."],
-            ["The rule matching the most dimensions", "A rule on product, mode and year beats a rule on product alone."],
-            ["Priority number breaks ties", "Lower number wins. A remaining tie is logged as a conflict."],
-          ].map(([t, d], i) => (
-            <li key={t} className="flex gap-3 border-border px-5 py-4 max-md:border-b md:border-r md:last:border-r-0">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-brand-tint-border bg-brand-tint text-[11px] font-bold text-primary">{i + 1}</span>
-              <span>
-                <span className="block text-[13px] font-bold text-foreground">{t}</span>
-                <span className="block text-xs text-subtle">{d}</span>
-              </span>
-            </li>
-          ))}
-        </ol>
-        <p className="border-t border-border px-5 py-2 text-[11px] text-muted-foreground">Every decision logs the rule and the matched dimension values.</p>
-      </Panel>
-
-      <div className="grid gap-6 lg:grid-cols-[260px_1fr] 2xl:grid-cols-[280px_1fr_340px]">
-        {/* Rule list */}
-        <Panel eyebrow={`${rules.length} rules`} title="Rules by stage" bodyClassName="p-0" className="lg:row-span-2 2xl:row-span-1">
-          <div className="scrollbar-prism max-h-[760px] overflow-y-auto py-2">
-            <div className="px-3 pb-2">
-              <Button
-                size="sm"
-                variant="tint"
-                className="w-full"
-                onClick={() => {
-                  const r: Rule = {
-                    id: nextRuleId(rules, pendingIds),
-                    name: "New rule",
-                    stage: "Renewal window",
-                    level: "rule",
-                    priority: 50,
-                    when: { stage: ["Renewal window"] },
-                    then: { workflowId: "R1", action: "WhatsApp reminder with payment link", executor: "WhatsApp vendor", delayHours: 4 },
-                    effectiveFrom: "2026-11-01",
-                    needsApprovalFrom: "Head of Persistency",
-                    source: "Insurer rule",
-                  };
-                  setSelectedId(r.id);
-                  setDraft(r);
-                }}
-              >
-                <Plus /> New rule
-              </Button>
-            </div>
-            {GROUPS.map((g) => {
-              const list = rules.filter((r) => r.stage === g).sort((a, b) => a.level.localeCompare(b.level) || a.priority - b.priority);
-              if (!list.length) return null;
-              return (
-                <div key={g} className="mb-2">
-                  <Eyebrow className="px-4 py-1.5">{g === "Any" ? "Any stage" : g}</Eyebrow>
-                  <ul>
-                    {list.map((r) => (
-                      <li key={r.id}>
-                        <button
-                          type="button"
-                          onClick={() => select(r)}
-                          className={cn("flex w-full cursor-pointer items-start gap-2 border-l-[3px] px-4 py-2 text-left transition-colors", r.id === selectedId ? "border-primary bg-brand-tint" : "border-transparent hover:bg-surface-translucent")}
-                        >
-                          <span className="mt-0.5 w-8 shrink-0 text-[10px] font-bold text-primary">{r.id}</span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[12px] font-semibold text-foreground">{r.name}</span>
-                            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                              {r.locked && <Lock className="size-2.5" aria-label="Locked" />}
-                              {LEVEL_SHORT[r.level]} · P{r.priority} · {dimensionCount(r)} dims
-                              {pendingIds.includes(r.id) && <span className="text-attention"> · change waiting</span>}
-                            </span>
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-        </Panel>
-
-        {/* Editor */}
-        <Panel
-          eyebrow={draft ? `${isNew ? "New rule" : "Rule"} ${draft.id}` : "Rule editor"}
-          title={draft ? draft.name : "Pick a rule"}
-          tiers={["live-engine"]}
-          actions={draft && <StatusPill status={LEVEL_STATUS[draft.level]}>{LEVEL_LABEL[draft.level]}</StatusPill>}
-        >
-          {!draft ? (
-            <p className="text-sm text-subtle">Pick a rule on the left or add a new one.</p>
-          ) : draft.locked ? (
-            <div className="space-y-4">
-              <NoteBanner tone="failed"><Lock className="mr-1 inline size-3.5" /> Guardrail, locked. It always wins and cannot be edited here. Compliance changes guardrails on the Guardrails page.</NoteBanner>
-              <RuleSummary rule={draft} />
-            </div>
-          ) : (
-            <div className="space-y-5">
-              <label className="block">
-                <span className="text-[11px] text-muted-foreground">Name</span>
-                <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="mt-1 h-8 rounded-input border-border bg-surface-translucent text-xs" />
-              </label>
-
-              <section>
-                <Eyebrow>When</Eyebrow>
-                <div className="mt-2 space-y-3">
-                  {(Object.keys(draft.when) as DimensionKey[]).map((k) => {
-                    const dim = DIMENSIONS.find((d) => d.key === k)!;
-                    const vals = draft.when[k] ?? [];
-                    return (
-                      <div key={k} className="rounded-input border border-border bg-surface-translucent p-2.5">
-                        <div className="mb-1.5 flex items-center justify-between">
-                          <span className="text-xs font-semibold text-foreground">{dim.label}</span>
-                          <Button variant="ghost" size="icon" className="size-6" aria-label={`Remove ${dim.label}`} onClick={() => setWhen(k, undefined)}><X className="size-3" /></Button>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {dim.values.map((v) => (
-                            <Chip key={v} active={vals.includes(v)} onClick={() => setWhen(k, vals.includes(v) ? vals.filter((x) => x !== v) : [...vals, v])}>{v}</Chip>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div className="flex items-center gap-2">
-                    <Select value={addDim} onValueChange={(v) => { setWhen(v as DimensionKey, []); setAddDim(""); }}>
-                      <SelectTrigger aria-label="Add a dimension" className="h-8 w-56 rounded-input border-border bg-surface-translucent text-xs"><SelectValue placeholder="Add a dimension" /></SelectTrigger>
-                      <SelectContent className="border-border bg-card">
-                        {DIMENSIONS.filter((d) => !(d.key in draft.when)).map((d) => <SelectItem key={d.key} value={d.key} className="text-xs">{d.label}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <span className="text-[11px] text-muted-foreground">{dimensionCount(draft)} of 17 dimensions used</span>
-                  </div>
-                </div>
-              </section>
-
-              <section>
-                <Eyebrow>Then</Eyebrow>
-                <div className="mt-2 grid gap-3 md:grid-cols-2">
-                  <label className="block">
-                    <span className="text-[11px] text-muted-foreground">Workflow</span>
-                    <Select value={draft.then.workflowId} onValueChange={(v) => setDraft({ ...draft, then: { ...draft.then, workflowId: v } })}>
-                      <SelectTrigger className="mt-1 h-8 rounded-input border-border bg-surface-translucent text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent className="border-border bg-card">
-                        {WORKFLOWS.map((w) => <SelectItem key={w.id} value={w.id} className="text-xs">{w.id} {w.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </label>
-                  {SETTING_FIELDS.map(({ setting, key }) =>
-                    key === "executor" ? (
-                      <label key={key} className="block">
-                        <span className="text-[11px] text-muted-foreground">{setting}</span>
-                        <Select value={draft.then.executor} onValueChange={(v) => setThen("executor", v)}>
-                          <SelectTrigger className="mt-1 h-8 rounded-input border-border bg-surface-translucent text-xs"><SelectValue /></SelectTrigger>
-                          <SelectContent className="border-border bg-card">
-                            {EXECUTORS.map((e) => <SelectItem key={e} value={e} className="text-xs">{e}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </label>
-                    ) : (
-                      <label key={key} className="block">
-                        <span className="text-[11px] text-muted-foreground">{setting}{key === "action" && " (action)"}</span>
-                        <Input
-                          value={(draft.then[key] as string | undefined) ?? ""}
-                          placeholder="Not set"
-                          onChange={(e) => setThen(key, e.target.value)}
-                          className="mt-1 h-8 rounded-input border-border bg-surface-translucent text-xs"
-                        />
-                      </label>
-                    ),
-                  )}
-                </div>
-              </section>
-
-              <section className="grid gap-3 md:grid-cols-4">
-                <label className="block">
-                  <span className="text-[11px] text-muted-foreground">Level</span>
-                  <Select value={draft.level} onValueChange={(v) => setDraft({ ...draft, level: v as RuleLevel })}>
-                    <SelectTrigger className="mt-1 h-8 rounded-input border-border bg-surface-translucent text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent className="border-border bg-card">
-                      <SelectItem value="insurer" className="text-xs">Insurer default</SelectItem>
-                      <SelectItem value="rule" className="text-xs">Rule</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </label>
-                <label className="block">
-                  <span className="text-[11px] text-muted-foreground">Priority</span>
-                  <Input type="number" value={draft.priority} onChange={(e) => setDraft({ ...draft, priority: Number(e.target.value) })} className="mt-1 h-8 rounded-input border-border bg-surface-translucent text-xs tabular" />
-                </label>
-                <label className="block">
-                  <span className="text-[11px] text-muted-foreground">Effective from</span>
-                  <Input type="date" value={draft.effectiveFrom} onChange={(e) => setDraft({ ...draft, effectiveFrom: e.target.value })} className="mt-1 h-8 rounded-input border-border bg-surface-translucent text-xs" />
-                </label>
-                <label className="block">
-                  <span className="text-[11px] text-muted-foreground">Needs approval from</span>
-                  <Select value={draft.needsApprovalFrom} onValueChange={(v) => setDraft({ ...draft, needsApprovalFrom: v })}>
-                    <SelectTrigger className="mt-1 h-8 rounded-input border-border bg-surface-translucent text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent className="border-border bg-card">
-                      {APPROVERS.map((a) => <SelectItem key={a} value={a} className="text-xs">{a}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </label>
-              </section>
-
-              <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-                <Button size="sm" disabled={!changed && !isNew} onClick={saveDraft}><Send /> Save as pending change</Button>
-                <Button size="sm" variant="outline" disabled={!changed} onClick={() => selected && setDraft(structuredClone(selected))}>Discard</Button>
-                <span className="text-[11px] text-muted-foreground">Saving creates a pending change. It goes live only when {draft.needsApprovalFrom} approves it.</span>
-              </div>
-            </div>
-          )}
-        </Panel>
-
-        {/* Who this affects + conflicts */}
-        <div className="space-y-6 lg:col-start-2 2xl:col-start-auto">
-          <Panel eyebrow="Who this affects" title="Live count" tiers={["live-engine"]}>
-            {!impact || !draft ? (
-              <p className="text-sm text-subtle">Pick a rule to see who it affects.</p>
-            ) : (
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="panel accent-left px-3 py-2.5">
-                    <div className="stat-number">{num(impact.nowWins)}</div>
-                    <div className="stat-label">decided by this rule now</div>
-                  </div>
-                  <div className="panel accent-left px-3 py-2.5">
-                    <div className="stat-number">{num(impact.draftWins)}</div>
-                    <div className="stat-label">{changed || isNew ? "with your edit" : "same as now"}</div>
-                  </div>
-                </div>
-                <p className="text-xs text-subtle">
-                  {num(impact.matches)} policies match its conditions. {num(impact.matches - impact.draftWins)} of those are decided by a higher-precedence rule.
-                </p>
-                <ul className="space-y-1 text-xs">
-                  {PRODUCTS.map((p) => (
-                    <li key={p} className="flex justify-between"><span className="text-subtle">{p}</span><span className="font-semibold text-foreground tabular">{num(impact.byProduct[p])}</span></li>
+        meta={`${rules.filter((r) => (r.status ?? "Active") === "Active").length} active · ${rules.filter((r) => r.status === "In review").length} in review · ${rules.filter((r) => r.status === "Retired").length} retired`}
+        actions={
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" aria-label="Order of precedence">
+                  <Info /> Order of precedence
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-72 rounded-card border-border bg-popover">
+                <p className="text-[13px] font-semibold">Order of precedence</p>
+                <ol className="mt-2 list-decimal space-y-1 pl-5 text-[13px] text-subtle">
+                  {PRECEDENCE.map((p) => (
+                    <li key={p}>{p}</li>
                   ))}
-                </ul>
-              </div>
+                </ol>
+              </PopoverContent>
+            </Popover>
+            {mayEdit && (
+              <Button asChild size="sm">
+                <Link to="/persistency/rules/$id" params={{ id: "new" }}>
+                  <Plus /> New rule
+                </Link>
+              </Button>
             )}
+          </div>
+        }
+      />
+      <PageTabs
+        label="Rules"
+        value={view}
+        onChange={(v) => navigate({ search: (p) => ({ ...p, view: v === "list" ? undefined : v, cell: undefined }) })}
+        tabs={[
+          { id: "list", label: "Rule list" },
+          { id: "matrix", label: "Product matrix" },
+          { id: "test", label: "Decision test" },
+          { id: "history", label: "Version history" },
+        ]}
+      />
+      {view === "list" && (
+        <>
+          <Panel title="Guardrails no rule can override" bodyClassName="p-0">
+            <ul className="grid sm:grid-cols-2 xl:grid-cols-4">
+              {GUARDRAIL_LINES.map((g) => (
+                <li key={g} className="flex items-center gap-2 border-b border-border/60 px-4 py-2 text-[13px] text-subtle">
+                  <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label="Locked" />
+                  {g}
+                </li>
+              ))}
+            </ul>
           </Panel>
-
-          <Panel eyebrow="Conflict check" title="Same level, same weight" tiers={["live-engine"]}>
-            {!impact || !draft ? null : impact.conflicts.length === 0 ? (
-              <StatusPill status="healthy">No conflicts at this level and priority</StatusPill>
-            ) : (
-              <ul className="space-y-2">
-                {impact.conflicts.map((c) => {
-                  const other = rules.find((r) => r.id === c.id);
-                  return (
-                    <li key={c.id} className="rounded-input border border-attention/40 bg-attention/10 p-3">
-                      <p className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground"><AlertTriangle className="size-3.5 text-attention" /> {draft.id} and {c.id} could both match {num(c.n)} policies</p>
-                      <p className="mt-0.5 text-xs text-subtle">{other?.name}. Same level, {dimensionCount(draft)} dimensions each, priority {draft.priority}. Pick a priority so one wins.</p>
-                      {!draft.locked && (
-                        <Button size="sm" variant="outline" className="mt-2" onClick={() => setDraft({ ...draft, priority: draft.priority - 1 })}>
-                          Make {draft.id} win (priority {draft.priority - 1})
-                        </Button>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </Panel>
-
-          <Panel eyebrow="Approvals" title={`${pending.length} pending changes`} tiers={["live-engine"]}>
-            {pending.length === 0 ? (
-              <p className="text-xs text-subtle">Nothing waiting.</p>
-            ) : (
-              <ul className="space-y-2">
-                {pending.map((c) => (
-                  <li key={c.id} className="rounded-input border border-border bg-surface-translucent p-2.5">
-                    <p className="text-xs font-semibold text-foreground">{c.title}</p>
-                    <p className="text-[11px] text-muted-foreground">{c.source} · waits for {c.rule.needsApprovalFrom}</p>
-                    {persona.id === "head" ? (
-                      <div className="mt-2 flex gap-1.5">
-                        <Button size="sm" className="h-7 text-[11px]" onClick={() => { approve(c.id); toast(`Approved: ${c.title}`); }}><Check /> Approve</Button>
-                        <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={() => reject(c.id)}><X /> Reject</Button>
-                      </div>
-                    ) : (
-                      <p className="mt-1 text-[11px] text-subtle">Switch to Head of Persistency to approve.</p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Panel>
-        </div>
-      </div>
-
-      <ProductMatrix policies={scoped} />
+          <DataGrid
+            label="Rules"
+            columns={cols}
+            rows={[...rules].sort((a, b) => (a.level === b.level ? a.priority - b.priority : a.level.localeCompare(b.level)))}
+            rowKey={(r) => r.id}
+            onRowClick={(r) => navigate({ to: "/persistency/rules/$id", params: { id: r.id } })}
+            csvName="rules.csv"
+            rowClassName={(r) => (r.status === "Retired" ? "opacity-60" : undefined)}
+          />
+        </>
+      )}
+      {view === "matrix" && <ProductMatrix />}
+      {view === "test" && <DecisionTest />}
+      {view === "history" && <VersionHistory />}
     </div>
   );
 }
 
-function RuleSummary({ rule }: { rule: Rule }) {
-  return (
-    <div className="space-y-3 text-xs">
-      <div className="flex flex-wrap gap-1.5">
-        {(Object.entries(rule.when) as [DimensionKey, string[]][]).map(([k, v]) => (
-          <Chip key={k} active><span className="text-muted-foreground">{DIMENSION_LABEL[k]}:</span> {v.join(", ")}</Chip>
-        ))}
-      </div>
-      <p className="text-subtle">Then: <span className="font-semibold text-foreground">{rule.then.action}</span> via {rule.then.executor} ({rule.then.workflowId})</p>
-      {rule.then.contactRule && <p className="text-subtle">Contact rule: {rule.then.contactRule}</p>}
-      <p className="text-muted-foreground">Effective from {date(rule.effectiveFrom)} · approved by {rule.needsApprovalFrom} · {rule.source}</p>
-    </div>
-  );
-}
+/* ---------- Product matrix ---------- */
 
-function ProductMatrix({ policies }: { policies: Policy[] }) {
-  const rules = usePersistencyStore((s) => s.rules);
-  const pending = usePersistencyStore((s) => s.pending);
-  const propose = usePersistencyStore((s) => s.propose);
-  const { persona } = useShell();
+const MATRIX_ROWS: { id: string; label: string; field: keyof RuleThen }[] = [
+  { id: "treatment", label: "Treatment", field: "action" },
+  { id: "script", label: "Script", field: "script" },
+  { id: "offers", label: "Offers", field: "offer" },
+  { id: "approvals", label: "Approvals", field: "approvals" },
+  { id: "executor", label: "Executor", field: "executor" },
+];
+
+function ProductMatrix() {
+  const s = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const policies = usePolicies();
+  const rules = usePersistencyStore((st) => st.rules);
   const ctx = useEngineContext();
-
-  const cells = useMemo(() => {
-    const map = new Map<string, Map<string, number>>();
-    const totals = new Map<string, number>();
+  const matrix = useMemo(() => {
+    const out: Record<string, Record<Product, { rule?: Rule | undefined; value?: string | undefined; count: number }>> = {};
+    const wins: Record<Product, Map<string, number>> = { ULIP: new Map(), Traditional: new Map(), Term: new Map() };
     for (const p of policies) {
-      const key = `${p.product}|${stageColumn(p.lifecycleStage)}`;
+      if (p.lifecycleStage !== "Renewal window") continue;
       const d = evaluate(p, rules, ctx);
-      const label = `${d.ruleId}|${d.action}`;
-      const m = map.get(key) ?? new Map<string, number>();
-      m.set(label, (m.get(label) ?? 0) + 1);
-      map.set(key, m);
-      totals.set(key, (totals.get(key) ?? 0) + 1);
+      wins[p.product].set(d.ruleId, (wins[p.product].get(d.ruleId) ?? 0) + 1);
     }
-    return { map, totals };
+    for (const row of MATRIX_ROWS) {
+      out[row.id] = {} as Record<Product, { rule?: Rule; value?: string; count: number }>;
+      for (const prod of PRODUCTS) {
+        const ranked = [...wins[prod].entries()].sort((a, b) => b[1] - a[1]);
+        const hit = ranked.map(([id, n]) => ({ rule: rules.find((r) => r.id === id), n })).find((x) => x.rule && x.rule.level !== "guardrail" && x.rule.then[row.field]);
+        out[row.id]![prod] = { rule: hit?.rule, value: hit?.rule ? String(hit.rule.then[row.field]) : undefined, count: hit?.n ?? 0 };
+      }
+    }
+    return out;
   }, [policies, rules, ctx]);
-
+  const [rowId, prod] = (s.cell ?? "").split(":") as [string, Product];
+  const cell = rowId ? matrix[rowId]?.[prod] : undefined;
   return (
-    <Panel eyebrow="Product matrix" title="Active treatment by product and stage" tiers={["live-engine"]}>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px] border-separate border-spacing-2 text-[12px]">
-          <thead>
-            <tr>
-              <th className="w-28" />
-              {STAGE_COLUMNS.map((c) => <th key={c} className="text-left text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{c}</th>)}
+    <>
+      <div className="overflow-hidden rounded-card border border-border">
+        <table className="w-full text-[13px]">
+          <thead className="bg-card">
+            <tr className="text-left text-[11px] uppercase tracking-[0.04em] text-muted-foreground">
+              <th className="border-b border-border px-3 py-2 font-medium">Setting</th>
+              {PRODUCTS.map((p) => (
+                <th key={p} className="border-b border-border px-3 py-2 font-medium">{p}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {PRODUCTS.map((prod) => (
-              <tr key={prod}>
-                <th scope="row" className="text-left align-top text-[13px] font-bold text-foreground">{prod}</th>
-                {STAGE_COLUMNS.map((col) => {
-                  const key = `${prod}|${col}`;
-                  const m = cells.map.get(key);
-                  const total = cells.totals.get(key) ?? 0;
-                  const top = m ? [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2) : [];
-                  const waiting = pending.find((c) => c.source === "Product matrix" && c.rule.when.product?.[0] === prod && c.rule.stage === col);
-                  const stageWfs = WORKFLOWS.filter((w) => (w.stage === col || w.stage === "Cross-cutting") && w.products.includes(prod));
+            {MATRIX_ROWS.map((row) => (
+              <tr key={row.id} className="border-b border-border/60">
+                <td className="px-3 py-2 font-medium">{row.label}</td>
+                {PRODUCTS.map((p) => {
+                  const c = matrix[row.id]![p];
                   return (
-                    <td key={col} className="rounded-input border border-border bg-surface-translucent p-3 align-top">
-                      {top.length === 0 ? (
-                        <p className="text-subtle">No policies in view</p>
-                      ) : (
-                        <ul className="space-y-1">
-                          {top.map(([label, n]) => {
-                            const [rid, action] = label.split("|");
-                            return (
-                              <li key={label}>
-                                <span className="mr-1 text-[10px] font-bold text-primary">{rid}</span>
-                                <span className="text-foreground">{action}</span>
-                                <span className="ml-1 text-muted-foreground tabular">{pct(n / Math.max(total, 1), 0)}</span>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      )}
-                      {MATRIX_NOTES[prod][col] && <p className="mt-1.5 text-[11px] text-subtle">{MATRIX_NOTES[prod][col]}</p>}
-                      <div className="mt-2 flex items-center gap-2">
-                        {waiting ? (
-                          <StatusPill status="attention">Override waiting for approval</StatusPill>
+                    <td key={p} className="px-3 py-2">
+                      <button type="button" onClick={() => navigate({ search: (x) => ({ ...x, cell: `${row.id}:${p}` }) })} className={`w-full cursor-pointer rounded-input border px-2 py-1.5 text-left hover:border-primary ${s.cell === `${row.id}:${p}` ? "border-primary" : "border-border"}`}>
+                        {c.rule ? (
+                          <>
+                            <span className="block text-foreground">{c.value}</span>
+                            <span className="block text-[12px] text-muted-foreground"><span className="text-primary">{c.rule.id}</span> {c.rule.name} · decides {num(c.count)}</span>
+                          </>
                         ) : (
-                          <Select
-                            value=""
-                            onValueChange={(wfId) => {
-                              const wf = workflowById(wfId);
-                              if (!wf) return;
-                              const stages = col === "Lapse and revival" ? ["Early lapse", "Late lapse"] : [col];
-                              const id = `M-${prod.slice(0, 2).toUpperCase()}${STAGE_COLUMNS.indexOf(col) + 1}`;
-                              propose({
-                                id: `PC-${id}`,
-                                title: `${prod}, ${col}: use ${wf.id} ${wf.name}`,
-                                source: "Product matrix",
-                                proposedBy: persona.label,
-                                at: new Date().toISOString(),
-                                effect: `Overrides the treatment for ${num(total)} ${prod} policies in ${col}`,
-                                rule: {
-                                  id,
-                                  name: `${prod} ${col} override: ${wf.name}`,
-                                  stage: col,
-                                  level: "insurer",
-                                  priority: 9,
-                                  when: { product: [prod], stage: stages },
-                                  then: { workflowId: wf.id, action: wf.name, executor: wf.executor, delayHours: 6 },
-                                  effectiveFrom: "2026-11-01",
-                                  needsApprovalFrom: "Head of Persistency",
-                                  source: "Insurer rule",
-                                },
-                              });
-                              toast("Override sent for approval", { description: `${prod}, ${col}: ${wf.id} ${wf.name}` });
-                            }}
-                          >
-                            <SelectTrigger aria-label={`Override ${prod} ${col}`} className="h-7 w-full rounded-input border-border bg-card text-[11px]"><SelectValue placeholder="Override" /></SelectTrigger>
-                            <SelectContent className="border-border bg-card">
-                              {stageWfs.map((w) => <SelectItem key={w.id} value={w.id} className="text-xs">{w.id} {w.name}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
+                          <span className="text-muted-foreground">No rule sets this</span>
                         )}
-                      </div>
+                      </button>
                     </td>
                   );
                 })}
@@ -574,7 +247,165 @@ function ProductMatrix({ policies }: { policies: Policy[] }) {
           </tbody>
         </table>
       </div>
-      <p className="mt-2 text-[11px] text-muted-foreground">Each cell shows the top two rules deciding policies in that cell now, with their share. An override becomes an insurer default once approved.</p>
-    </Panel>
+      <p className="text-[12px] text-muted-foreground">Each cell shows the rule that decides the most policies of that product in the renewal window and sets this field.</p>
+      <Sheet open={!!s.cell} onOpenChange={(o) => !o && navigate({ search: (x) => ({ ...x, cell: undefined }) })}>
+        <SheetContent side="right" className="w-full border-border bg-background sm:max-w-[420px]">
+          <SheetHeader className="text-left">
+            <SheetTitle className="text-[16px]">{MATRIX_ROWS.find((r) => r.id === rowId)?.label} · {prod}</SheetTitle>
+          </SheetHeader>
+          {cell?.rule ? (
+            <div className="mt-4 space-y-3 text-[13px]">
+              <p className="font-medium"><span className="mr-1.5 text-primary">{cell.rule.id}</span>{cell.rule.name}</p>
+              <p className="text-subtle">{ruleConditionText(cell.rule)}</p>
+              <p>Value: {cell.value}</p>
+              <p className="text-muted-foreground">Decides {num(cell.count)} {prod} policies in the renewal window.</p>
+              <Button asChild size="sm"><Link to="/persistency/rules/$id" params={{ id: cell.rule.id }}>Edit rule</Link></Button>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-3 text-[13px]">
+              <p className="text-muted-foreground">No rule sets this field for {prod}.</p>
+              <Button asChild size="sm"><Link to="/persistency/rules/$id" params={{ id: "new" }}>New rule</Link></Button>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+}
+
+/* ---------- Decision test ---------- */
+
+function DecisionTest() {
+  const s = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const policies = usePolicies();
+  const rules = usePersistencyStore((st) => st.rules);
+  const ctx = useEngineContext();
+  const [q, setQ] = useState(s.policy ?? "");
+  const wanted = s.policy?.trim().toUpperCase();
+  const policy = wanted ? policies.find((p) => p.policyId === wanted) : undefined;
+  const trace = useMemo(() => (policy ? decisionTrace(policy, rules, ctx) : null), [policy, rules, ctx]);
+  return (
+    <div className="space-y-4">
+      <form
+        className="flex items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          navigate({ search: (p) => ({ ...p, policy: q.trim().toUpperCase() || undefined }) });
+        }}
+      >
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Policy number, for example SLI02400118" aria-label="Policy number" className={`${inputCls} w-80`} />
+        <Button type="submit" size="sm">Test</Button>
+      </form>
+      {s.policy && !policy && <NoteBanner tone="attention">No policy {s.policy} in the book.</NoteBanner>}
+      {policy && trace && (
+        <>
+          <Panel title={`${policy.policyId} · ${policy.customerName}`}>
+            <p className="text-[13px]">
+              Winner: {trace.winner ? <Link to="/persistency/rules/$id" params={{ id: trace.winner.id }} className="text-primary hover:underline">{trace.winner.id} {trace.winner.name} (version {trace.winner.version ?? 1})</Link> : "none"}
+            </p>
+            <p className="mt-1 text-[13px] text-subtle">{trace.reason}</p>
+          </Panel>
+          <DataGrid
+            label="Rules considered"
+            rows={trace.rows}
+            rowKey={(r) => r.rule.id}
+            pageSize={50}
+            rowClassName={(r) => (r.rule.id === trace.winner?.id ? "bg-brand-tint" : r.matched ? undefined : "opacity-60")}
+            columns={[
+              { id: "rule", label: "Rule", value: (r) => r.rule.id, render: (r) => <Link to="/persistency/rules/$id" params={{ id: r.rule.id }} className="text-primary hover:underline">{r.rule.id} {r.rule.name}</Link> },
+              { id: "level", label: "Level", value: (r) => r.rule.level },
+              { id: "matched", label: "Matched", value: (r) => (r.matched ? "Yes" : "No"), render: (r) => <StatusChip tone={r.matched ? "ok" : "neutral"}>{r.matched ? "Matched" : "Not matched"}</StatusChip> },
+              { id: "values", label: "Dimension values on the policy", sortable: false, value: (r) => Object.entries(r.values).map(([k, v]) => `${dimLabel(k)}: ${v}`).join("; "), render: (r) => <span className="text-[12px] text-subtle">{Object.entries(r.values).map(([k, v]) => `${dimLabel(k)}: ${v}`).join(" · ")}</span> },
+              { id: "dims", label: "Dimensions", align: "right", value: (r) => r.dims },
+              { id: "priority", label: "Priority", align: "right", value: (r) => r.rule.priority },
+            ]}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Version history ---------- */
+
+interface HistRow {
+  key: string;
+  ruleId: string;
+  ruleName: string;
+  v: Version<Rule>;
+  prev?: Version<Rule> | undefined;
+}
+
+function VersionHistory() {
+  const rules = usePersistencyStore((st) => st.rules);
+  const saved = useWork((st) => st.versions);
+  const restore = useWork((st) => st.restoreVersion);
+  const user = useUser();
+  const mayEdit = useCan("rules.edit");
+  const navigate = useNavigate();
+  const [open, setOpen] = useState<HistRow | null>(null);
+  const [confirm, setConfirm] = useState(false);
+  const rows = useMemo(() => {
+    const out: HistRow[] = [];
+    for (const r of rules) {
+      const list = (saved[`rule:${r.id}`] ?? seedVersions(`rule:${r.id}`)) as Version<Rule>[];
+      if (list.length < 2 && !saved[`rule:${r.id}`]) continue;
+      list.forEach((v, i) => out.push({ key: `${r.id}-${v.no}`, ruleId: r.id, ruleName: r.name, v, prev: list[i - 1] }));
+    }
+    return out.sort((a, b) => (a.v.at < b.v.at ? 1 : -1));
+  }, [rules, saved]);
+  return (
+    <>
+      <DataGrid
+        label="Rule versions"
+        rows={rows}
+        rowKey={(r) => r.key}
+        onRowClick={setOpen}
+        csvName="rule-versions.csv"
+        columns={[
+          { id: "rule", label: "Rule", value: (r) => `${r.ruleId} ${r.ruleName}` },
+          { id: "version", label: "Version", align: "right", value: (r) => r.v.no, render: (r) => `v${r.v.no}` },
+          { id: "author", label: "Author", value: (r) => r.v.author },
+          { id: "at", label: "Time", value: (r) => r.v.at, render: (r) => dateTime(r.v.at) },
+          { id: "note", label: "Change note", value: (r) => r.v.note },
+          { id: "status", label: "Status", value: (r) => r.v.status, render: (r) => <StatusChip tone={versionTone(r.v.status)}>{r.v.status}</StatusChip> },
+          { id: "approver", label: "Approver", value: (r) => r.v.approver ?? "" },
+        ]}
+      />
+      <Sheet open={!!open} onOpenChange={(o) => !o && setOpen(null)}>
+        <SheetContent side="right" className="w-full border-border bg-background sm:max-w-[480px]">
+          {open && (
+            <div className="space-y-4">
+              <SheetHeader className="text-left">
+                <SheetTitle className="text-[16px]">{open.ruleId} {open.ruleName} · version {open.v.no}</SheetTitle>
+                <p className="text-[12px] text-muted-foreground">{open.v.author} · {dateTime(open.v.at)} · {open.v.status}</p>
+              </SheetHeader>
+              <p className="text-[13px]">{open.v.note}</p>
+              <h3 className="text-[14px] font-semibold">Diff against version {open.prev?.no ?? "none"}</h3>
+              <ul className="space-y-1.5 font-mono text-[12px]">
+                {ruleDiff(open.prev?.data, open.v.data).map((d, i) => (
+                  <li key={i} className="rounded-input border border-border px-2 py-1">{d}</li>
+                ))}
+              </ul>
+              {mayEdit && open.v.status !== "Draft" && <Button size="sm" variant="outline" onClick={() => setConfirm(true)}>Restore as new draft</Button>}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+      <ConfirmDialog
+        open={confirm}
+        onOpenChange={setConfirm}
+        title={`Restore version ${open?.v.no ?? ""}`}
+        body="A new Draft is created from this version. The Active version keeps deciding until the draft is approved."
+        confirmLabel="Restore"
+        onConfirm={() => {
+          if (!open) return;
+          const no = restore(`rule:${open.ruleId}`, open.v.no, user?.name ?? "User");
+          toast.success(`Draft version ${no} created`);
+          navigate({ to: "/persistency/rules/$id", params: { id: open.ruleId } });
+        }}
+      />
+    </>
   );
 }
