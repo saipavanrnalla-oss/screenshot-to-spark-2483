@@ -392,7 +392,7 @@ function BuilderPage() {
             {problems.length > 4 && <li className="text-attention">and {problems.length - 4} more</li>}
           </ul>
         )}
-        <span className="ml-auto text-muted-foreground">{dirty ? "Unsaved changes" : "Saved"}{latestSim ? ` · last simulation ${latestSim.result}` : " · not simulated"}</span>
+        <span className="ml-auto text-muted-foreground">{dirty ? "Unsaved changes" : "Saved"}{latestSim ? ` · last simulation ${latestSim.result}` : " · no simulation run yet"}</span>
       </div>
 
       <Dialog open={!!insertEdge} onOpenChange={(o) => !o && setInsertEdge(null)}>
@@ -456,7 +456,7 @@ function BuilderPage() {
           </label>
           <div className="text-[13px]">
             <p className="text-[12px] font-medium text-muted-foreground">Latest simulation</p>
-            {latestSim ? <p><StatusChip tone={latestSim.result === "Pass" ? "ok" : "risk"}>{latestSim.result}</StatusChip> <span className="ml-1 text-subtle">{latestSim.scenario} · {latestSim.steps} steps · {latestSim.policyId}</span></p> : <p className="text-attention">Not simulated. Approvers cannot approve without a passing simulation.</p>}
+            {latestSim ? <p><StatusChip tone={latestSim.result === "Pass" ? "ok" : "risk"}>{latestSim.result}</StatusChip> <span className="ml-1 text-subtle">{latestSim.scenario} · {latestSim.steps} steps · {latestSim.policyId}</span></p> : <p className="text-attention">No simulation run yet. Approvers need a passing simulation to approve.</p>}
             {latestSim && !simFresh && <p className="text-[12px] text-muted-foreground">Run again if you changed the canvas since.</p>}
           </div>
           <div className="text-[13px]">
