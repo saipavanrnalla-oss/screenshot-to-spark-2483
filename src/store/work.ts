@@ -102,6 +102,7 @@ interface WorkState {
 
   stamp: () => string;
   addActivity: (row: Omit<ActivityRow, "id" | "at"> & { at?: string | undefined }) => void;
+  addActivities: (rows: (Omit<ActivityRow, "id" | "at"> & { at?: string | undefined })[]) => void;
   placeHold: (policyId: string, reason: HoldReason, note: string, by: string) => number;
   releaseHold: (policyId: string, reason: string, by: string) => void;
   assignOwner: (ids: string[], owner: string, by: string) => void;
@@ -244,6 +245,18 @@ export const useWork = create<WorkState>()(
         addActivity: (row) => {
           const at = row.at ?? tick();
           pushRow({ ...row, at, id: `U-${row.policyId}-${at}-${eventSeq++}` });
+        },
+
+        addActivities: (rows) => {
+          const at = tick();
+          set((s) => {
+            const activity = { ...s.activity };
+            for (const r of rows) {
+              const row: ActivityRow = { ...r, at: r.at ?? at, id: `U-${r.policyId}-${at}-${eventSeq++}` };
+              activity[r.policyId] = [row, ...(activity[r.policyId] ?? [])];
+            }
+            return { activity };
+          });
         },
 
         placeHold: (policyId, reason, note, by) => {
