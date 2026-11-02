@@ -149,10 +149,10 @@ function Library() {
           { id: "version", label: "Version", align: "right", value: (r) => r.version, render: (r) => (enabled(r) ? `v${r.version}` : "None") },
           { id: "workflows", label: "Workflows served", value: (r) => r.workflows.join(", ") },
           { id: "tasks", label: "Tasks (30 days)", align: "right", value: (r) => r.tasks, render: (r) => num(r.tasks) },
-          { id: "success", label: "Success rate", align: "right", value: (r) => r.success, render: (r) => (r.tasks ? pct(r.success * 100) : "None") },
-          { id: "handoff", label: "Handoff rate", align: "right", value: (r) => r.handoffs, render: (r) => (r.tasks ? pct(r.handoffs * 100) : "None") },
+          { id: "success", label: "Success rate", align: "right", value: (r) => r.success, render: (r) => (r.tasks ? pct(r.success) : "None") },
+          { id: "handoff", label: "Handoff rate", align: "right", value: (r) => r.handoffs, render: (r) => (r.tasks ? pct(r.handoffs) : "None") },
           { id: "aht", label: "Average handling time", align: "right", value: (r) => r.aht, render: (r) => (r.aht ? `${Math.round(r.aht)} s` : "None") },
-          { id: "conduct", label: "Conduct score", align: "right", value: (r) => r.conduct, render: (r) => (r.tasks ? pct(r.conduct * 100) : "None") },
+          { id: "conduct", label: "Conduct score", align: "right", value: (r) => r.conduct, render: (r) => (r.tasks ? pct(r.conduct) : "None") },
           { id: "cost", label: "Cost (30 days)", align: "right", value: (r) => r.cost, render: (r) => (r.tasks ? inr(Math.round(r.cost)) : "None") },
           {
             id: "pause",

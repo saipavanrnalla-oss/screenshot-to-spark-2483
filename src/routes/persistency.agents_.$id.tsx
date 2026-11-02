@@ -122,10 +122,10 @@ function Overview({ id }: { id: string }) {
             <thead><tr className="text-left text-[11px] uppercase text-muted-foreground"><th className="py-1 font-medium" /><th className="py-1 text-right font-medium">7 days</th><th className="py-1 text-right font-medium">30 days</th></tr></thead>
             <tbody>
               {row("Tasks", (x) => num(x.tasks))}
-              {row("Success", (x) => pct(x.success * 100))}
-              {row("Handoffs", (x) => pct(x.handoffs * 100))}
+              {row("Success", (x) => pct(x.success))}
+              {row("Handoffs", (x) => pct(x.handoffs))}
               {row("Handling time", (x) => (x.aht ? `${Math.round(x.aht)} s` : "None"))}
-              {row("Conduct score", (x) => pct(x.conduct * 100))}
+              {row("Conduct score", (x) => pct(x.conduct))}
               {row("Cost", (x) => inr(Math.round(x.cost)))}
             </tbody>
           </table>
