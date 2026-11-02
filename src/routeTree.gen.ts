@@ -34,6 +34,7 @@ import { Route as PersistencyWhereDesibleSitsRouteImport } from './routes/persis
 import { Route as PersistencyWhereWeSitRouteImport } from './routes/persistency.where-we-sit'
 import { Route as PersistencyPoliciesIdRouteImport } from './routes/persistency.policies_.$id'
 import { Route as PersistencyQueuesPersonaRouteImport } from './routes/persistency.queues.$persona'
+import { Route as PersistencyRulesIdRouteImport } from './routes/persistency.rules_.$id'
 import { Route as PersistencyWorkPersonaRouteImport } from './routes/persistency.work.$persona'
 import { Route as PersistencyWorkflowsIndexRouteImport } from './routes/persistency.workflows.index'
 import { Route as PersistencyWorkflowsIdRouteImport } from './routes/persistency.workflows.$id'
@@ -167,6 +168,11 @@ const PersistencyQueuesPersonaRoute =
     path: '/queues/$persona',
     getParentRoute: () => PersistencyRoute,
   } as any)
+const PersistencyRulesIdRoute = PersistencyRulesIdRouteImport.update({
+  id: '/rules_/$id',
+  path: '/rules/$id',
+  getParentRoute: () => PersistencyRoute,
+} as any)
 const PersistencyWorkPersonaRoute = PersistencyWorkPersonaRouteImport.update({
   id: '/work/$persona',
   path: '/work/$persona',
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/persistency/': typeof PersistencyIndexRoute
   '/persistency/policies/$id': typeof PersistencyPoliciesIdRoute
   '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
+  '/persistency/rules/$id': typeof PersistencyRulesIdRoute
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows/': typeof PersistencyWorkflowsIndexRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/persistency': typeof PersistencyIndexRoute
   '/persistency/policies/$id': typeof PersistencyPoliciesIdRoute
   '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
+  '/persistency/rules/$id': typeof PersistencyRulesIdRoute
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows': typeof PersistencyWorkflowsIndexRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/persistency/': typeof PersistencyIndexRoute
   '/persistency/policies_/$id': typeof PersistencyPoliciesIdRoute
   '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
+  '/persistency/rules_/$id': typeof PersistencyRulesIdRoute
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows/': typeof PersistencyWorkflowsIndexRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/persistency/'
     | '/persistency/policies/$id'
     | '/persistency/queues/$persona'
+    | '/persistency/rules/$id'
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows/'
@@ -331,6 +341,7 @@ export interface FileRouteTypes {
     | '/persistency'
     | '/persistency/policies/$id'
     | '/persistency/queues/$persona'
+    | '/persistency/rules/$id'
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows'
@@ -361,6 +372,7 @@ export interface FileRouteTypes {
     | '/persistency/'
     | '/persistency/policies_/$id'
     | '/persistency/queues/$persona'
+    | '/persistency/rules_/$id'
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows/'
@@ -549,6 +561,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersistencyQueuesPersonaRouteImport
       parentRoute: typeof PersistencyRoute
     }
+    '/persistency/rules_/$id': {
+      id: '/persistency/rules_/$id'
+      path: '/rules/$id'
+      fullPath: '/persistency/rules/$id'
+      preLoaderRoute: typeof PersistencyRulesIdRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
     '/persistency/work/$persona': {
       id: '/persistency/work/$persona'
       path: '/work/$persona'
@@ -596,6 +615,7 @@ interface PersistencyRouteChildren {
   PersistencyIndexRoute: typeof PersistencyIndexRoute
   PersistencyPoliciesIdRoute: typeof PersistencyPoliciesIdRoute
   PersistencyQueuesPersonaRoute: typeof PersistencyQueuesPersonaRoute
+  PersistencyRulesIdRoute: typeof PersistencyRulesIdRoute
   PersistencyWorkPersonaRoute: typeof PersistencyWorkPersonaRoute
   PersistencyWorkflowsIdRoute: typeof PersistencyWorkflowsIdRoute
   PersistencyWorkflowsIndexRoute: typeof PersistencyWorkflowsIndexRoute
@@ -624,6 +644,7 @@ const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyIndexRoute: PersistencyIndexRoute,
   PersistencyPoliciesIdRoute: PersistencyPoliciesIdRoute,
   PersistencyQueuesPersonaRoute: PersistencyQueuesPersonaRoute,
+  PersistencyRulesIdRoute: PersistencyRulesIdRoute,
   PersistencyWorkPersonaRoute: PersistencyWorkPersonaRoute,
   PersistencyWorkflowsIdRoute: PersistencyWorkflowsIdRoute,
   PersistencyWorkflowsIndexRoute: PersistencyWorkflowsIndexRoute,
