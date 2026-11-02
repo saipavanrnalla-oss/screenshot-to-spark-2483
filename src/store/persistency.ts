@@ -98,7 +98,7 @@ const TICKER_POOL: number[] = (() => {
 
 // Release 1 keeps rule approvals in the shared approvals queue (store/work.ts); these stay for hidden pages.
 const SEED_PENDING: PendingChange[] = [] as PendingChange[];
-const _OLD_SEED_PENDING: PendingChange[] = [
+export const LEGACY_SEED_PENDING: PendingChange[] = [
   {
     id: "PC-101",
     title: "Quarterly-mode ULIP, year 2: WhatsApp before call",
@@ -547,11 +547,13 @@ export function usePolicies(): Policy[] {
     if (keys.length === 0 && !importedNew) return BASE_POLICIES;
     const out = importedNew ? [...BASE_POLICIES, ...NEW_POLICIES] : BASE_POLICIES.slice();
     for (const id of keys) {
-      const i = POLICY_INDEX.get(id);
+      const base = POLICY_INDEX.get(id);
+      const extra = NEW_INDEX.get(id);
+      const i = base ?? (importedNew && extra !== undefined ? BASE_POLICIES.length + extra : undefined);
       if (i !== undefined) out[i] = { ...out[i]!, ...overrides[id] } as Policy;
     }
     return out;
-  }, [overrides]);
+  }, [overrides, importedNew]);
 }
 
 export function usePolicy(id: string | null): Policy | undefined {
