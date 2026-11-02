@@ -124,8 +124,9 @@ export function dueListSample(): SampleFile {
   for (const p of list) rows.push(dueRow(p, STAGE_CHANGE_SET.has(p.policyId) ? newDueDate(p) : p.dueDate));
   for (const p of NEW_POLICIES) rows.push(dueRow(p, p.dueDate));
   const rng = new Rng(3232);
+  const spare = BASE_POLICIES.slice(DUE_COUNTS.updated).filter((p) => !STAGE_CHANGE_SET.has(p.policyId));
   for (let i = 0; i < DUE_COUNTS.rejects; i++) {
-    const src = BASE_POLICIES[DUE_COUNTS.updated + i]!;
+    const src = spare[i]!;
     const r = dueRow(src, src.dueDate);
     if (i < 12) r[3] = "";
     else if (i < 22) r[5] = "31/02/2026";
