@@ -182,7 +182,7 @@ const NOTES: Record<number, string> = {
 export function seedAgentVersions(id: string): Version<AgentConfig>[] {
   const def = AGENTS.find((a) => a.id === id);
   const n = def?.version ?? 1;
-  return Array.from({ length: n }, (_, i) => {
+  const list: Version<AgentConfig>[] = Array.from({ length: n }, (_, i) => {
     const no = i + 1;
     const day = 28 - (n - no) * 21;
     const at = new Date(Date.UTC(2026, 9, day, 6, 30)).toISOString();
@@ -195,9 +195,27 @@ export function seedAgentVersions(id: string): Version<AgentConfig>[] {
       approver: "Head of Persistency, Compliance and quality",
       approvedAt: at,
       data: baseConfig(id, no),
-      reviewedCalls: no === n ? (id === "renewal-voice" ? 30 : 30) : 30,
+      reviewedCalls: 30,
     } satisfies Version<AgentConfig>;
   });
+  if (id === "message") {
+    const prev = list[list.length - 1]!.data;
+    list.push({
+      no: n + 1,
+      status: "In review",
+      author: "MIS and analytics",
+      at: "2026-10-27T13:05:00.000Z",
+      note: "Shorter grace reminder; Tamil template",
+      data: {
+        ...prev,
+        templates: [
+          ...prev.templates.map((t) => (t.id === "grace" ? { ...t, text: "Dear {customer}, policy {policy} is in grace until {graceEnd}. Pay {amount}: {link}" } : t)),
+          { id: "pre-due-ta", name: "Pre-due reminder", language: "Tamil", text: "{customer}, ungal policy {policy} premium {amount} {due} anru due. Ingu selutthavum: {link}" },
+        ],
+      },
+    });
+  }
+  return list;
 }
 
 export const NOT_ENABLED_IDS = AGENTS.filter((a) => a.status === "Not enabled").map((a) => a.id);
