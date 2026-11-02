@@ -282,7 +282,8 @@ function DecisionTest() {
   const rules = usePersistencyStore((st) => st.rules);
   const ctx = useEngineContext();
   const [q, setQ] = useState(s.policy ?? "");
-  const policy = s.policy ? policies.find((p) => p.policyId === s.policy.trim().toUpperCase()) : undefined;
+  const wanted = s.policy?.trim().toUpperCase();
+  const policy = wanted ? policies.find((p) => p.policyId === wanted) : undefined;
   const trace = useMemo(() => (policy ? decisionTrace(policy, rules, ctx) : null), [policy, rules, ctx]);
   return (
     <div className="space-y-4">
