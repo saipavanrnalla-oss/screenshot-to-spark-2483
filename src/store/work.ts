@@ -97,6 +97,7 @@ interface WorkState {
   orchestration: Orchestration;
   newWorkflows: { code: string; name: string; stage: string; createdBy: string; archived?: boolean | undefined }[];
   archived: string[];
+  wfNames: Record<string, string>;
   bannerSeen: Record<string, boolean>;
 
   stamp: () => string;
@@ -143,6 +144,7 @@ interface WorkState {
   decideProposal: (id: string, s: Omit<ProposalState, "at">) => void;
   createWorkflow: (name: string, stage: string, by: string) => string;
   archiveWorkflow: (code: string) => void;
+  renameWorkflow: (code: string, name: string) => void;
   log: (by: string, text: string) => void;
   reset: () => void;
 }
@@ -189,6 +191,7 @@ function initial() {
     } as Orchestration,
     newWorkflows: [] as { code: string; name: string; stage: string; createdBy: string; archived?: boolean | undefined }[],
     archived: [] as string[],
+    wfNames: {} as Record<string, string>,
     bannerSeen: {} as Record<string, boolean>,
   };
 }
@@ -463,6 +466,7 @@ export const useWork = create<WorkState>()(
           return code;
         },
         archiveWorkflow: (code) => set((s) => ({ archived: [...new Set([...s.archived, code])] })),
+        renameWorkflow: (code, name) => set((s) => ({ wfNames: { ...s.wfNames, [code]: name }, newWorkflows: s.newWorkflows.map((w) => (w.code === code ? { ...w, name } : w)) })),
         log: event,
 
         reset: () => {

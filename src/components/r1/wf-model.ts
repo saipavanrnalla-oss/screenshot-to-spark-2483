@@ -37,6 +37,7 @@ export function useWorkflowRows(): WfRow[] {
   const saved = useWork((s) => s.versions);
   const created = useWork((s) => s.newWorkflows);
   const archived = useWork((s) => s.archived);
+  const names = useWork((s) => s.wfNames);
   return useMemo(() => {
     const base = [
       ...WORKFLOWS.map((w) => ({ code: w.id, name: w.name, stage: w.stage, products: [...w.products] as string[], trigger: w.trigger, isNew: false })),
@@ -50,6 +51,7 @@ export function useWorkflowRows(): WfRow[] {
       const trig = g?.nodes.find((n) => n.type.startsWith("trigger."));
       return {
         ...w,
+        name: names[w.code] ?? w.name,
         trigger: w.isNew && trig ? trig.label : w.trigger,
         executors: executorsOf(g),
         version: act?.no ?? 0,
@@ -59,7 +61,7 @@ export function useWorkflowRows(): WfRow[] {
         archived: archived.includes(w.code),
       };
     });
-  }, [saved, created, archived]);
+  }, [saved, created, archived, names]);
 }
 
 export function wfName(code: string, created: { code: string; name: string }[]): string {

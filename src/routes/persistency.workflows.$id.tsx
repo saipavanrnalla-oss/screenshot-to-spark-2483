@@ -1,7 +1,8 @@
-import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { CanvasBox } from "@/components/r1/canvas-box";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { lazy, Suspense, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ChevronLeft, Copy, Pencil, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { PALETTE_BY_TYPE, type WfGraph, type WfNode } from "@/data/persistency/r
 import { AGENT_META, type AgentConfig } from "@/data/persistency/r1/agents";
 import { seedActivity } from "@/data/persistency/r1/activity";
 import type { ActivityRow, Version } from "@/data/persistency/r1/types";
+import type { Policy } from "@/data/persistency";
 import { diffGraphs, edgeOptions, estimatedCost, isOutreach } from "@/engine/workflow";
 import { useScopedPolicies } from "@/hooks/use-shell";
 import { useWorkflowStats } from "@/hooks/use-workflow-stats";
@@ -26,7 +28,6 @@ import { gate } from "@/lib/gate";
 import { dateTime, inr, num } from "@/lib/format";
 import { seedVersions, useWork } from "@/store/work";
 
-const WfCanvas = lazy(() => import("@/components/r1/wf-canvas"));
 
 const search = z.object({
   tab: fallback(z.enum(["canvas", "activity", "versions", "settings"]).optional(), undefined),
@@ -46,17 +47,6 @@ export const Route = createFileRoute("/persistency/workflows/$id")({
   }),
   component: WorkflowPage,
 });
-
-export function CanvasBox(props: React.ComponentProps<typeof WfCanvas>) {
-  const h = props.height ?? 560;
-  return (
-    <ClientOnly fallback={<div className="rounded-card border border-border" style={{ height: h }} />}>
-      <Suspense fallback={<div className="rounded-card border border-border" style={{ height: h }} />}>
-        <WfCanvas {...props} />
-      </Suspense>
-    </ClientOnly>
-  );
-}
 
 function WorkflowPage() {
   const { id } = Route.useParams();
@@ -233,16 +223,13 @@ function NodePanel({ code, node, policies, graph, onClose }: { code: string; nod
   );
 }
 
-function ActivityTab({ code, versions, policies }: { code: string; versions: Version<WfGraph>[]; policies: { policyId: string }[] }) {
+function ActivityTab({ code, versions, policies }: { code: string; versions: Version<WfGraph>[]; policies: Policy[] }) {
   const added = useWork((s) => s.activity);
   const rows = useMemo(() => {
     const out: (ActivityRow & { wfVersion?: number | undefined })[] = [];
     for (const list of Object.values(added)) for (const r of list) if (r.workflow === code) out.push(r);
     const sample = policies.slice(0, 400);
-    for (const p of sample) {
-      const full = (p as Parameters<typeof seedActivity>[0]);
-      for (const r of seedActivity(full)) if (r.workflow === code) out.push(r);
-    }
+    for (const p of sample) for (const r of seedActivity(p)) if (r.workflow === code) out.push(r);
     return out.sort((a, b) => (a.at < b.at ? 1 : -1)).map((r) => ({ ...r, wfVersion: versionAt(versions, r.at) }));
   }, [added, policies, code, versions]);
   return (
