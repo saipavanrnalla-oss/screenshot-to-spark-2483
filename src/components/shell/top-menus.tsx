@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Bell, CircleHelp, CircleUser } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -27,39 +27,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { userById, type NavKey } from "@/config/users";
-import { useModulesOverride } from "@/hooks/use-chrome";
-import { navVisible } from "@/lib/gate";
-import { useAdapters, usePersistencyStore } from "@/store/persistency";
+import { userById } from "@/config/users";
+import { useNotices } from "@/components/r1/notices";
+import { resetAllWork } from "@/store/work";
 import { useSession, type Theme } from "@/store/session";
 
 const iconButton = "relative inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-surface-translucent hover:text-foreground";
 
-interface Notice {
-  id: string;
-  text: string;
-  to: string;
-  needs: NavKey;
-  tone: "off" | "risk" | "neutral";
-}
-
 export function NotificationBell() {
-  const pending = usePersistencyStore((s) => s.pending);
-  const killed = usePersistencyStore((s) => s.killedWorkflows);
-  const paused = usePersistencyStore((s) => s.killSwitchGlobal);
-  const adapters = useAdapters();
-  const override = useModulesOverride();
-  const user = userById(useSession((s) => s.userId));
+  const notices = useNotices();
   const [open, setOpen] = useState(false);
-
-  const notices = useMemo<Notice[]>(() => {
-    const out: Notice[] = [];
-    if (pending.length) out.push({ id: "approvals", text: `${pending.length} ${pending.length === 1 ? "change is" : "changes are"} waiting for approval`, to: "/persistency/approvals", needs: "approvals", tone: "neutral" });
-    for (const a of adapters.filter((x) => x.stale && x.enabled)) out.push({ id: `file-${a.id}`, text: `${a.name} overdue`, to: "/persistency/data", needs: "data", tone: "risk" });
-    if (paused) out.push({ id: "paused", text: "All outreach is paused", to: "/persistency/workflows", needs: "workflows", tone: "off" });
-    for (const w of killed) out.push({ id: `wf-${w}`, text: `Workflow ${w} paused`, to: "/persistency/workflows", needs: "workflows", tone: "off" });
-    return out.filter((n) => navVisible(n.needs, user, override));
-  }, [pending, adapters, paused, killed, user, override]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -83,6 +60,8 @@ export function NotificationBell() {
               <li key={n.id}>
                 <Link
                   to={n.to as "/persistency/data"}
+                  params={n.params as never}
+                  search={(n.search ?? {}) as never}
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-2.5 px-4 py-2 text-[13px] text-foreground hover:bg-surface-translucent"
                 >
@@ -159,7 +138,6 @@ export function UserMenu() {
   const theme = useSession((s) => s.theme);
   const setTheme = useSession((s) => s.setTheme);
   const signOut = useSession((s) => s.signOut);
-  const resetDemo = usePersistencyStore((s) => s.resetDemo);
   const [confirmReset, setConfirmReset] = useState(false);
 
   return (
@@ -213,7 +191,7 @@ export function UserMenu() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                resetDemo();
+                resetAllWork();
                 toast.success("Sample data reset");
               }}
             >

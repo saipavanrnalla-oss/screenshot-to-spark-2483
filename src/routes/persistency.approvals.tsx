@@ -37,7 +37,7 @@ export const Route = createFileRoute("/persistency/approvals")({
   component: ApprovalsPage,
 });
 
-export const KIND_LABEL: Record<ApprovalKind, string> = {
+const KIND_LABEL: Record<ApprovalKind, string> = {
   rule: "Rule change",
   workflow: "Workflow version",
   agent: "Agent version",
