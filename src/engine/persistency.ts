@@ -1,5 +1,6 @@
 import { NOW, addDays, diffDays, fromIso, toIso } from "@/data/persistency/dates";
 import { INSURER_NAME, WARMING_STATIONS } from "@/data/persistency/reference";
+import { inr } from "@/lib/format";
 import type {
   CohortSet,
   ConditionRow,
@@ -205,7 +206,7 @@ export function evaluate(p: Policy, rules: Rule[], ctx: EngineContext): Decision
   for (const row of group ?? []) {
     if (row.op === "within N days of") matchedDimensions[row.dim] = `${nums.daysToDue} days to due`;
     else if (row.op === "above" || row.op === "below" || row.op === "between") {
-      const x = row.dim === "ticketBand" ? `₹${nums.ticketSize.toLocaleString("en-IN")}` : row.dim === "policyYear" ? `Year ${nums.policyYear}` : String(nums.touches);
+      const x = row.dim === "ticketBand" ? inr(nums.ticketSize) : row.dim === "policyYear" ? `Year ${nums.policyYear}` : String(nums.touches);
       matchedDimensions[row.dim] = x;
     } else matchedDimensions[row.dim] = dims[row.dim].find((v) => row.op === "is not" || row.values.includes(v)) ?? dims[row.dim][0] ?? "";
   }
