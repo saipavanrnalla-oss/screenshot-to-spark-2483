@@ -209,6 +209,21 @@ export interface RuleThen {
   freeze?: boolean | undefined;
 }
 
+export type ConditionOp = "is" | "is not" | "is any of" | "above" | "below" | "between" | "within N days of";
+
+/** One row of the rule editor's condition builder. */
+export interface ConditionRow {
+  dim: DimensionKey;
+  op: ConditionOp;
+  values: string[];
+  /** Number for above, below, between (lower) and within N days of. */
+  n?: number | undefined;
+  /** Upper bound for between. */
+  n2?: number | undefined;
+}
+
+export type RuleStatus = "Active" | "Draft" | "In review" | "Retired";
+
 export interface Rule {
   id: string;
   name: string;
@@ -216,11 +231,21 @@ export interface Rule {
   level: RuleLevel;
   priority: number;
   when: Partial<Record<DimensionKey, string[]>>;
+  /** Condition groups from the rule editor: rows inside a group join with AND, groups join with OR. */
+  conds?: ConditionRow[][] | undefined;
   then: RuleThen;
   effectiveFrom: string;
+  effectiveTo?: string | undefined;
   needsApprovalFrom: string;
   locked?: boolean | undefined;
   source: "Insurer rule" | "Proposed by Desible, insurer to confirm";
+  /** Only Active rules decide. Missing means Active. */
+  status?: RuleStatus | undefined;
+  version?: number | undefined;
+  description?: string | undefined;
+  notes?: string | undefined;
+  lastChanged?: string | undefined;
+  approver?: string | undefined;
 }
 
 export interface Decision {
