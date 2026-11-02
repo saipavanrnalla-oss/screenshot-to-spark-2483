@@ -184,7 +184,7 @@ export function seedAgentVersions(id: string): Version<AgentConfig>[] {
   const n = def?.version ?? 1;
   const list: Version<AgentConfig>[] = Array.from({ length: n }, (_, i) => {
     const no = i + 1;
-    const day = 28 - (n - no) * 21;
+    const day = 27 - (n - no) * 21;
     const at = new Date(Date.UTC(2026, 9, day, 6, 30)).toISOString();
     return {
       no,
