@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SEED_GRAPHS, generateFromPrompt, PREPARED_PROMPTS, seedWorkflowVersions } from "@/data/persistency/r1/wf";
+import { SEED_GRAPHS, generateFromPrompt, PREPARED_PROMPTS, seedWorkflowVersions, type WfGraph } from "@/data/persistency/r1/wf";
 import { simulate, validateGraph, diffGraphs } from "@/engine/workflow";
 import { addNode, connect, deleteNode, insertOnEdge } from "@/components/r1/wf-model";
 import { guardrailConflict, hasConditions } from "@/components/r1/rule-model";
@@ -24,14 +24,14 @@ describe("workflow builder", () => {
   });
 
   it("an outreach node with no edge for its results is refused", () => {
-    const base = { nodes: [{ id: "t", type: "trigger.manual", label: "Start", x: 0, y: 0, config: {} }, { id: "o", type: "outcome.bau", label: "End", x: 0, y: 0, config: {} }], edges: [{ id: "e1", from: "t", to: "o" }] };
+    const base: WfGraph = { nodes: [{ id: "t", type: "trigger.manual", label: "Start", x: 0, y: 0, config: {} }, { id: "o", type: "outcome.bau", label: "End", x: 0, y: 0, config: {} }], edges: [{ id: "e1", from: "t", to: "o" }] };
     const r = insertOnEdge(base, "e1", "agent.voice");
     // insertOnEdge gives the new node one labelled edge only, so the other results are uncovered.
     expect(validateGraph(r.graph).some((p) => p.nodeId === r.id)).toBe(true);
   });
 
   it("deleting a node reconnects the edges either side", () => {
-    let g = { nodes: [{ id: "t", type: "trigger.manual", label: "Start", x: 0, y: 0, config: {} }, { id: "o", type: "outcome.bau", label: "End", x: 0, y: 0, config: {} }], edges: [] as { id: string; from: string; to: string; label?: string }[] };
+    let g: WfGraph = { nodes: [{ id: "t", type: "trigger.manual", label: "Start", x: 0, y: 0, config: {} }, { id: "o", type: "outcome.bau", label: "End", x: 0, y: 0, config: {} }], edges: [] };
     const a = addNode(g, "wait.days");
     g = connect(connect(a.graph, "t", a.id), a.id, "o");
     const d = deleteNode(g, a.id);
