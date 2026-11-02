@@ -16,7 +16,7 @@ export const DIMENSIONS: { key: DimensionKey; label: string; values: string[] }[
   { key: "reasonCode", label: "Reason code", values: ["Money problem", "Forgot", "Lost interest", "Mis-sold", "Wants to surrender", "Will pay later", "Not reached", "Mandate bounce", "Mandate failed"] },
   { key: "calendar", label: "Calendar", values: ["Month-end (last 5 days)", "Mid-month", "Festival window"] },
   { key: "touchHistory", label: "Touch history", values: ["No touches in 30 days", "1 to 3 touches in 30 days", "4 to 7 touches in 30 days", "8 or more touches in 30 days"] },
-  { key: "executor", label: "Executor", values: ["Call-centre vendor (fixed payout)", "Call-centre vendor (variable payout)", "WhatsApp vendor", "Voice bot vendor", "Desible"] },
+  { key: "executor", label: "Executor", values: ["Call-centre vendor (fixed payout)", "Call-centre vendor (variable payout)", "WhatsApp vendor", "Voice bot vendor", "Bank relationship manager", "Sales officer", "High-value desk", "Retention desk"] },
   { key: "insurer", label: "Insurer", values: ["Sample Life Insurance"] },
 ];
 
@@ -57,7 +57,7 @@ export const SEED_RULES: Rule[] = [
   {
     id: "G3", name: "No collection messages during free-look", stage: "Sourcing", level: "guardrail", priority: 3, locked: true, source: INSURER,
     when: { state: ["Free-look open"] },
-    then: { workflowId: "S3", action: "Watch only, service messages allowed", executor: "Desible", delayHours: 24, exclusions: "Renewal and payment content" },
+    then: { workflowId: "S3", action: "Watch only, service messages allowed", executor: "Message agent", delayHours: 24, exclusions: "Renewal and payment content" },
     effectiveFrom: EFF, needsApprovalFrom: "Compliance",
   },
   {
@@ -141,7 +141,7 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R08", name: "ULIP year 1: first-year protect", stage: "Warming", level: "rule", priority: 35, source: PROPOSED,
     when: { stage: ["Warming"], product: ["ULIP"], policyYear: ["1"] },
-    then: { workflowId: "W2", action: "Fund value and lock-in explainer call", executor: "Desible", delayHours: 24, script: "ULIP first-year protect" },
+    then: { workflowId: "W2", action: "Fund value and lock-in explainer call", executor: "Renewal voice agent", delayHours: 24, script: "ULIP first-year protect" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
@@ -155,7 +155,7 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R10", name: "Sourcing: PIVC and welcome call", stage: "Sourcing", level: "rule", priority: 50, source: PROPOSED, status: "Retired", version: 2,
     when: { stage: ["Sourcing"] },
-    then: { workflowId: "S2", action: "Welcome and PIVC call", executor: "Desible", delayHours: 6 },
+    then: { workflowId: "S2", action: "Welcome and PIVC call", executor: "Welcome and verification", delayHours: 6 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
@@ -167,7 +167,7 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R12", name: "Early lapse: voice and WhatsApp recovery", stage: "Lapse and revival", level: "rule", priority: 50, source: PROPOSED,
     when: { stage: ["Early lapse"] },
-    then: { workflowId: "L1", action: "Revival link, premium plus late fee", executor: "Desible", delayHours: 6, offer: "Late fee waiver up to ₹500 with approval" },
+    then: { workflowId: "L1", action: "Revival link, premium plus late fee", executor: "Message agent", delayHours: 6, offer: "Late fee waiver up to ₹500 with approval" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
