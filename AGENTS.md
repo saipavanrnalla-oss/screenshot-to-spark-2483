@@ -25,4 +25,7 @@
 - Every rule change (rule editor, product matrix, war-room recommendation, learn step) becomes a `PendingChange` via the store's `propose`; only `approve`/`applyNow` touch `rules`. Why: nothing changes until a named person approves it.
 - Persona homes are one `PersonaHome` rendering panel ids from `src/config/panels.ts` through the registry in `components/persistency/persona-panels.tsx`. Why: a new persona is a config entry, a new panel is one registry entry.
 - Month-end numbers (plan, run-rate, required rate, daily series) come only from `useMonth` in `components/persistency/month.tsx`. Why: war room, CXO, regional and measurement must agree.
-- Workflow canvases are data in `data/persistency/workflow-graphs.ts`, drawn by one lazy-loaded `@xyflow/react` component behind `ClientOnly`. Why: one canvas for all workflows, kept out of SSR.
+- Versioned objects (rules, workflows, agents, stage settings) share one Draft, In review, Active, Retired lifecycle in `store/work.ts` (`saveDraft`, `submit`, `approve`); seeded history comes from `seedVersions`. Why: one approval queue and one diff model for every module.
+- Workflow graphs are `WfGraph` data edited with the pure helpers in `components/r1/wf-model.ts` and checked and played by `engine/workflow.ts`; the canvas loads through `CanvasBox`. Why: builder, compare and simulation stay consistent and testable.
+- File imports go through `checkFile` and `applyImport` (`components/r1/data-model.ts`), which write to both stores. Why: an import changes the counts on every screen it feeds.
+

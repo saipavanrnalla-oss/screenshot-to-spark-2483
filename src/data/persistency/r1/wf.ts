@@ -197,7 +197,7 @@ const R4 = build(
     ["field", "decision.field", "Bounce reason is insufficient funds", { condition: "Bounce reason is Insufficient funds" }],
     ["msg", "agent.message", "Debit failed message", { script: "Bounce template" }],
     ["pay", "agent.payment", "Payment link or new mandate"],
-    ["voice", "agent.voice", "Bounce recovery call", { script: "Bounce script", dispositions: ["Will pay (link requested)", "Mandate problem", "Default"] }],
+    ["voice", "agent.voice", "Bounce recovery call", { script: "Bounce script", retries: 1, dispositions: ["Will pay (link requested)", "Mandate problem", "Default"] }],
     ["rem", "people.remittance", "Re-present or new mandate"],
     ["wp", "wait.payment", "Wait for payment file"],
     ["oPaid", "outcome.paid"],
@@ -287,7 +287,7 @@ export function seedWorkflowVersions(code: string): Version<WfGraph>[] {
       approver: "Head of Persistency, Compliance and quality",
       approvedAt: new Date(Date.UTC(2026, 3 + no, 5, 6)).toISOString(),
       data: r1Graph(no),
-      sims: [{ id: `SIM-R1-${no}`, at: new Date(Date.UTC(2026, 3 + no, 4, 6)).toISOString(), by: "MIS and analytics", policyId: "SLI02400118", scenario: no >= 3 ? "Pays after the link" : "No answer", result: "Pass", steps: 4 + no }],
+      sims: [{ id: `SIM-R1-${no}`, at: new Date(Date.UTC(2026, 3 + no, 4, 6)).toISOString(), by: "MIS and analytics", policyId: "SLI02400113", scenario: no >= 3 ? "Pays after the link" : "No answer", result: "Pass", steps: 4 + no }],
     }));
   }
   if (code === "R4") {
@@ -295,13 +295,13 @@ export function seedWorkflowVersions(code: string): Version<WfGraph>[] {
     v1.nodes = v1.nodes.filter((n) => n.id !== "voice");
     v1.edges = v1.edges.filter((e) => e.from !== "voice" && e.to !== "voice").map((e) => (e.from === "pay" && e.label === "Not paid" ? { ...e, to: "wp" } : e));
     return [
-      { no: 1, status: "Retired", author: "MIS and analytics", at: "2026-05-10T06:00:00.000Z", note: "First release", approver: "Head of Persistency, Compliance and quality", approvedAt: "2026-05-12T06:00:00.000Z", data: v1, sims: [{ id: "SIM-R4-1", at: "2026-05-11T06:00:00.000Z", by: "MIS and analytics", policyId: "SLI02400342", scenario: "Pays after the link", result: "Pass", steps: 6 }] },
-      { no: 2, status: "Active", author: "Head of Persistency", at: "2026-08-20T06:00:00.000Z", note: "Recovery call when the link is not paid", approver: "Head of Persistency, Compliance and quality", approvedAt: "2026-08-22T06:00:00.000Z", data: R4, sims: [{ id: "SIM-R4-2", at: "2026-08-21T06:00:00.000Z", by: "Head of Persistency", policyId: "SLI02400342", scenario: "No answer", result: "Pass", steps: 8 }] },
+      { no: 1, status: "Retired", author: "MIS and analytics", at: "2026-05-10T06:00:00.000Z", note: "First release", approver: "Head of Persistency, Compliance and quality", approvedAt: "2026-05-12T06:00:00.000Z", data: v1, sims: [{ id: "SIM-R4-1", at: "2026-05-11T06:00:00.000Z", by: "MIS and analytics", policyId: "SLI02400347", scenario: "Pays after the link", result: "Pass", steps: 6 }] },
+      { no: 2, status: "Active", author: "Head of Persistency", at: "2026-08-20T06:00:00.000Z", note: "Recovery call when the link is not paid", approver: "Head of Persistency, Compliance and quality", approvedAt: "2026-08-22T06:00:00.000Z", data: R4, sims: [{ id: "SIM-R4-2", at: "2026-08-21T06:00:00.000Z", by: "Head of Persistency", policyId: "SLI02400347", scenario: "No answer", result: "Pass", steps: 8 }] },
     ];
   }
   const g = SEED_GRAPHS[code];
   if (!g) return [];
-  const sims = code === "R2" ? [{ id: "SIM-R2-1", at: "2026-09-14T06:00:00.000Z", by: "MIS and analytics", policyId: "SLI02400118", scenario: "Promises a date", result: "Pass" as const, steps: 6 }] : code === "W1" ? [{ id: "SIM-W1-1", at: "2026-09-02T06:00:00.000Z", by: "MIS and analytics", policyId: "SLI02400210", scenario: "No answer", result: "Pass" as const, steps: 7 }] : undefined;
+  const sims = code === "R2" ? [{ id: "SIM-R2-1", at: "2026-09-14T06:00:00.000Z", by: "MIS and analytics", policyId: "SLI02400113", scenario: "Promises a date", result: "Pass" as const, steps: 6 }] : code === "W1" ? [{ id: "SIM-W1-1", at: "2026-09-02T06:00:00.000Z", by: "MIS and analytics", policyId: "SLI02400210", scenario: "No answer", result: "Pass" as const, steps: 7 }] : undefined;
   return [{ no: 1, status: "Active", author: "MIS and analytics", at: "2026-06-01T06:00:00.000Z", note: "First release", approver: "Head of Persistency, Compliance and quality", approvedAt: "2026-06-03T06:00:00.000Z", data: g, sims }];
 }
 

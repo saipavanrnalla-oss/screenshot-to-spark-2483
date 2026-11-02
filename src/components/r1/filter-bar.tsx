@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Bookmark, ChevronDown, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,8 @@ export function rangeOf(v: string | undefined): [string, string] {
 /** Filter bar with removable chips and saved views. Values live with the page (usually in the URL). */
 export function FilterBar({ page, fields, values: raw, onChange }: { page: string; fields: FilterField[]; values: object; onChange: (v: Filters) => void }) {
   const values = raw as Filters;
-  const views = useWork((s) => s.savedViews.filter((v) => v.page === page));
+  const allViews = useWork((s) => s.savedViews);
+  const views = useMemo(() => allViews.filter((v) => v.page === page), [allViews, page]);
   const saveView = useWork((s) => s.saveView);
   const deleteView = useWork((s) => s.deleteView);
   const [naming, setNaming] = useState(false);

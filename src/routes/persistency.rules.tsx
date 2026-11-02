@@ -294,7 +294,7 @@ function DecisionTest() {
           navigate({ search: (p) => ({ ...p, policy: q.trim().toUpperCase() || undefined }) });
         }}
       >
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Policy number, for example SLI02400118" aria-label="Policy number" className={`${inputCls} w-80`} />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Policy number, for example SLI02400113" aria-label="Policy number" className={`${inputCls} w-80`} />
         <Button type="submit" size="sm">Test</Button>
       </form>
       {s.policy && !policy && <NoteBanner tone="attention">No policy {s.policy} in the book.</NoteBanner>}
