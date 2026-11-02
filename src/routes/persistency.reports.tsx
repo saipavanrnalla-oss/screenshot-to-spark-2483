@@ -343,7 +343,7 @@ function Collection() {
       </div>
       <Panel title="Collection against plan">
         <RunRateChart height={300} />
-        <p className="mt-2 text-[12px] text-muted-foreground">{m.daysLeft} days left. Gap to plan {croreValue(m.gap)}. Collected {croreValue(m.col.collectedCr)} against {croreValue(m.col.dueCr ?? m.col.planCr)} due.</p>
+        <p className="mt-2 text-[12px] text-muted-foreground">{m.daysLeft} days left. Gap to plan {croreValue(m.gap)}. {num(m.col.paidCount)} of {num(m.col.dueCount)} policies due this month have paid; {num(m.col.promisedCount)} have promised.</p>
       </Panel>
     </div>
   );
