@@ -12,7 +12,8 @@ import { PolicyActions } from "@/components/r1/policy-actions";
 import { WhyHere, useNextStep } from "@/components/r1/policy-panel";
 import { isOnHold, policyStatus, statusTone } from "@/components/r1/policy-model";
 import { DIMENSION_LABEL, type DimensionKey } from "@/data/persistency";
-import { seedActivity, paymentHistory, attemptsUsed } from "@/data/persistency/r1/activity";
+import { paymentHistory, attemptsUsed } from "@/data/persistency/r1/activity";
+import { usePolicyActivity } from "@/components/r1/policy-activity";
 import { TRANSCRIPTS, THREADS } from "@/data/persistency/r1/tasks";
 import { mandateState } from "@/data/persistency/derived";
 import type { ActivityRow } from "@/data/persistency/r1/types";
@@ -45,22 +46,6 @@ export const Route = createFileRoute("/persistency/policies_/$id")({
   }),
   component: PolicyPage,
 });
-
-export function usePolicyActivity(policyId: string): ActivityRow[] {
-  const policy = usePolicy(policyId);
-  const added = useWork((s) => s.activity[policyId]);
-  const pauses = useWork((s) => s.agentPause);
-  return useMemo(() => {
-    if (!policy) return [];
-    const seeded = seedActivity(policy);
-    return [...(added ?? []), ...seeded].filter((r) => {
-      // Tasks of a paused agent after the pause time do not run.
-      const id = r.executor === "Renewal voice agent" ? "renewal-voice" : r.executor === "Message agent" ? "message" : null;
-      const p = id ? pauses[id] : undefined;
-      return !p || r.at < p.at || r.executorKind !== "agent";
-    });
-  }, [policy, added, pauses]);
-}
 
 function PolicyPage() {
   const { id } = Route.useParams();
