@@ -165,7 +165,7 @@ function ControlTower() {
             <Link
               key={s.column}
               to="/persistency/stages"
-              search={(prev) => ({ ...prev, sub: `stage:${s.column}` })}
+              search={{}}
               className="group relative border-border px-5 py-4 transition-colors hover:bg-brand-tint max-lg:border-b lg:border-r lg:last:border-r-0"
             >
               <Eyebrow>{i + 1} · {s.column}</Eyebrow>

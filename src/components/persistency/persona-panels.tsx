@@ -231,7 +231,7 @@ function LifecycleMap() {
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {stages.map((s) => (
-        <Link key={s.column} to="/persistency/stages" search={(prev) => ({ ...prev, sub: `stage:${s.column}` })} className="rounded-input border border-border bg-surface-translucent p-3 hover:border-brand-tint-border">
+        <Link key={s.column} to="/persistency/stages" search={{}} className="rounded-input border border-border bg-surface-translucent p-3 hover:border-brand-tint-border">
           <p className="text-[11px] text-muted-foreground">{s.column}</p>
           <p className="text-lg font-extrabold text-foreground tabular">{num(s.count)}</p>
           <p className="text-[11px] text-subtle tabular">{money(s.premium)} at stake</p>
