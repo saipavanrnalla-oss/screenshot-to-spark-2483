@@ -162,7 +162,7 @@ function Inner(p: WfCanvasProps) {
         edgeTypes={edgeTypes}
         colorMode={theme === "light" ? "light" : "dark"}
         fitView
-        fitViewOptions={{ padding: 0.15 }}
+        fitViewOptions={{ padding: 0.12, minZoom: 0.6, maxZoom: 1 }}
         minZoom={0.2}
         nodesConnectable={!!p.editable}
         nodesDraggable={!!p.editable}
