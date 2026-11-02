@@ -1,4 +1,4 @@
-import { useMemo, type DragEvent } from "react";
+import { useEffect, useMemo, type DragEvent } from "react";
 import {
   Background,
   BaseEdge,
@@ -10,6 +10,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   getSmoothStepPath,
+  useNodesState,
   useReactFlow,
   type Edge,
   type EdgeProps,
@@ -126,6 +127,8 @@ function Inner(p: WfCanvasProps) {
       })),
     [p.graph, p.selectedId, p.activeId, p.marks, p.counts, p.editable],
   );
+  const [rfNodes, setRfNodes, onNodesChange] = useNodesState<FlowNode>(nodes);
+  useEffect(() => setRfNodes(nodes), [nodes, setRfNodes]);
   const edges: Edge<EdgeData>[] = useMemo(
     () =>
       p.graph.edges.map((e) => ({
@@ -149,7 +152,7 @@ function Inner(p: WfCanvasProps) {
   return (
     <div className="prism-flow w-full overflow-hidden rounded-card border border-border" style={{ height: p.height ?? 560 }} onDragOver={(e) => p.editable && e.preventDefault()} onDrop={onDrop}>
       <ReactFlow
-        nodes={nodes}
+        nodes={rfNodes}
         edges={edges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
@@ -165,7 +168,7 @@ function Inner(p: WfCanvasProps) {
         onEdgeClick={(_, e) => p.onSelectEdge?.(e.id)}
         onPaneClick={() => p.onSelectNode?.(null)}
         onNodeDragStop={(_, n) => p.onMove?.(n.id, n.position.x, n.position.y)}
-        onNodesChange={() => undefined}
+        onNodesChange={onNodesChange}
         onConnect={(c) => c.source && c.target && p.onConnect?.(c.source, c.target)}
         proOptions={{ hideAttribution: true }}
       >
