@@ -240,7 +240,7 @@ export const useWork = create<WorkState>()(
 
         addActivity: (row) => {
           const at = row.at ?? tick();
-          pushRow({ ...row, at, id: `U-${row.policyId}-${at}-${Math.random().toString(36).slice(2, 6)}` });
+          pushRow({ ...row, at, id: `U-${row.policyId}-${at}-${eventSeq++}` });
         },
 
         placeHold: (policyId, reason, note, by) => {
