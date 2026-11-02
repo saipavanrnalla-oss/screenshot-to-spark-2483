@@ -197,7 +197,7 @@ const R4 = build(
     ["field", "decision.field", "Bounce reason is insufficient funds", { condition: "Bounce reason is Insufficient funds" }],
     ["msg", "agent.message", "Debit failed message", { script: "Bounce template" }],
     ["pay", "agent.payment", "Payment link or new mandate"],
-    ["voice", "agent.voice", "Bounce recovery call", { script: "Bounce script", dispositions: ["Will pay (link requested)", "Mandate problem", "Default"] }],
+    ["voice", "agent.voice", "Bounce recovery call", { script: "Bounce script", retries: 1, dispositions: ["Will pay (link requested)", "Mandate problem", "Default"] }],
     ["rem", "people.remittance", "Re-present or new mandate"],
     ["wp", "wait.payment", "Wait for payment file"],
     ["oPaid", "outcome.paid"],
