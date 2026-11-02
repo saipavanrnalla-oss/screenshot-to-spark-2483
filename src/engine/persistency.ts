@@ -1,7 +1,9 @@
 import { NOW, addDays, diffDays, fromIso, toIso } from "@/data/persistency/dates";
 import { INSURER_NAME, WARMING_STATIONS } from "@/data/persistency/reference";
+import { inr } from "@/lib/format";
 import type {
   CohortSet,
+  ConditionRow,
   Decision,
   DimensionKey,
   Policy,
@@ -86,14 +88,75 @@ export function policyDimensions(p: Policy, ctx: EngineContext): Record<Dimensio
   };
 }
 
-export function ruleMatches(rule: Rule, dims: Record<DimensionKey, string[]>): boolean {
-  return (Object.entries(rule.when) as [DimensionKey, string[]][]).every(
+/** Numeric facts used by above, below, between and "within N days of" conditions. */
+export interface PolicyNumbers {
+  ticketSize: number;
+  policyYear: number;
+  daysToDue: number;
+  touches: number;
+}
+
+export function policyNumbers(p: Policy, now: Date = NOW): PolicyNumbers {
+  return { ticketSize: p.annualisedPremium, policyYear: p.policyYear, daysToDue: diffDays(fromIso(p.dueDate), now), touches: p.touchesLast30d };
+}
+
+function numberFor(dim: DimensionKey, nums: PolicyNumbers): number | null {
+  if (dim === "ticketBand") return nums.ticketSize;
+  if (dim === "policyYear") return nums.policyYear;
+  if (dim === "touchHistory") return nums.touches;
+  if (dim === "calendar") return nums.daysToDue;
+  return null;
+}
+
+/** One condition row. Numeric operators need the policy numbers; without them they never match. */
+export function conditionMatches(row: ConditionRow, dims: Record<DimensionKey, string[]>, nums?: PolicyNumbers): boolean {
+  const have = dims[row.dim] ?? [];
+  switch (row.op) {
+    case "is":
+    case "is any of":
+      return row.values.length === 0 || have.some((v) => row.values.includes(v));
+    case "is not":
+      return !have.some((v) => row.values.includes(v));
+    case "within N days of": {
+      if (!nums || row.n === undefined) return false;
+      return nums.daysToDue >= 0 && nums.daysToDue <= row.n;
+    }
+    default: {
+      if (!nums || row.n === undefined) return false;
+      const x = numberFor(row.dim, nums);
+      if (x === null) return false;
+      if (row.op === "above") return x > row.n;
+      if (row.op === "below") return x < row.n;
+      return x >= row.n && x <= (row.n2 ?? row.n);
+    }
+  }
+}
+
+function groupMatches(group: ConditionRow[], dims: Record<DimensionKey, string[]>, nums?: PolicyNumbers): boolean {
+  return group.every((row) => conditionMatches(row, dims, nums));
+}
+
+export function ruleMatches(rule: Rule, dims: Record<DimensionKey, string[]>, nums?: PolicyNumbers): boolean {
+  const whenOk = (Object.entries(rule.when) as [DimensionKey, string[]][]).every(
     ([k, vals]) => !vals || vals.length === 0 || dims[k].some((v) => vals.includes(v)),
   );
+  if (!whenOk) return false;
+  if (!rule.conds || rule.conds.length === 0) return true;
+  return rule.conds.some((g) => groupMatches(g, dims, nums));
 }
 
 export function dimensionCount(rule: Rule): number {
-  return Object.values(rule.when).filter((v) => v && v.length > 0).length;
+  const keys = new Set(Object.entries(rule.when).filter(([, v]) => v && v.length > 0).map(([k]) => k));
+  if (rule.conds?.length) {
+    const most = Math.max(0, ...rule.conds.map((g) => new Set(g.map((r) => r.dim)).size));
+    return keys.size + most;
+  }
+  return keys.size;
+}
+
+/** Only Active rules decide; Draft, In review and Retired rules are listed but never fire. */
+export function isLive(rule: Rule): boolean {
+  return (rule.status ?? "Active") === "Active";
 }
 
 function compareRules(a: Rule, b: Rule): number {
@@ -113,7 +176,8 @@ const NON_PAYMENT_WORKFLOWS = new Set(["X1", "X2", "L3", "S3"]);
 export function evaluate(p: Policy, rules: Rule[], ctx: EngineContext): Decision {
   const now = ctx.now ?? NOW;
   const dims = policyDimensions(p, ctx);
-  const matched = rules.filter((r) => ruleMatches(r, dims)).sort(compareRules);
+  const nums = policyNumbers(p, now);
+  const matched = rules.filter((r) => isLive(r) && ruleMatches(r, dims, nums)).sort(compareRules);
   const best = matched[0];
   if (!best) {
     return {
@@ -137,6 +201,14 @@ export function evaluate(p: Policy, rules: Rule[], ctx: EngineContext): Decision
     if (!vals?.length) continue;
     const hit = dims[k].find((v) => vals.includes(v));
     if (hit !== undefined) matchedDimensions[k] = hit;
+  }
+  const group = best.conds?.find((g) => g.every((row) => conditionMatches(row, dims, nums)));
+  for (const row of group ?? []) {
+    if (row.op === "within N days of") matchedDimensions[row.dim] = `${nums.daysToDue} days to due`;
+    else if (row.op === "above" || row.op === "below" || row.op === "between") {
+      const x = row.dim === "ticketBand" ? inr(nums.ticketSize) : row.dim === "policyYear" ? `Year ${nums.policyYear}` : String(nums.touches);
+      matchedDimensions[row.dim] = x;
+    } else matchedDimensions[row.dim] = dims[row.dim].find((v) => row.op === "is not" || row.values.includes(v)) ?? dims[row.dim][0] ?? "";
   }
   const decision: Decision = {
     policyId: p.policyId,

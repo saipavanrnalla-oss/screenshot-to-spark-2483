@@ -27,6 +27,7 @@ import { PERSONAS } from "@/config/personas";
 import { Rng } from "@/data/persistency/rng";
 import type { CallOutcome } from "@/data/persistency/scripts";
 import { applyEvent, evaluate, type EngineContext } from "@/engine/persistency";
+import { NEW_POLICIES } from "@/data/persistency/r1/due-import";
 
 export interface AuditEntry {
   id: number;
@@ -95,7 +96,9 @@ const TICKER_POOL: number[] = (() => {
   return idx;
 })();
 
-const SEED_PENDING: PendingChange[] = [
+// Release 1 keeps rule approvals in the shared approvals queue (store/work.ts); these stay for hidden pages.
+const SEED_PENDING: PendingChange[] = [] as PendingChange[];
+export const LEGACY_SEED_PENDING: PendingChange[] = [
   {
     id: "PC-101",
     title: "Quarterly-mode ULIP, year 2: WhatsApp before call",
@@ -164,7 +167,14 @@ interface PersistencyState {
   languages: string[];
   enabledPersonas: string[];
   personaActions: Record<string, string>;
+  /** The sample due list was imported: its new policies join the book. */
+  importedNew: boolean;
 
+  patchPolicy: (policyId: string, patch: Partial<Policy>) => void;
+  patchPolicies: (patches: Record<string, Partial<Policy>>) => void;
+  markPaid: (policyIds: string[]) => void;
+  setImportedNew: (on: boolean) => void;
+  upsertRule: (rule: Rule) => void;
   simulate: (policyId: string, event: SimulatedEvent) => void;
   tick: () => void;
   approve: (changeId: string, actor?: string, effectiveFrom?: string) => void;
@@ -195,10 +205,13 @@ interface PersistencyState {
 let auditSeq = 1;
 let tickerSeq = 1;
 
+const NEW_INDEX = new Map(NEW_POLICIES.map((p, i) => [p.policyId, i]));
+
 function mergedPolicy(id: string, overrides: Record<string, Partial<Policy>>): Policy | undefined {
   const i = POLICY_INDEX.get(id);
-  if (i === undefined) return undefined;
-  const base = BASE_POLICIES[i]!;
+  const n = i === undefined ? NEW_INDEX.get(id) : undefined;
+  if (i === undefined && n === undefined) return undefined;
+  const base = i !== undefined ? BASE_POLICIES[i]! : NEW_POLICIES[n!]!;
   const o = overrides[id];
   return o ? ({ ...base, ...o } as Policy) : base;
 }
@@ -220,7 +233,7 @@ function ctxFrom(s: CtxSlice, now: Date): EngineContext {
   };
 }
 
-const DEFAULT_COHORT_SET: Record<Product, CohortSet> = { ULIP: "insurer", Traditional: "insurer", Term: "starter" };
+const DEFAULT_COHORT_SET: Record<Product, CohortSet> = { ULIP: "insurer", Traditional: "insurer", Term: "insurer" };
 const SEED_STALE = FILE_ADAPTERS.filter((a) => a.stale).map((a) => a.id);
 
 function initialTicker(): TickerItem[] {
@@ -282,11 +295,12 @@ function initialData() {
     languages: [...LANGUAGES] as string[],
     enabledPersonas: PERSONAS.map((p) => p.id),
     personaActions: {} as Record<string, string>,
+    importedNew: false,
   };
 }
 
 /** localStorage key for saved work. Bump the version when the saved shape changes. */
-export const STORE_KEY = "pct-store-v1";
+export const STORE_KEY = "pct-store-v2";
 
 export const usePersistencyStore = create<PersistencyState>()(
   persist(
@@ -297,6 +311,34 @@ export const usePersistencyStore = create<PersistencyState>()(
 
   return {
     ...initialData(),
+
+    patchPolicy: (policyId, patch) => set((s) => ({ overrides: { ...s.overrides, [policyId]: { ...s.overrides[policyId], ...patch } } })),
+
+    patchPolicies: (patches) =>
+      set((s) => {
+        const overrides = { ...s.overrides };
+        for (const [id, patch] of Object.entries(patches)) overrides[id] = { ...overrides[id], ...patch };
+        return { overrides };
+      }),
+
+    markPaid: (policyIds) =>
+      set((s) => {
+        const overrides = { ...s.overrides };
+        for (const id of policyIds) {
+          const p = mergedPolicy(id, s.overrides);
+          if (!p) continue;
+          overrides[id] = { ...overrides[id], state: "Paid", reasonCode: "None", ...(p.monthDue ? { monthDue: { ...p.monthDue, status: "paid" as const, paidOn: NOW_ISO } } : {}) };
+        }
+        return { overrides, receipts: [...new Set([...s.receipts, ...policyIds])] };
+      }),
+
+    setImportedNew: (on) => set({ importedNew: on }),
+
+    upsertRule: (rule) =>
+      set((s) => ({
+        rules: s.rules.some((r) => r.id === rule.id) ? s.rules.map((r) => (r.id === rule.id ? rule : r)) : [...s.rules, rule],
+        rulesVersion: s.rulesVersion + 1,
+      })),
 
     simulate: (policyId, event) => {
       const s = get();
@@ -499,16 +541,19 @@ export const usePersistencyStore = create<PersistencyState>()(
 /** All policies with in-session changes applied. */
 export function usePolicies(): Policy[] {
   const overrides = usePersistencyStore((s) => s.overrides);
+  const importedNew = usePersistencyStore((s) => s.importedNew);
   return useMemo(() => {
     const keys = Object.keys(overrides);
-    if (keys.length === 0) return BASE_POLICIES;
-    const out = BASE_POLICIES.slice();
+    if (keys.length === 0 && !importedNew) return BASE_POLICIES;
+    const out = importedNew ? [...BASE_POLICIES, ...NEW_POLICIES] : BASE_POLICIES.slice();
     for (const id of keys) {
-      const i = POLICY_INDEX.get(id);
+      const base = POLICY_INDEX.get(id);
+      const extra = NEW_INDEX.get(id);
+      const i = base ?? (importedNew && extra !== undefined ? BASE_POLICIES.length + extra : undefined);
       if (i !== undefined) out[i] = { ...out[i]!, ...overrides[id] } as Policy;
     }
     return out;
-  }, [overrides]);
+  }, [overrides, importedNew]);
 }
 
 export function usePolicy(id: string | null): Policy | undefined {
