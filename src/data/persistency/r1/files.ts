@@ -1,10 +1,13 @@
 import { BASE_POLICIES, POLICY_INDEX } from "../index";
-import { NOW, DAY_MS, addDays, diffDays, fromIso, toIso } from "../dates";
+import { NOW, DAY_MS, addDays, toIso } from "../dates";
 import { hashId } from "../derived";
 import { Rng } from "../rng";
 import type { Policy } from "../types";
 import { branchOf } from "./common";
 import { TASKS_BY_POLICY } from "./tasks";
+import { DUE_COUNTS, NEW_POLICIES, STAGE_CHANGE_IDS, newDueDate } from "./due-import";
+
+export { DUE_COUNTS, NEW_POLICIES, STAGE_CHANGE_IDS, newDueDate };
 
 export interface AdapterDef {
   id: string;
@@ -102,31 +105,7 @@ const fmtDmy = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.sl
 
 /* ---------- Due list sample: 11,754 known policies, 214 new, 32 rejects ---------- */
 
-export const DUE_COUNTS = { rows: 12_000, rejects: 32, newPolicies: 214, updated: 11_754, stageChanges: 61 } as const;
-
-/** 61 warming policies whose due date in the file moves them into the renewal window. */
-export const STAGE_CHANGE_IDS: string[] = BASE_POLICIES.filter((p) => {
-  if (p.lifecycleStage !== "Warming") return false;
-  const d = diffDays(fromIso(p.dueDate), NOW);
-  return d > 90 && d <= 120;
-})
-  .slice(0, DUE_COUNTS.stageChanges)
-  .map((p) => p.policyId);
 const STAGE_CHANGE_SET = new Set(STAGE_CHANGE_IDS);
-
-export function newDueDate(p: Policy): string {
-  return toIso(addDays(fromIso(p.dueDate), -35));
-}
-
-/** The 214 policies that are new in the sample due list. */
-export const NEW_POLICIES: Policy[] = (() => {
-  const out: Policy[] = [];
-  for (let i = 0; i < DUE_COUNTS.newPolicies; i++) {
-    const src = BASE_POLICIES[(i * 53) % BASE_POLICIES.length]!;
-    out.push({ ...src, policyId: `SLI0251${String(i).padStart(5, "0")}`, customerName: BASE_POLICIES[(i * 97 + 11) % BASE_POLICIES.length]!.customerName });
-  }
-  return out;
-})();
 
 function dueRow(p: Policy, due: string): string[] {
   return [p.policyId, p.customerName, p.product, String(p.annualisedPremium), p.paymentMode, fmtDmy(due), p.paymentMethod, p.channel, branchOf(p), p.insurerCohort];
