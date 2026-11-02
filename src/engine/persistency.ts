@@ -175,7 +175,8 @@ const NON_PAYMENT_WORKFLOWS = new Set(["X1", "X2", "L3", "S3"]);
 export function evaluate(p: Policy, rules: Rule[], ctx: EngineContext): Decision {
   const now = ctx.now ?? NOW;
   const dims = policyDimensions(p, ctx);
-  const matched = rules.filter((r) => ruleMatches(r, dims)).sort(compareRules);
+  const nums = policyNumbers(p, now);
+  const matched = rules.filter((r) => isLive(r) && ruleMatches(r, dims, nums)).sort(compareRules);
   const best = matched[0];
   if (!best) {
     return {
@@ -199,6 +200,14 @@ export function evaluate(p: Policy, rules: Rule[], ctx: EngineContext): Decision
     if (!vals?.length) continue;
     const hit = dims[k].find((v) => vals.includes(v));
     if (hit !== undefined) matchedDimensions[k] = hit;
+  }
+  const group = best.conds?.find((g) => g.every((row) => conditionMatches(row, dims, nums)));
+  for (const row of group ?? []) {
+    if (row.op === "within N days of") matchedDimensions[row.dim] = `${nums.daysToDue} days to due`;
+    else if (row.op === "above" || row.op === "below" || row.op === "between") {
+      const x = row.dim === "ticketBand" ? `₹${nums.ticketSize.toLocaleString("en-IN")}` : row.dim === "policyYear" ? `Year ${nums.policyYear}` : String(nums.touches);
+      matchedDimensions[row.dim] = x;
+    } else matchedDimensions[row.dim] = dims[row.dim].find((v) => row.op === "is not" || row.values.includes(v)) ?? dims[row.dim][0] ?? "";
   }
   const decision: Decision = {
     policyId: p.policyId,
