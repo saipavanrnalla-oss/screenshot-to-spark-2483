@@ -160,3 +160,13 @@ export function insertOnEdge(g: WfGraph, edgeId: string, type: string): { graph:
   const label = freeLabel(withNode, n.id);
   return { graph: { ...withNode, edges: [...withNode.edges, { id: nextEdgeId(withNode), from: n.id, to: e.to, ...(label ? { label } : {}) }] }, id: n.id };
 }
+
+export function blankGraph(): WfGraph {
+  return {
+    nodes: [
+      { id: "t", type: "trigger.manual", label: "Manual start", x: 0, y: 40, config: {} },
+      { id: "o", type: "outcome.bau", label: "Business as usual", x: 320, y: 40, config: {} },
+    ],
+    edges: [{ id: "e1", from: "t", to: "o" }],
+  };
+}

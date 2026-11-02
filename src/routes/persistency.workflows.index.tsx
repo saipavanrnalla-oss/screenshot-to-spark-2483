@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/ds/primitives";
 import { StatusChip, versionTone } from "@/components/r1/status-chip";
 import { ConfirmDialog } from "@/components/r1/confirm";
 import { inputCls, selectCls } from "@/components/r1/tabs";
-import { WF_STAGES, useWorkflowRows, wfVersions, type WfRow } from "@/components/r1/wf-model";
+import { WF_STAGES, blankGraph, useWorkflowRows, wfVersions, type WfRow } from "@/components/r1/wf-model";
 import { useScopedPolicies } from "@/hooks/use-shell";
 import { useWorkflowStats } from "@/hooks/use-workflow-stats";
 import { useCan, useUser } from "@/hooks/use-user";
@@ -29,16 +29,6 @@ export const Route = createFileRoute("/persistency/workflows/")({
   }),
   component: WorkflowLibrary,
 });
-
-export function blankGraph(): WfGraph {
-  return {
-    nodes: [
-      { id: "t", type: "trigger.manual", label: "Manual start", x: 0, y: 40, config: {} },
-      { id: "o", type: "outcome.bau", label: "Business as usual", x: 320, y: 40, config: {} },
-    ],
-    edges: [{ id: "e1", from: "t", to: "o" }],
-  };
-}
 
 function WorkflowLibrary() {
   const navigate = useNavigate();
