@@ -47,32 +47,32 @@ export interface ImportSummary {
 export function summarise(adapterId: string, check: CheckResult): ImportSummary {
   const v = check.valid;
   if (adapterId === "due-list") {
-    const known = v.filter((r) => POLICY_INDEX.has(r.policy ?? ""));
+    const known = v.filter((r) => POLICY_INDEX.has(r["policy"] ?? ""));
     return {
       lines: [
         ["New policies", v.length - known.length],
         ["Updated policies", known.length],
-        ["Policies changing stage", known.filter((r) => STAGE_SET.has(r.policy ?? "")).length],
+        ["Policies changing stage", known.filter((r) => STAGE_SET.has(r["policy"] ?? "")).length],
       ],
     };
   }
   if (adapterId === "payments") {
     const matched = v.filter((r) => {
-      const p = BASE_POLICIES[POLICY_INDEX.get(r.policy ?? "") ?? -1];
+      const p = BASE_POLICIES[POLICY_INDEX.get(r["policy"] ?? "") ?? -1];
       return p && OPEN.has(p.state);
     });
-    const ids = new Set(matched.map((r) => r.receipt));
+    const ids = new Set(matched.map((r) => r["receipt"]));
     return {
       lines: [
         ["Receipts", v.length],
         ["Matched to a policy", matched.length],
         ["Unmatched", v.length - matched.length],
-        ["Open touches that close", PAYMENT_RECEIPTS.filter((r) => r.closedTouch && ids.has(r.receipt)).length],
+        ["Open touches that close", PAYMENT_RECEIPTS.filter((r) => r.closedTouch && ids.has(r["receipt"])).length],
       ],
     };
   }
-  if (adapterId === "bounce") return { lines: [["Bounces", v.length], ["Policies moving to bounce recovery (R4)", v.filter((r) => POLICY_INDEX.has(r.policy ?? "")).length]] };
-  if (adapterId === "call-results") return { lines: [["Call results", v.length], ["Activity rows written", v.filter((r) => POLICY_INDEX.has(r.policy ?? "")).length]] };
+  if (adapterId === "bounce") return { lines: [["Bounces", v.length], ["Policies moving to bounce recovery (R4)", v.filter((r) => POLICY_INDEX.has(r["policy"] ?? "")).length]] };
+  if (adapterId === "call-results") return { lines: [["Call results", v.length], ["Activity rows written", v.filter((r) => POLICY_INDEX.has(r["policy"] ?? "")).length]] };
   if (adapterId === "wa-results") return { lines: [["Message results", v.length]] };
   if (adapterId === "cohort") return { lines: [["Cohort rows", v.length]] };
   return { lines: [["Rows", v.length]] };
@@ -87,7 +87,7 @@ export function applyImport(adapterId: string, check: CheckResult, by: string, r
     ps.setImportedNew(true);
     const patches: Record<string, Partial<Policy>> = {};
     for (const r of v) {
-      const id = r.policy ?? "";
+      const id = r["policy"] ?? "";
       if (!STAGE_SET.has(id)) continue;
       const p = BASE_POLICIES[POLICY_INDEX.get(id)!]!;
       patches[id] = { dueDate: newDueDate(p), lifecycleStage: "Renewal window", state: "Renewal window open" };
@@ -95,7 +95,7 @@ export function applyImport(adapterId: string, check: CheckResult, by: string, r
     ps.patchPolicies(patches);
   }
   if (adapterId === "payments") {
-    const ids = v.map((r) => r.policy ?? "").filter((id) => {
+    const ids = v.map((r) => r["policy"] ?? "").filter((id) => {
       const p = BASE_POLICIES[POLICY_INDEX.get(id) ?? -1];
       return p && OPEN.has(p.state);
     });
@@ -103,14 +103,14 @@ export function applyImport(adapterId: string, check: CheckResult, by: string, r
   }
   if (adapterId === "bounce") {
     const patches: Record<string, Partial<Policy>> = {};
-    for (const r of v) if (POLICY_INDEX.has(r.policy ?? "")) patches[r.policy!] = { reasonCode: "Mandate bounce" };
+    for (const r of v) if (POLICY_INDEX.has(r["policy"] ?? "")) patches[r["policy"]!] = { reasonCode: "Mandate bounce" };
     ps.patchPolicies(patches);
   }
   if (adapterId === "call-results") {
     ws.addActivities(
       v
-        .filter((r) => POLICY_INDEX.has(r.policy ?? ""))
-        .map((r) => ({ policyId: r.policy!, step: "Collection call", executor: r.vendor ?? "Call-centre vendor", executorKind: "vendor" as const, result: r.disposition ?? "", disposition: r.disposition, durationSec: Number(r.duration) || undefined, channel: "Voice" as const, workflow: "R2", reason: "From the vendor's results file" })),
+        .filter((r) => POLICY_INDEX.has(r["policy"] ?? ""))
+        .map((r) => ({ policyId: r["policy"]!, step: "Collection call", executor: r["vendor"] ?? "Call-centre vendor", executorKind: "vendor" as const, result: r["disposition"] ?? "", disposition: r["disposition"], durationSec: Number(r["duration"]) || undefined, channel: "Voice" as const, workflow: "R2", reason: "From the vendor's results file" })),
     );
   }
   ws.setImported(adapterId);

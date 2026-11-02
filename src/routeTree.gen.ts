@@ -39,6 +39,9 @@ import { Route as PersistencyRulesIdRouteImport } from './routes/persistency.rul
 import { Route as PersistencyWorkPersonaRouteImport } from './routes/persistency.work.$persona'
 import { Route as PersistencyWorkflowsIndexRouteImport } from './routes/persistency.workflows.index'
 import { Route as PersistencyWorkflowsIdRouteImport } from './routes/persistency.workflows.$id'
+import { Route as PersistencyDataExecutorsIdRouteImport } from './routes/persistency.data_.executors.$id'
+import { Route as PersistencyDataFilesIdRouteImport } from './routes/persistency.data_.files.$id'
+import { Route as PersistencyDataImportIdRouteImport } from './routes/persistency.data_.import.$id'
 import { Route as PersistencyWorkflowsIdEditRouteImport } from './routes/persistency.workflows.$id_.edit'
 
 const IndexRoute = IndexRouteImport.update({
@@ -196,6 +199,22 @@ const PersistencyWorkflowsIdRoute = PersistencyWorkflowsIdRouteImport.update({
   path: '/workflows/$id',
   getParentRoute: () => PersistencyRoute,
 } as any)
+const PersistencyDataExecutorsIdRoute =
+  PersistencyDataExecutorsIdRouteImport.update({
+    id: '/data_/executors/$id',
+    path: '/data/executors/$id',
+    getParentRoute: () => PersistencyRoute,
+  } as any)
+const PersistencyDataFilesIdRoute = PersistencyDataFilesIdRouteImport.update({
+  id: '/data_/files/$id',
+  path: '/data/files/$id',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyDataImportIdRoute = PersistencyDataImportIdRouteImport.update({
+  id: '/data_/import/$id',
+  path: '/data/import/$id',
+  getParentRoute: () => PersistencyRoute,
+} as any)
 const PersistencyWorkflowsIdEditRoute =
   PersistencyWorkflowsIdEditRouteImport.update({
     id: '/workflows/$id_/edit',
@@ -234,6 +253,9 @@ export interface FileRoutesByFullPath {
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows/': typeof PersistencyWorkflowsIndexRoute
+  '/persistency/data/executors/$id': typeof PersistencyDataExecutorsIdRoute
+  '/persistency/data/files/$id': typeof PersistencyDataFilesIdRoute
+  '/persistency/data/import/$id': typeof PersistencyDataImportIdRoute
   '/persistency/workflows/$id/edit': typeof PersistencyWorkflowsIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -266,6 +288,9 @@ export interface FileRoutesByTo {
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows': typeof PersistencyWorkflowsIndexRoute
+  '/persistency/data/executors/$id': typeof PersistencyDataExecutorsIdRoute
+  '/persistency/data/files/$id': typeof PersistencyDataFilesIdRoute
+  '/persistency/data/import/$id': typeof PersistencyDataImportIdRoute
   '/persistency/workflows/$id/edit': typeof PersistencyWorkflowsIdEditRoute
 }
 export interface FileRoutesById {
@@ -300,6 +325,9 @@ export interface FileRoutesById {
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows/': typeof PersistencyWorkflowsIndexRoute
+  '/persistency/data_/executors/$id': typeof PersistencyDataExecutorsIdRoute
+  '/persistency/data_/files/$id': typeof PersistencyDataFilesIdRoute
+  '/persistency/data_/import/$id': typeof PersistencyDataImportIdRoute
   '/persistency/workflows/$id_/edit': typeof PersistencyWorkflowsIdEditRoute
 }
 export interface FileRouteTypes {
@@ -335,6 +363,9 @@ export interface FileRouteTypes {
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows/'
+    | '/persistency/data/executors/$id'
+    | '/persistency/data/files/$id'
+    | '/persistency/data/import/$id'
     | '/persistency/workflows/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -367,6 +398,9 @@ export interface FileRouteTypes {
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows'
+    | '/persistency/data/executors/$id'
+    | '/persistency/data/files/$id'
+    | '/persistency/data/import/$id'
     | '/persistency/workflows/$id/edit'
   id:
     | '__root__'
@@ -400,6 +434,9 @@ export interface FileRouteTypes {
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows/'
+    | '/persistency/data_/executors/$id'
+    | '/persistency/data_/files/$id'
+    | '/persistency/data_/import/$id'
     | '/persistency/workflows/$id_/edit'
   fileRoutesById: FileRoutesById
 }
@@ -621,6 +658,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersistencyWorkflowsIdRouteImport
       parentRoute: typeof PersistencyRoute
     }
+    '/persistency/data_/executors/$id': {
+      id: '/persistency/data_/executors/$id'
+      path: '/data/executors/$id'
+      fullPath: '/persistency/data/executors/$id'
+      preLoaderRoute: typeof PersistencyDataExecutorsIdRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/data_/files/$id': {
+      id: '/persistency/data_/files/$id'
+      path: '/data/files/$id'
+      fullPath: '/persistency/data/files/$id'
+      preLoaderRoute: typeof PersistencyDataFilesIdRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/data_/import/$id': {
+      id: '/persistency/data_/import/$id'
+      path: '/data/import/$id'
+      fullPath: '/persistency/data/import/$id'
+      preLoaderRoute: typeof PersistencyDataImportIdRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
     '/persistency/workflows/$id_/edit': {
       id: '/persistency/workflows/$id_/edit'
       path: '/workflows/$id/edit'
@@ -659,6 +717,9 @@ interface PersistencyRouteChildren {
   PersistencyWorkPersonaRoute: typeof PersistencyWorkPersonaRoute
   PersistencyWorkflowsIdRoute: typeof PersistencyWorkflowsIdRoute
   PersistencyWorkflowsIndexRoute: typeof PersistencyWorkflowsIndexRoute
+  PersistencyDataExecutorsIdRoute: typeof PersistencyDataExecutorsIdRoute
+  PersistencyDataFilesIdRoute: typeof PersistencyDataFilesIdRoute
+  PersistencyDataImportIdRoute: typeof PersistencyDataImportIdRoute
   PersistencyWorkflowsIdEditRoute: typeof PersistencyWorkflowsIdEditRoute
 }
 
@@ -690,6 +751,9 @@ const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyWorkPersonaRoute: PersistencyWorkPersonaRoute,
   PersistencyWorkflowsIdRoute: PersistencyWorkflowsIdRoute,
   PersistencyWorkflowsIndexRoute: PersistencyWorkflowsIndexRoute,
+  PersistencyDataExecutorsIdRoute: PersistencyDataExecutorsIdRoute,
+  PersistencyDataFilesIdRoute: PersistencyDataFilesIdRoute,
+  PersistencyDataImportIdRoute: PersistencyDataImportIdRoute,
   PersistencyWorkflowsIdEditRoute: PersistencyWorkflowsIdEditRoute,
 }
 

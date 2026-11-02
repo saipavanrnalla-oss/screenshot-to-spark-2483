@@ -7,7 +7,7 @@ describe("release 1 sample files", () => {
     const f = dueListSample();
     expect(f.rows.length).toBe(12_000);
     const auto = autoMap("due-list", f.header);
-    expect(auto.PREM_FREQ).toBeUndefined();
+    expect(auto["PREM_FREQ"]).toBeUndefined();
     const r = checkFile("due-list", f, { ...auto, PREM_FREQ: "mode" }, "dd/mm/yyyy");
     expect(r.valid.length).toBe(11_968);
     expect(r.rejects.length).toBe(32);
