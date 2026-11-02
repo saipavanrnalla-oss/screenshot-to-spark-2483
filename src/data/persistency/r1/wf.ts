@@ -121,7 +121,7 @@ export interface WfGraph {
 /* ---------- Seed graphs ---------- */
 
 type NodeSpec = [id: string, type: string, label?: string, config?: WfNodeConfig];
-type EdgeSpec = [from: string, to: string, label?: string];
+type EdgeSpec = [from: string, to: string, label?: string | undefined];
 
 function build(nodes: NodeSpec[], edges: EdgeSpec[]): WfGraph {
   return {

@@ -358,7 +358,8 @@ export function checkFile(adapterId: string, file: SampleFile, mapping: Record<s
         rec[t.key] = iso;
       }
     }
-    if (rec.product !== undefined && rec.product !== "" && !PRODUCTS.has(rec.product)) return void rejects.push({ row: idx + 2, reason: `Unknown product ${rec.product}` });
+    const product = rec["product"];
+    if (product !== undefined && product !== "" && !PRODUCTS.has(product)) return void rejects.push({ row: idx + 2, reason: `Unknown product ${product}` });
     valid.push(rec);
   });
   return { valid, rejects, missingRequired };
