@@ -78,7 +78,7 @@ function EdgeView({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targ
   const [path, lx, ly] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition });
   return (
     <>
-      <BaseEdge id={id} path={path} markerEnd={markerEnd} style={{ stroke: data?.selected ? "var(--primary)" : "var(--muted-foreground)", strokeWidth: data?.selected ? 2 : 1.25 }} />
+      <BaseEdge id={id} path={path} {...(markerEnd ? { markerEnd } : {})} style={{ stroke: data?.selected ? "var(--primary)" : "var(--muted-foreground)", strokeWidth: data?.selected ? 2 : 1.25 }} />
       <EdgeLabelRenderer>
         <div className="group nodrag nopan pointer-events-auto absolute flex items-center gap-1" style={{ transform: `translate(-50%, -50%) translate(${lx}px, ${ly}px)` }}>
           {label && <span className="rounded-sm bg-card px-1 text-[10px] font-semibold text-subtle">{label}</span>}

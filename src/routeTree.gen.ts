@@ -38,6 +38,7 @@ import { Route as PersistencyRulesIdRouteImport } from './routes/persistency.rul
 import { Route as PersistencyWorkPersonaRouteImport } from './routes/persistency.work.$persona'
 import { Route as PersistencyWorkflowsIndexRouteImport } from './routes/persistency.workflows.index'
 import { Route as PersistencyWorkflowsIdRouteImport } from './routes/persistency.workflows.$id'
+import { Route as PersistencyWorkflowsIdEditRouteImport } from './routes/persistency.workflows.$id_.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -189,6 +190,12 @@ const PersistencyWorkflowsIdRoute = PersistencyWorkflowsIdRouteImport.update({
   path: '/workflows/$id',
   getParentRoute: () => PersistencyRoute,
 } as any)
+const PersistencyWorkflowsIdEditRoute =
+  PersistencyWorkflowsIdEditRouteImport.update({
+    id: '/workflows/$id_/edit',
+    path: '/workflows/$id/edit',
+    getParentRoute: () => PersistencyRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows/': typeof PersistencyWorkflowsIndexRoute
+  '/persistency/workflows/$id/edit': typeof PersistencyWorkflowsIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -250,6 +258,7 @@ export interface FileRoutesByTo {
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows': typeof PersistencyWorkflowsIndexRoute
+  '/persistency/workflows/$id/edit': typeof PersistencyWorkflowsIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -282,6 +291,7 @@ export interface FileRoutesById {
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows/': typeof PersistencyWorkflowsIndexRoute
+  '/persistency/workflows/$id_/edit': typeof PersistencyWorkflowsIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -315,6 +325,7 @@ export interface FileRouteTypes {
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows/'
+    | '/persistency/workflows/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows'
+    | '/persistency/workflows/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -376,6 +388,7 @@ export interface FileRouteTypes {
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows/'
+    | '/persistency/workflows/$id_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -589,6 +602,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersistencyWorkflowsIdRouteImport
       parentRoute: typeof PersistencyRoute
     }
+    '/persistency/workflows/$id_/edit': {
+      id: '/persistency/workflows/$id_/edit'
+      path: '/workflows/$id/edit'
+      fullPath: '/persistency/workflows/$id/edit'
+      preLoaderRoute: typeof PersistencyWorkflowsIdEditRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
   }
 }
 
@@ -619,6 +639,7 @@ interface PersistencyRouteChildren {
   PersistencyWorkPersonaRoute: typeof PersistencyWorkPersonaRoute
   PersistencyWorkflowsIdRoute: typeof PersistencyWorkflowsIdRoute
   PersistencyWorkflowsIndexRoute: typeof PersistencyWorkflowsIndexRoute
+  PersistencyWorkflowsIdEditRoute: typeof PersistencyWorkflowsIdEditRoute
 }
 
 const PersistencyRouteChildren: PersistencyRouteChildren = {
@@ -648,6 +669,7 @@ const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyWorkPersonaRoute: PersistencyWorkPersonaRoute,
   PersistencyWorkflowsIdRoute: PersistencyWorkflowsIdRoute,
   PersistencyWorkflowsIndexRoute: PersistencyWorkflowsIndexRoute,
+  PersistencyWorkflowsIdEditRoute: PersistencyWorkflowsIdEditRoute,
 }
 
 const PersistencyRouteWithChildren = PersistencyRoute._addFileChildren(
