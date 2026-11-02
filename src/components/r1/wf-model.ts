@@ -110,7 +110,7 @@ export function makeNode(g: WfGraph, type: string, x: number, y: number): WfNode
   return {
     id: nextNodeId(g),
     type,
-    label: item?.label ?? type,
+    label: type === "wait.days" ? "Wait 2 days" : (item?.label ?? type),
     x,
     y,
     config: { executor: item?.executor, ...(item?.outreach ? { dispositions: [...(item.returns ?? [])] } : {}), ...(type === "wait.days" ? { days: 2 } : {}) },

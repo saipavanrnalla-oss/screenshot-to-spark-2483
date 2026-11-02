@@ -118,7 +118,7 @@ function RuleEditorPage() {
     const no = saveDraft(`rule:${ruleId}`, draft, author, isNew ? "New rule" : "Rule change");
     if (!stored) upsertRule({ ...draft, status: "Draft", version: no, lastChanged: NOW_ISO });
     toast.success(`Saved as draft version ${no}`);
-    if (isNew) navigate({ to: "/persistency/rules/$id", params: { id: ruleId } });
+    if (isNew) setTimeout(() => navigate({ to: "/persistency/rules/$id", params: { id: ruleId } }), 60);
     return no;
   };
   const doSubmit = () => {
@@ -146,7 +146,7 @@ function RuleEditorPage() {
       secondApproverReason: noConds ? "The rule has no conditions" : undefined,
     });
     toast.success(`Version ${no} sent for review`, { description: noConds ? "No conditions: a second approver is needed." : "Waiting for Head of Persistency." });
-    if (isNew) navigate({ to: "/persistency/rules/$id", params: { id: ruleId } });
+    if (isNew) setTimeout(() => navigate({ to: "/persistency/rules/$id", params: { id: ruleId } }), 60);
   };
 
   return (
