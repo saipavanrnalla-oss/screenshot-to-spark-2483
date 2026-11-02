@@ -32,12 +32,13 @@ interface NodeData extends Record<string, unknown> {
   active: boolean;
   mark?: Mark | undefined;
   count?: number | undefined;
+  paused?: boolean | undefined;
 }
 
 type FlowNode = Node<NodeData, "wf">;
 
 function NodeView({ data }: NodeProps<FlowNode>) {
-  const { node, selected, active, mark, count } = data;
+  const { node, selected, active, mark, count, paused } = data;
   const item = PALETTE_BY_TYPE[node.type];
   const outreach = isOutreach(node);
   return (
@@ -48,6 +49,7 @@ function NodeView({ data }: NodeProps<FlowNode>) {
         mark === "added" && "border-ok ring-1 ring-ok",
         mark === "removed" && "border-destructive opacity-70 ring-1 ring-destructive",
         mark === "changed" && "border-attention ring-1 ring-attention",
+        paused && "border-destructive",
       )}
     >
       <Handle type="target" position={Position.Left} className="!size-2.5 !border !border-border !bg-card" />
@@ -57,6 +59,7 @@ function NodeView({ data }: NodeProps<FlowNode>) {
       </div>
       <p className="mt-0.5 text-[12px] font-semibold leading-snug text-foreground">{node.label}</p>
       {node.config.executor && <p className="truncate text-[11px] text-subtle">{node.config.executor}</p>}
+      {paused && <p className="text-[10px] font-semibold text-destructive">Agent paused</p>}
       {outreach && (
         <p className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground" title="Paid since the list, On hold and Contact policy run before this step and cannot be removed">
           <ShieldCheck className="size-3 text-ok" aria-hidden /> Paid · Hold · Contact
@@ -104,6 +107,7 @@ export interface WfCanvasProps {
   activeId?: string | null | undefined;
   marks?: Record<string, Mark> | undefined;
   counts?: Record<string, number> | undefined;
+  pausedExecutors?: string[] | undefined;
   height?: number | string | undefined;
   onSelectNode?: ((id: string | null) => void) | undefined;
   onSelectEdge?: ((id: string) => void) | undefined;
@@ -122,10 +126,10 @@ function Inner(p: WfCanvasProps) {
         id: n.id,
         type: "wf" as const,
         position: { x: n.x, y: n.y },
-        data: { node: n, selected: n.id === p.selectedId, active: n.id === p.activeId, mark: p.marks?.[n.id], count: p.counts?.[n.id] },
+        data: { node: n, selected: n.id === p.selectedId, active: n.id === p.activeId, mark: p.marks?.[n.id], count: p.counts?.[n.id], paused: !!n.config.executor && !!p.pausedExecutors?.includes(n.config.executor) },
         draggable: !!p.editable,
       })),
-    [p.graph, p.selectedId, p.activeId, p.marks, p.counts, p.editable],
+    [p.graph, p.selectedId, p.activeId, p.marks, p.counts, p.editable, p.pausedExecutors],
   );
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<FlowNode>(nodes);
   useEffect(() => setRfNodes(nodes), [nodes, setRfNodes]);
