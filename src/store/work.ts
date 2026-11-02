@@ -574,7 +574,7 @@ export function useVersions<T>(key: string): Version<T>[] {
 }
 
 export function activeVersion<T>(list: Version<T>[]): Version<T> | undefined {
-  return [...list].reverse().find((v) => v.status === "Active") ?? list[list.length - 1];
+  return [...list].reverse().find((v) => v.status === "Active") ?? [...list].reverse().find((v) => v.status === "Retired") ?? list[0];
 }
 
 export function useStageSettings(): StageSettings {
