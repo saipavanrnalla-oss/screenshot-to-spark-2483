@@ -6,7 +6,7 @@ export const DIMENSIONS: { key: DimensionKey; label: string; values: string[] }[
   { key: "paymentMode", label: "Payment mode", values: ["Monthly", "Quarterly", "Half-yearly", "Annual"] },
   { key: "paymentMethod", label: "Payment method / mandate", values: ["NACH/ECS mandate", "Credit card SI", "Cash/cheque", "UPI autopay", "Bank branch"] },
   { key: "channel", label: "Channel", values: ["Agency", "Bancassurance", "Online", "Direct"] },
-  { key: "cohort", label: "Cohort (active set)", values: ["A1", "A2", "A3", "A4", "A5", "High", "Medium", "Low", "Band 1", "Band 2", "Band 3", "Band 4", "Band 5", "Unscored"] },
+  { key: "cohort", label: "Cohort (active set)", values: ["Highest propensity", "High propensity", "Moderate propensity", "Low propensity", "Lowest propensity", "High", "Medium", "Low", "Band 1", "Band 2", "Band 3", "Band 4", "Band 5", "Unscored"] },
   { key: "ticketBand", label: "Ticket size band", values: ["Under ₹25,000", "₹25,000 to ₹1,00,000", "₹1,00,000 to ₹5,00,000", "₹5,00,000 and above"] },
   { key: "customerProfile", label: "Customer profile", values: ["Salaried", "Self-employed", "Senior", "HNI", "NRI"] },
   { key: "language", label: "Language / region", values: ["Hindi", "English", "Marathi", "Tamil", "Telugu", "Kannada", "Bengali", "Gujarati", "North", "South", "East", "West"] },
@@ -110,7 +110,7 @@ export const SEED_RULES: Rule[] = [
   },
   {
     id: "R03", name: "Grace, high-risk cohort: voice bot first", stage: "Renewal window", level: "rule", priority: 20, source: PROPOSED,
-    when: { state: ["Grace"], cohort: ["A4", "A5", "High", "Band 4", "Band 5"] },
+    when: { state: ["Grace"], cohort: ["Low propensity", "Lowest propensity", "High", "Band 4", "Band 5"] },
     then: { workflowId: "R2", action: "Voice bot call, then telecall if no answer", executor: "Voice bot vendor", delayHours: 1, script: "Due-date collection (short)" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
@@ -172,7 +172,7 @@ export const SEED_RULES: Rule[] = [
   },
   {
     id: "R13", name: "Early lapse, high-risk cohort: telecall", stage: "Lapse and revival", level: "rule", priority: 30, source: PROPOSED, status: "Retired", version: 3,
-    when: { stage: ["Early lapse"], cohort: ["A4", "A5", "High", "Band 4", "Band 5"] },
+    when: { stage: ["Early lapse"], cohort: ["Low propensity", "Lowest propensity", "High", "Band 4", "Band 5"] },
     then: { workflowId: "L1", action: "Recovery telecall", executor: "Call-centre vendor (variable payout)", delayHours: 4 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
@@ -185,14 +185,14 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R15", name: "Early risk call", stage: "Renewal window", level: "rule", priority: 24, source: PROPOSED, status: "In review", version: 1,
     description: "Low cohort, 90 days to due: an early call from the renewal voice agent.",
-    when: { cohort: ["A5"] },
+    when: { cohort: ["Lowest propensity"] },
     conds: [[{ dim: "calendar", op: "within N days of", values: ["due date"], n: 90 }]],
     then: { workflowId: "R1", action: "Early renewal call", executor: "Renewal voice agent", delayHours: 6 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
     id: "R16", name: "Month-end push", version: 1, description: "Day of month 25 or later with the plan behind: an extra call for grace policies.", stage: "Renewal window", level: "rule", priority: 25, source: PROPOSED,
-    when: { calendar: ["Month-end (last 5 days)"], state: ["Grace"], cohort: ["A3", "Medium", "Band 3"] },
+    when: { calendar: ["Month-end (last 5 days)"], state: ["Grace"], cohort: ["Moderate propensity", "Medium", "Band 3"] },
     then: { workflowId: "R2", action: "Extra month-end call", executor: "Call-centre vendor (fixed payout)", delayHours: 2, target: "Close before month-end" },
     effectiveFrom: EFF, needsApprovalFrom: "Regional lead",
   },

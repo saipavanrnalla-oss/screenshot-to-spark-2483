@@ -22,8 +22,10 @@ import { Route as PersistencyConfigurationRouteImport } from './routes/persisten
 import { Route as PersistencyContactPolicyRouteImport } from './routes/persistency.contact-policy'
 import { Route as PersistencyDataRouteImport } from './routes/persistency.data'
 import { Route as PersistencyGuardrailsRouteImport } from './routes/persistency.guardrails'
+import { Route as PersistencyLaunchRouteImport } from './routes/persistency.launch'
 import { Route as PersistencyLifecycleRouteImport } from './routes/persistency.lifecycle'
 import { Route as PersistencyMeasurementRouteImport } from './routes/persistency.measurement'
+import { Route as PersistencyPerformanceRouteImport } from './routes/persistency.performance'
 import { Route as PersistencyPoliciesRouteImport } from './routes/persistency.policies'
 import { Route as PersistencyReportsRouteImport } from './routes/persistency.reports'
 import { Route as PersistencyRulesRouteImport } from './routes/persistency.rules'
@@ -111,6 +113,11 @@ const PersistencyGuardrailsRoute = PersistencyGuardrailsRouteImport.update({
   path: '/guardrails',
   getParentRoute: () => PersistencyRoute,
 } as any)
+const PersistencyLaunchRoute = PersistencyLaunchRouteImport.update({
+  id: '/launch',
+  path: '/launch',
+  getParentRoute: () => PersistencyRoute,
+} as any)
 const PersistencyLifecycleRoute = PersistencyLifecycleRouteImport.update({
   id: '/lifecycle',
   path: '/lifecycle',
@@ -119,6 +126,11 @@ const PersistencyLifecycleRoute = PersistencyLifecycleRouteImport.update({
 const PersistencyMeasurementRoute = PersistencyMeasurementRouteImport.update({
   id: '/measurement',
   path: '/measurement',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyPerformanceRoute = PersistencyPerformanceRouteImport.update({
+  id: '/performance',
+  path: '/performance',
   getParentRoute: () => PersistencyRoute,
 } as any)
 const PersistencyPoliciesRoute = PersistencyPoliciesRouteImport.update({
@@ -235,8 +247,10 @@ export interface FileRoutesByFullPath {
   '/persistency/contact-policy': typeof PersistencyContactPolicyRoute
   '/persistency/data': typeof PersistencyDataRoute
   '/persistency/guardrails': typeof PersistencyGuardrailsRoute
+  '/persistency/launch': typeof PersistencyLaunchRoute
   '/persistency/lifecycle': typeof PersistencyLifecycleRoute
   '/persistency/measurement': typeof PersistencyMeasurementRoute
+  '/persistency/performance': typeof PersistencyPerformanceRoute
   '/persistency/policies': typeof PersistencyPoliciesRoute
   '/persistency/reports': typeof PersistencyReportsRoute
   '/persistency/rules': typeof PersistencyRulesRoute
@@ -270,8 +284,10 @@ export interface FileRoutesByTo {
   '/persistency/contact-policy': typeof PersistencyContactPolicyRoute
   '/persistency/data': typeof PersistencyDataRoute
   '/persistency/guardrails': typeof PersistencyGuardrailsRoute
+  '/persistency/launch': typeof PersistencyLaunchRoute
   '/persistency/lifecycle': typeof PersistencyLifecycleRoute
   '/persistency/measurement': typeof PersistencyMeasurementRoute
+  '/persistency/performance': typeof PersistencyPerformanceRoute
   '/persistency/policies': typeof PersistencyPoliciesRoute
   '/persistency/reports': typeof PersistencyReportsRoute
   '/persistency/rules': typeof PersistencyRulesRoute
@@ -307,8 +323,10 @@ export interface FileRoutesById {
   '/persistency/contact-policy': typeof PersistencyContactPolicyRoute
   '/persistency/data': typeof PersistencyDataRoute
   '/persistency/guardrails': typeof PersistencyGuardrailsRoute
+  '/persistency/launch': typeof PersistencyLaunchRoute
   '/persistency/lifecycle': typeof PersistencyLifecycleRoute
   '/persistency/measurement': typeof PersistencyMeasurementRoute
+  '/persistency/performance': typeof PersistencyPerformanceRoute
   '/persistency/policies': typeof PersistencyPoliciesRoute
   '/persistency/reports': typeof PersistencyReportsRoute
   '/persistency/rules': typeof PersistencyRulesRoute
@@ -345,8 +363,10 @@ export interface FileRouteTypes {
     | '/persistency/contact-policy'
     | '/persistency/data'
     | '/persistency/guardrails'
+    | '/persistency/launch'
     | '/persistency/lifecycle'
     | '/persistency/measurement'
+    | '/persistency/performance'
     | '/persistency/policies'
     | '/persistency/reports'
     | '/persistency/rules'
@@ -380,8 +400,10 @@ export interface FileRouteTypes {
     | '/persistency/contact-policy'
     | '/persistency/data'
     | '/persistency/guardrails'
+    | '/persistency/launch'
     | '/persistency/lifecycle'
     | '/persistency/measurement'
+    | '/persistency/performance'
     | '/persistency/policies'
     | '/persistency/reports'
     | '/persistency/rules'
@@ -416,8 +438,10 @@ export interface FileRouteTypes {
     | '/persistency/contact-policy'
     | '/persistency/data'
     | '/persistency/guardrails'
+    | '/persistency/launch'
     | '/persistency/lifecycle'
     | '/persistency/measurement'
+    | '/persistency/performance'
     | '/persistency/policies'
     | '/persistency/reports'
     | '/persistency/rules'
@@ -539,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersistencyGuardrailsRouteImport
       parentRoute: typeof PersistencyRoute
     }
+    '/persistency/launch': {
+      id: '/persistency/launch'
+      path: '/launch'
+      fullPath: '/persistency/launch'
+      preLoaderRoute: typeof PersistencyLaunchRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
     '/persistency/lifecycle': {
       id: '/persistency/lifecycle'
       path: '/lifecycle'
@@ -551,6 +582,13 @@ declare module '@tanstack/react-router' {
       path: '/measurement'
       fullPath: '/persistency/measurement'
       preLoaderRoute: typeof PersistencyMeasurementRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/performance': {
+      id: '/persistency/performance'
+      path: '/performance'
+      fullPath: '/persistency/performance'
+      preLoaderRoute: typeof PersistencyPerformanceRouteImport
       parentRoute: typeof PersistencyRoute
     }
     '/persistency/policies': {
@@ -699,8 +737,10 @@ interface PersistencyRouteChildren {
   PersistencyContactPolicyRoute: typeof PersistencyContactPolicyRoute
   PersistencyDataRoute: typeof PersistencyDataRoute
   PersistencyGuardrailsRoute: typeof PersistencyGuardrailsRoute
+  PersistencyLaunchRoute: typeof PersistencyLaunchRoute
   PersistencyLifecycleRoute: typeof PersistencyLifecycleRoute
   PersistencyMeasurementRoute: typeof PersistencyMeasurementRoute
+  PersistencyPerformanceRoute: typeof PersistencyPerformanceRoute
   PersistencyPoliciesRoute: typeof PersistencyPoliciesRoute
   PersistencyReportsRoute: typeof PersistencyReportsRoute
   PersistencyRulesRoute: typeof PersistencyRulesRoute
@@ -733,8 +773,10 @@ const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyContactPolicyRoute: PersistencyContactPolicyRoute,
   PersistencyDataRoute: PersistencyDataRoute,
   PersistencyGuardrailsRoute: PersistencyGuardrailsRoute,
+  PersistencyLaunchRoute: PersistencyLaunchRoute,
   PersistencyLifecycleRoute: PersistencyLifecycleRoute,
   PersistencyMeasurementRoute: PersistencyMeasurementRoute,
+  PersistencyPerformanceRoute: PersistencyPerformanceRoute,
   PersistencyPoliciesRoute: PersistencyPoliciesRoute,
   PersistencyReportsRoute: PersistencyReportsRoute,
   PersistencyRulesRoute: PersistencyRulesRoute,

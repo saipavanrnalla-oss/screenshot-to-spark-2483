@@ -201,7 +201,7 @@ function seedApprovals(): Approval[] {
   return [
     {
       id: "AP-201", kind: "rule", objectId: "R15", objectName: "Early risk call", versionNo: 1, requestedBy: "MIS and analytics", at: "2026-10-27T09:10:00.000Z",
-      summary: "New rule: A5 cohort within 90 days of due gets an early renewal call", reach: 0, diff: ["New rule", "When: cohort A5, within 90 days of due date", "Then: Early renewal call by Renewal voice agent", "Priority 24"], conflicts: [],
+      summary: "New rule: Lowest propensity cohort within 90 days of due gets an early renewal call", reach: 0, diff: ["New rule", "When: cohort Lowest propensity, within 90 days of due date", "Then: Early renewal call by Renewal voice agent", "Priority 24"], conflicts: [],
       needs: ["head"], signoffs: [], status: "waiting",
     },
     {
@@ -211,14 +211,14 @@ function seedApprovals(): Approval[] {
     },
     {
       id: "AP-203", kind: "rule", objectId: "R16", objectName: "Month-end push", versionNo: 2, requestedBy: "Head of Persistency", at: "2026-10-25T07:20:00.000Z",
-      summary: "Month-end push also covers cohort A4", reach: 0, diff: ["Cohort: A3 → A3, A4", "Priority 25 → 24"], conflicts: [],
+      summary: "Month-end push also covers cohort Low propensity", reach: 0, diff: ["Cohort: Moderate propensity → Moderate propensity, Low propensity", "Priority 25 → 24"], conflicts: [],
       needs: ["head"], signoffs: [], status: "waiting",
-      payload: { cohort: ["A3", "A4", "Medium", "Band 3"], priority: 24 },
+      payload: { cohort: ["Moderate propensity", "Low propensity", "Medium", "Band 3"], priority: 24 },
     },
     {
       id: "AP-204", kind: "agent", objectId: "message", objectName: "Message agent", versionNo: 7, requestedBy: "MIS and analytics", at: "2026-10-27T13:05:00.000Z",
       summary: "Grace reminder template shortened; Tamil template added", reach: 0, diff: ["Template 'Grace reminder' text shortened", "Language added: Tamil template"], conflicts: [],
-      needs: ["head", "compliance"], signoffs: [{ role: "head", name: "Head of Persistency", at: "2026-10-27T15:00:00.000Z" }], status: "waiting",
+      needs: ["head"], signoffs: [{ role: "head", name: "Head of Persistency", at: "2026-10-27T15:00:00.000Z" }], status: "waiting",
     },
   ];
 }
@@ -550,7 +550,7 @@ const RULE_HISTORY: Record<string, { note: string; change: Partial<Rule> }[]> = 
   R05: [{ note: "First release: reminder the day before", change: { then: { workflowId: "R3", action: "WhatsApp reminder a day before promised date", executor: "WhatsApp vendor", delayHours: 20 } } }],
   R10: [{ note: "First release", change: {} }],
   R13: [{ note: "First release", change: { priority: 35 } }, { note: "Priority 30", change: {} }],
-  R03: [{ note: "First release: A5 only", change: { when: { state: ["Grace"], cohort: ["A5"] } } }],
+  R03: [{ note: "First release: Lowest propensity only", change: { when: { state: ["Grace"], cohort: ["Lowest propensity"] } } }],
 };
 
 function seedRuleVersions(id: string): Version<unknown>[] {
@@ -580,7 +580,7 @@ function seedRuleVersions(id: string): Version<unknown>[] {
     data: rule,
   };
   const list = [...older.slice(0, latest.no - 1), latest];
-  if (id === "R16") list.push({ no: 2, status: "In review", author: "Head of Persistency", at: "2026-10-25T07:20:00.000Z", note: "Also covers cohort A4", data: { ...rule, when: { ...rule.when, cohort: ["A3", "A4", "Medium", "Band 3"] }, priority: 24, version: 2 } });
+  if (id === "R16") list.push({ no: 2, status: "In review", author: "Head of Persistency", at: "2026-10-25T07:20:00.000Z", note: "Also covers cohort Low propensity", data: { ...rule, when: { ...rule.when, cohort: ["Moderate propensity", "Low propensity", "Medium", "Band 3"] }, priority: 24, version: 2 } });
   return list;
 }
 

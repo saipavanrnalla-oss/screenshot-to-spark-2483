@@ -327,7 +327,7 @@ export function generatePolicies(): Policy[] {
     const insurerVal = d.latentRisk * 0.8 + r.normal() * 0.45 + (policyYear <= 2 ? 0.25 : 0);
     const insurerCohort: InsurerCohort = unscoredInsurer
       ? "Unscored"
-      : insurerVal < 0.35 ? "A1" : insurerVal < 0.7 ? "A2" : insurerVal < 1.05 ? "A3" : insurerVal < 1.45 ? "A4" : "A5";
+      : insurerVal < 0.35 ? "Highest propensity" : insurerVal < 0.7 ? "High propensity" : insurerVal < 1.05 ? "Moderate propensity" : insurerVal < 1.45 ? "Low propensity" : "Lowest propensity";
 
     const highFlags =
       (d.paymentMode === "Monthly" ? 1 : 0) +

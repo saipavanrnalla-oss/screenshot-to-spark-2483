@@ -8,37 +8,37 @@ import { VENDORS, WORKFLOWS } from "@/data/persistency";
 const visibleFor = (id: string, override = false) => NAV.filter((n) => navVisible(n.key, userById(id), override)).map((n) => n.key);
 
 describe("Release 1 visibility", () => {
-  it("hides Cohorts, Work queues, Collections, Contact policy, Administration, Overview and Where Desible sits", () => {
+  it("hides Cohorts, Rules, Work queues, Collections, Data files, Contact policy, Administration, Overview and Where Desible sits", () => {
     const hidden = (Object.keys(MODULES) as (keyof typeof MODULES)[]).filter((k) => !MODULES[k].enabled).sort();
-    expect(hidden).toEqual(["admin", "cohorts", "collections", "guardrails", "overview", "positioning", "roles"]);
+    expect(hidden).toEqual(["admin", "cohorts", "collections", "data", "guardrails", "overview", "positioning", "roles", "rules"]);
   });
 
   it("turns every old banner, badge, ticker and panel off", () => {
     expect(Object.values(CHROME).every((v) => v === false)).toBe(true);
   });
 
-  it("shows each role exactly the sidebar items in the brief", () => {
-    const full: NavKey[] = ["stages", "policies", "approvals", "rules", "workflows", "agents", "data", "reports"];
-    expect(visibleFor("head")).toEqual(full);
-    expect(visibleFor("mis")).toEqual(full);
-    expect(visibleFor("compliance")).toEqual(full);
-    expect(visibleFor("remittance")).toEqual(["stages", "policies", "data"]);
-    expect(visibleFor("executive")).toEqual(["stages", "reports"]);
+  it("lists two demo users", () => {
+    expect(USERS.map((u) => u.id)).toEqual(["ops", "head"]);
   });
 
-  it("lands each test user on the page in the brief", () => {
+  it("shows each user the sidebar items for the demo", () => {
+    expect(visibleFor("ops")).toEqual(["policies", "approvals", "workflows", "agents", "performance", "launch"]);
+    expect(visibleFor("head")).toEqual(["policies", "approvals", "workflows", "reports", "performance"]);
+  });
+
+  it("lands each user on the page for the demo", () => {
     const landing = Object.fromEntries(USERS.map((u) => [u.id, MODULES[u.landing].label]));
-    expect(landing).toEqual({
-      head: "Policy stages",
-      mis: "Data files",
-      compliance: "Workflows",
-      remittance: "Data files",
-      executive: "Reports",
-    });
+    expect(landing).toEqual({ ops: "Agents", head: "Workflow performance" });
+  });
+
+  it("keeps Head of Persistency read-only on workflows", () => {
+    const head = userById("head")!;
+    expect(head.can).not.toContain("workflows.edit");
+    expect(head.readOnly).toContain("workflows");
   });
 
   it("shows every page with ?modules=all", () => {
-    expect(visibleFor("executive", true)).toHaveLength(NAV.length);
+    expect(visibleFor("head", true)).toHaveLength(NAV.length);
   });
 
   it("uses no real vendor names", () => {

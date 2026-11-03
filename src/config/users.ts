@@ -1,6 +1,6 @@
 import type { ModuleId } from "./modules";
 
-export type RoleId = "head" | "mis" | "compliance" | "remittance" | "executive";
+export type RoleId = "ops" | "head" | "mis" | "compliance" | "remittance" | "executive";
 
 /** Sidebar entries. Each belongs to a module (or none, for shared pages such as Approvals). */
 export type NavKey =
@@ -18,7 +18,9 @@ export type NavKey =
   | "contact-policy"
   | "reports"
   | "admin"
-  | "positioning";
+  | "positioning"
+  | "performance"
+  | "launch";
 
 export type Permission =
   | "rules.edit"
@@ -58,7 +60,8 @@ export interface TestUser {
 
 const HIDDEN_FOR_HEAD: NavKey[] = ["overview", "cohorts", "work", "collections", "contact-policy", "admin", "positioning"];
 
-export const USERS: TestUser[] = [
+/** Release 1 users that stay in the code but are not listed at sign-in. Move one into USERS to bring it back. */
+export const USERS_HIDDEN: TestUser[] = [
   {
     id: "head",
     name: "Head of Persistency",
@@ -114,8 +117,37 @@ export const USERS: TestUser[] = [
   },
 ];
 
+/** The two personas shown in the demo. */
+export const USERS: TestUser[] = [
+  {
+    id: "ops",
+    name: "Operations lead, Persistency",
+    role: "Operations lead",
+    scope: "Whole book",
+    landing: "agents",
+    nav: ["agents", "workflows", "launch", "performance", "approvals", "policies"],
+    readOnly: [],
+    can: [
+      "rules.edit", "workflows.edit", "agents.edit", "agents.thresholds", "agents.pause", "stages.edit", "executors.edit",
+      "policies.act", "policies.hold", "files.import", "lists.create", "experiments.edit",
+    ],
+  },
+  {
+    id: "head",
+    name: "Head of Persistency",
+    role: "Head of Persistency",
+    scope: "Whole book",
+    landing: "performance",
+    nav: ["performance", "policies", "reports", "approvals", "workflows"],
+    readOnly: ["workflows"],
+    can: ["rules.approve", "workflows.approve", "agents.approve", "stages.approve", "policies.act", "policies.hold", "reports.packs", "experiments.edit"],
+  },
+];
+
+const ALL_USERS = [...USERS, ...USERS_HIDDEN.filter((h) => !USERS.some((u) => u.id === h.id))];
+
 export function userById(id: string | null | undefined): TestUser | undefined {
-  return USERS.find((u) => u.id === id);
+  return ALL_USERS.find((u) => u.id === id);
 }
 
 export function can(user: TestUser | undefined, permission: Permission): boolean {

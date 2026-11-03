@@ -14,7 +14,7 @@ export function trackStation(p: Policy): number | null {
   return null;
 }
 
-const HIGH_RISK = new Set(["A5", "High", "Band 5"]);
+const HIGH_RISK = new Set(["Lowest propensity", "High", "Band 5"]);
 
 export interface SubStep {
   key: string;

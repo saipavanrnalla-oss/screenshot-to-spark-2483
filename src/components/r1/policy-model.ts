@@ -118,4 +118,4 @@ export function matchesFilters(bp: BoardPolicy, f: PolicyFilters): boolean {
   return true;
 }
 
-export const COHORTS = ["A1", "A2", "A3", "A4", "A5", "Unscored"] as const;
+export const COHORTS = ["Highest propensity", "High propensity", "Moderate propensity", "Low propensity", "Lowest propensity", "Unscored"] as const;

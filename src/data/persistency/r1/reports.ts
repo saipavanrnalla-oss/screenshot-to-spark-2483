@@ -38,7 +38,7 @@ function offsetFor(f: SeriesFilter): number {
   if (f.ticket) o += OFFSETS.ticket[f.ticket] ?? 0;
   if (f.region) o += OFFSETS.region[f.region] ?? 0;
   if (f.branch) o += ((hashId(f.branch) % 70) - 35) / 10;
-  if (f.cohort) o += { A1: 4.5, A2: 2.2, A3: 0, A4: -3.1, A5: -6.4 }[f.cohort] ?? 0;
+  if (f.cohort) o += ({ "Highest propensity": 4.5, "High propensity": 2.2, "Moderate propensity": 0, "Low propensity": -3.1, "Lowest propensity": -6.4 } as Record<string, number>)[f.cohort] ?? 0;
   return o;
 }
 
@@ -101,7 +101,7 @@ export const SEED_EXPERIMENTS: Experiment[] = [
     method: "Random untreated holdout",
     status: "Finished",
     share: 15,
-    cohorts: ["A4", "A5"],
+    cohorts: ["Low propensity", "Lowest propensity"],
     products: ["ULIP", "Traditional"],
     start: "2026-07-01",
     end: "2026-09-30",
@@ -112,11 +112,11 @@ export const SEED_EXPERIMENTS: Experiment[] = [
   },
   {
     id: "EXP-08",
-    name: "Early renewal call for A5 at 90 days to due",
+    name: "Early renewal call for Lowest propensity at 90 days to due",
     method: "Staggered start by region or branch",
     status: "Finished",
     share: 50,
-    cohorts: ["A5"],
+    cohorts: ["Lowest propensity"],
     products: ["ULIP", "Traditional", "Term"],
     start: "2026-06-01",
     end: "2026-08-31",
@@ -131,7 +131,7 @@ export const SEED_EXPERIMENTS: Experiment[] = [
     method: "Random untreated holdout",
     status: "Draft",
     share: 10,
-    cohorts: ["A3", "A4"],
+    cohorts: ["Moderate propensity", "Low propensity"],
     products: ["ULIP", "Traditional"],
     start: "2026-12-01",
     end: "2027-02-28",
@@ -160,23 +160,23 @@ export const PROPOSALS: Proposal[] = [
     title: "WhatsApp first, then call, for agency policies without e-NACH",
     evidence: "Treated 71 percent against 64 percent untreated, 2,310 policies, from experiment EXP-07.",
     experimentId: "EXP-07",
-    cohort: "A4, A5",
-    rule: { name: "Agency, no e-NACH: WhatsApp first, then call", description: "From experiment EXP-07.", stage: "Renewal window", priority: 38, when: { channel: ["Agency"], cohort: ["A4", "A5"] }, conds: [[{ dim: "paymentMethod", op: "is not", values: ["NACH/ECS mandate"] }]], then: { workflowId: "R1", action: "WhatsApp first, call two days later", executor: "Message agent", delayHours: 4 } },
+    cohort: "Low propensity, Lowest propensity",
+    rule: { name: "Agency, no e-NACH: WhatsApp first, then call", description: "From experiment EXP-07.", stage: "Renewal window", priority: 38, when: { channel: ["Agency"], cohort: ["Low propensity", "Lowest propensity"] }, conds: [[{ dim: "paymentMethod", op: "is not", values: ["NACH/ECS mandate"] }]], then: { workflowId: "R1", action: "WhatsApp first, call two days later", executor: "Message agent", delayHours: 4 } },
   },
   {
     id: "PR-2",
-    title: "Early renewal call for A5 at 90 days to due",
+    title: "Early renewal call for Lowest propensity at 90 days to due",
     evidence: "Treated 66.8 percent against 62.5 percent, 2,438 policies, from experiment EXP-08.",
     experimentId: "EXP-08",
-    cohort: "A5",
-    rule: { name: "A5 early renewal call", description: "From experiment EXP-08.", stage: "Renewal window", priority: 26, when: { cohort: ["A5"] }, conds: [[{ dim: "calendar", op: "within N days of", values: ["due date"], n: 90 }]], then: { workflowId: "R1", action: "Early renewal call", executor: "Renewal voice agent", delayHours: 6 } },
+    cohort: "Lowest propensity",
+    rule: { name: "Lowest propensity early renewal call", description: "From experiment EXP-08.", stage: "Renewal window", priority: 26, when: { cohort: ["Lowest propensity"] }, conds: [[{ dim: "calendar", op: "within N days of", values: ["due date"], n: 90 }]], then: { workflowId: "R1", action: "Early renewal call", executor: "Renewal voice agent", delayHours: 6 } },
   },
   {
     id: "PR-3",
     title: "Monthly-mode offer on the first call for short-of-cash customers",
     evidence: "Promises kept 58 percent against 47 percent in the comparison period, 1,120 calls, same period last year.",
     experimentId: "EXP-08",
-    cohort: "A3, A4",
+    cohort: "Moderate propensity, Low propensity",
     rule: { name: "Short of cash: monthly mode offer", description: "Same period last year comparison.", stage: "Renewal window", priority: 34, when: { reasonCode: ["Money problem"] }, then: { workflowId: "R2", action: "Offer monthly mode on the call", executor: "Renewal voice agent", delayHours: 6, offer: "Mode change to monthly (needs approval)" } },
   },
   {
@@ -184,8 +184,8 @@ export const PROPOSALS: Proposal[] = [
     title: "Skip the voice call for Term customers who read the reminder",
     evidence: "Treated 79 percent against 78 percent, 640 policies, from experiment EXP-07. Difference within noise.",
     experimentId: "EXP-07",
-    cohort: "A1, A2",
-    rule: { name: "Term, reminder read: no call", description: "From experiment EXP-07.", stage: "Renewal window", priority: 44, when: { product: ["Term"], cohort: ["A1", "A2"] }, then: { workflowId: "R1", action: "Reminder message only", executor: "Message agent", delayHours: 6 } },
+    cohort: "Highest propensity, High propensity",
+    rule: { name: "Term, reminder read: no call", description: "From experiment EXP-07.", stage: "Renewal window", priority: 44, when: { product: ["Term"], cohort: ["Highest propensity", "High propensity"] }, then: { workflowId: "R1", action: "Reminder message only", executor: "Message agent", delayHours: 6 } },
   },
 ];
 

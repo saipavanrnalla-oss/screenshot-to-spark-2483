@@ -14,6 +14,8 @@ import {
   FileText,
   CheckSquare,
   Bot,
+  Play,
+  Activity,
 } from "lucide-react";
 import { MODULES, type ModuleId } from "@/config/modules";
 import type { NavKey } from "@/config/users";
@@ -46,6 +48,8 @@ export const NAV: NavEntry[] = [
   { key: "reports", ...m("measurement"), icon: LineChart },
   { key: "admin", ...m("admin"), icon: Settings2 },
   { key: "positioning", ...m("positioning"), icon: Network },
+  { key: "performance", ...m("performance"), icon: Activity },
+  { key: "launch", ...m("launch"), icon: Play },
 ];
 
 export const NAV_BY_KEY = Object.fromEntries(NAV.map((n) => [n.key, n])) as Record<NavKey, NavEntry>;

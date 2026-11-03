@@ -32,13 +32,15 @@ interface NodeData extends Record<string, unknown> {
   active: boolean;
   mark?: Mark | undefined;
   count?: number | undefined;
+  funnel?: boolean | undefined;
+  total?: number | undefined;
   paused?: boolean | undefined;
 }
 
 type FlowNode = Node<NodeData, "wf">;
 
 function NodeView({ data }: NodeProps<FlowNode>) {
-  const { node, selected, active, mark, count, paused } = data;
+  const { node, selected, active, mark, count, paused, funnel, total } = data;
   const item = PALETTE_BY_TYPE[node.type];
   const outreach = isOutreach(node);
   return (
@@ -55,10 +57,16 @@ function NodeView({ data }: NodeProps<FlowNode>) {
       <Handle type="target" position={Position.Left} className="!size-2.5 !border !border-border !bg-card" />
       <div className="flex items-center justify-between gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">{item?.group ?? "Step"}</span>
-        {count !== undefined && count > 0 && <span className="rounded-pill bg-brand-tint px-1.5 text-[10px] font-semibold text-primary tabular">{count}</span>}
+        {!funnel && count !== undefined && count > 0 && <span className="rounded-pill bg-brand-tint px-1.5 text-[10px] font-semibold text-primary tabular">{count}</span>}
       </div>
       <p className="mt-0.5 text-[12px] font-semibold leading-snug text-foreground">{node.label}</p>
       {node.config.executor && <p className="truncate text-[11px] text-subtle">{node.config.executor}</p>}
+      {funnel && count !== undefined && (
+        <p className="mt-1 flex items-baseline gap-1.5">
+          <span className="text-[18px] font-semibold leading-none text-primary tabular">{count.toLocaleString("en-IN")}</span>
+          <span className="text-[10px] text-muted-foreground">policies{total ? ` · ${Math.round((count / total) * 100)}%` : ""}</span>
+        </p>
+      )}
       {paused && <p className="text-[10px] font-semibold text-destructive">Agent paused</p>}
       {outreach && (
         <p className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground" title="Paid since the list, On hold and Contact policy run before this step and cannot be removed">
@@ -75,6 +83,7 @@ interface EdgeData extends Record<string, unknown> {
   editable: boolean;
   onInsert?: ((id: string) => void) | undefined;
   selected: boolean;
+  count?: number | undefined;
 }
 
 function EdgeView({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, label, markerEnd, data }: EdgeProps<Edge<EdgeData>>) {
@@ -84,7 +93,12 @@ function EdgeView({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targ
       <BaseEdge id={id} path={path} {...(markerEnd ? { markerEnd } : {})} style={{ stroke: data?.selected ? "var(--primary)" : "var(--muted-foreground)", strokeWidth: data?.selected ? 2 : 1.25 }} />
       <EdgeLabelRenderer>
         <div className="group nodrag nopan pointer-events-auto absolute flex items-center gap-1" style={{ transform: `translate(-50%, -50%) translate(${lx}px, ${ly}px)` }}>
-          {label && <span className="rounded-sm bg-card px-1 text-[10px] font-semibold text-subtle">{label}</span>}
+          {(label || data?.count !== undefined) && (
+            <span className="rounded-sm bg-card px-1 text-[10px] font-semibold text-subtle">
+              {label}
+              {data?.count !== undefined && <span className="ml-1 text-primary tabular">{data.count.toLocaleString("en-IN")}</span>}
+            </span>
+          )}
           {data?.editable && (
             <button type="button" aria-label="Insert a step here" onClick={() => data.onInsert?.(id)} className="flex size-4 items-center justify-center rounded-full border border-border bg-card text-muted-foreground opacity-0 transition-opacity hover:border-primary hover:text-primary group-hover:opacity-100 focus:opacity-100">
               <Plus className="size-3" />
@@ -107,6 +121,8 @@ export interface WfCanvasProps {
   activeId?: string | null | undefined;
   marks?: Record<string, Mark> | undefined;
   counts?: Record<string, number> | undefined;
+  /** Funnel mode: big counts on nodes, counts on edges. */
+  funnel?: { total: number; edges: Record<string, number> } | undefined;
   pausedExecutors?: string[] | undefined;
   height?: number | string | undefined;
   onSelectNode?: ((id: string | null) => void) | undefined;
@@ -126,10 +142,10 @@ function Inner(p: WfCanvasProps) {
         id: n.id,
         type: "wf" as const,
         position: { x: n.x, y: n.y },
-        data: { node: n, selected: n.id === p.selectedId, active: n.id === p.activeId, mark: p.marks?.[n.id], count: p.counts?.[n.id], paused: !!n.config.executor && !!p.pausedExecutors?.includes(n.config.executor) },
+        data: { node: n, selected: n.id === p.selectedId, active: n.id === p.activeId, mark: p.marks?.[n.id], count: p.counts?.[n.id], funnel: !!p.funnel, total: p.funnel?.total, paused: !!n.config.executor && !!p.pausedExecutors?.includes(n.config.executor) },
         draggable: !!p.editable,
       })),
-    [p.graph, p.selectedId, p.activeId, p.marks, p.counts, p.editable, p.pausedExecutors],
+    [p.graph, p.selectedId, p.activeId, p.marks, p.counts, p.funnel, p.editable, p.pausedExecutors],
   );
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<FlowNode>(nodes);
   useEffect(() => setRfNodes(nodes), [nodes, setRfNodes]);
@@ -142,9 +158,9 @@ function Inner(p: WfCanvasProps) {
         type: "wf",
         ...(e.label ? { label: e.label } : {}),
         markerEnd: { type: MarkerType.ArrowClosed, color: "var(--muted-foreground)" },
-        data: { editable: !!p.editable, onInsert: p.onInsert, selected: e.id === p.selectedEdge },
+        data: { editable: !!p.editable, onInsert: p.onInsert, selected: e.id === p.selectedEdge, count: p.funnel?.edges[e.id] },
       })),
-    [p.graph, p.editable, p.onInsert, p.selectedEdge],
+    [p.graph, p.editable, p.onInsert, p.selectedEdge, p.funnel],
   );
   const onDrop = (e: DragEvent) => {
     const type = e.dataTransfer.getData("application/wf-node");
@@ -162,7 +178,7 @@ function Inner(p: WfCanvasProps) {
         edgeTypes={edgeTypes}
         colorMode={theme === "light" ? "light" : "dark"}
         fitView
-        fitViewOptions={{ padding: 0.12, minZoom: 0.6, maxZoom: 1 }}
+        fitViewOptions={{ padding: 0.08, minZoom: 0.3, maxZoom: 1 }}
         minZoom={0.2}
         nodesConnectable={!!p.editable}
         nodesDraggable={!!p.editable}

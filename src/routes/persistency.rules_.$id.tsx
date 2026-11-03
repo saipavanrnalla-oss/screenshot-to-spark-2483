@@ -142,7 +142,7 @@ function RuleEditorPage() {
       reach: impact.matched.length,
       diff: ruleDiff(stored && isLive(stored) ? stored : undefined, draft),
       conflicts: overlaps.slice(0, 3).map((o) => `Shares ${num(o.n)} policies with ${o.rule.id} ${o.rule.name}`),
-      needs: noConds ? ["head", "compliance"] : ["head"],
+      needs: noConds ? ["head"] : ["head"],
       secondApproverReason: noConds ? "The rule has no conditions" : undefined,
     });
     toast.success(`Version ${no} sent for review`, { description: noConds ? "No conditions: a second approver is needed." : "Waiting for Head of Persistency." });

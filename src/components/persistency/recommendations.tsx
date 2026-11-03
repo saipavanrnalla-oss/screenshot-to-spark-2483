@@ -25,7 +25,7 @@ interface Rec {
   executor?: string | undefined;
 }
 
-const HIGH = new Set(["A4", "A5", "High", "Band 4", "Band 5"]);
+const HIGH = new Set(["Low propensity", "Lowest propensity", "High", "Band 4", "Band 5"]);
 const CASH = new Set(["Cash/cheque", "Bank branch"]);
 
 function paidRate(list: Policy[]): { rate: number; n: number } {

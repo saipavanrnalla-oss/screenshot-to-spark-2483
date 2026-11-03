@@ -176,8 +176,8 @@ export function simulate(g: WfGraph, scenario: Scenario): SimResult {
       if (HALT.has(disposition)) haltSeen = true;
       if (disposition === "Already paid") paidSeen = true;
     } else if (cur.type === "decision.cohort") {
-      chosen = pick("A4") ?? edges[0];
-      disposition = "Cohort A4";
+      chosen = pick("Low propensity") ?? edges[0];
+      disposition = "Cohort Low propensity";
     } else if (cur.type === "decision.product") {
       chosen = pick("ULIP") ?? edges[0];
       disposition = "ULIP";

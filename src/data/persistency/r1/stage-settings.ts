@@ -25,7 +25,7 @@ export interface StageSettings {
 
 export const STAGE_LIST: Stage[] = ["Sourcing", "Warming", "Renewal window", "Early lapse", "Late lapse"];
 
-export const INTERRUPT_NEXT = ["Hold (X1)", "Surrender retention (L3)", "Claims team", "Grievance team", "Back to the open journey"] as const;
+export const INTERRUPT_NEXT = ["Hold (X1)", "ULIP Surrender Prevention (L3)", "Claims team", "Grievance team", "Back to the open journey"] as const;
 
 export const DEFAULT_STAGE_SETTINGS: StageSettings = {
   warmingStart: 365,
@@ -49,7 +49,7 @@ export const DEFAULT_STAGE_SETTINGS: StageSettings = {
     { event: "Complaint", next: "Hold (X1)" },
     { event: "Bereavement", next: "Claims team" },
     { event: "Stop-calling request", next: "Hold (X1)" },
-    { event: "Surrender request", next: "Surrender retention (L3)" },
+    { event: "Surrender request", next: "ULIP Surrender Prevention (L3)" },
     { event: "Legal threat", next: "Grievance team" },
   ],
   revivalYears: { ULIP: 3, Traditional: 5, Term: 5 },

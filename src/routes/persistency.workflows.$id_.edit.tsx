@@ -480,7 +480,7 @@ function BuilderPage() {
                   diff: d.lines.length ? d.lines : ["No changes to steps"],
                   conflicts: [],
                   sim: latestSim ? { result: latestSim.result, reason: latestSim.reason, steps: latestSim.steps } : undefined,
-                  needs: ["head", "compliance"],
+                  needs: ["head"],
                   effectiveFrom: effective,
                 });
                 setPublishOpen(false);

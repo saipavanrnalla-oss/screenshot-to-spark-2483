@@ -121,19 +121,19 @@ export const LEGACY_SEED_PENDING: PendingChange[] = [
   },
   {
     id: "PC-102",
-    title: "Grace, A4 cohort: move from Call-centre vendor (fixed payout) to Desible voice",
+    title: "Grace, Low propensity cohort: move from Call-centre vendor (fixed payout) to Desible voice",
     source: "War-room recommendation",
     proposedBy: "Month-end war room (rule-based)",
     at: "2026-10-28T08:15:00.000Z",
-    effect: "Reassigns month-end grace calls for A4 policies",
+    effect: "Reassigns month-end grace calls for Low propensity policies",
     rule: {
       id: "R18",
-      name: "Month-end grace, A4: Desible voice first",
+      name: "Month-end grace, Low propensity: Desible voice first",
       stage: "Renewal window",
       level: "rule",
       priority: 18,
       source: "Proposed by Desible, insurer to confirm",
-      when: { state: ["Grace"], cohort: ["A4"], calendar: ["Month-end (last 5 days)"] },
+      when: { state: ["Grace"], cohort: ["Low propensity"], calendar: ["Month-end (last 5 days)"] },
       then: { workflowId: "R2", action: "Desible voice call, telecall fallback", executor: "Desible", delayHours: 1 },
       effectiveFrom: "2026-10-28",
       needsApprovalFrom: "Head of Persistency",
@@ -260,7 +260,7 @@ function seedAudit(ticker: TickerItem[]): AuditEntry[] {
   }));
   out.push(
     { id: auditSeq++, at: "2026-10-26T16:40:00.000Z", actor: "Ops / remittance", kind: "setting", detail: "bounce_returns marked late; R4 paused until it arrives" },
-    { id: auditSeq++, at: "2026-10-03T05:50:00.000Z", actor: "MIS / analytics", kind: "setting", detail: "risk_cohorts_2026-10.csv loaded; insurer cohorts A1-A5 active for ULIP and Traditional" },
+    { id: auditSeq++, at: "2026-10-03T05:50:00.000Z", actor: "MIS / analytics", kind: "setting", detail: "risk_cohorts_2026-10.csv loaded; insurer cohorts Highest propensity-Lowest propensity active for ULIP and Traditional" },
     { id: auditSeq++, at: "2026-10-01T04:30:00.000Z", actor: "Head of Persistency", kind: "approval", detail: "Insurer defaults D1, D2, D3 confirmed" },
     { id: auditSeq++, at: "2026-10-01T04:00:00.000Z", actor: "Compliance", kind: "approval", detail: "Guardrails G1 to G5 locked" },
   );

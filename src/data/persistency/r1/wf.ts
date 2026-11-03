@@ -38,7 +38,7 @@ export const PALETTE: PaletteItem[] = [
   P("check.approval", "Approval needed", "Checks", "Waits for a named approver.", ["Approvals"], ["Approved", "Returned"]),
   P("decision.rule", "Rule", "Decisions", "Cites a rule from Rules and follows its action.", ["Rules"], ["Matched", "Not matched"]),
   P("decision.disposition", "Branch on disposition", "Decisions", "One edge per disposition.", ["Disposition"], [...DISPOSITIONS]),
-  P("decision.cohort", "Branch on cohort", "Decisions", "One edge per cohort.", ["Cohort"], ["A1", "A2", "A3", "A4", "A5"]),
+  P("decision.cohort", "Branch on cohort", "Decisions", "One edge per cohort.", ["Cohort"], ["Highest propensity", "High propensity", "Moderate propensity", "Low propensity", "Lowest propensity"]),
   P("decision.product", "Branch on product", "Decisions", "One edge per product.", ["Product"], ["ULIP", "Traditional", "Term"]),
   P("decision.field", "Branch on a field", "Decisions", "Branches on a policy field with a condition.", ["Policy facts"], ["Yes", "No"]),
   P("agent.message", "Message agent", "Agents", "Sends an approved template in the customer's language.", ["Template", "Policy facts"], [...DISPOSITIONS], { outreach: true, executor: "Message agent", agentId: "message", cost: 1.2 }),
@@ -178,12 +178,12 @@ const R2 = build(
     ["oPaid", "outcome.paid"],
     ["oR3", "outcome.routed", "Promise follow-up (R3)"],
     ["oHold", "outcome.routed", "Hold (X1)"],
-    ["oL3", "outcome.routed", "Surrender retention (L3)"],
+    ["oL3", "outcome.routed", "ULIP Surrender Prevention (L3)"],
     ["oH", "outcome.handoff", "Telecaller owns the case"],
-    ["oL1", "outcome.routed", "Early-lapse recovery (L1)"],
+    ["oL1", "outcome.routed", "Lapse Revival Campaign (L1)"],
   ],
   [
-    ["t", "paid"], ["paid", "oPaid", "Paid"], ["paid", "cohort", "Not paid"], ["cohort", "bot", "A5"], ["cohort", "voice", "A3"], ["cohort", "voice", "A4"], ["cohort", "vendor", "A1"], ["cohort", "vendor", "A2"],
+    ["t", "paid"], ["paid", "oPaid", "Paid"], ["paid", "cohort", "Not paid"], ["cohort", "bot", "Lowest propensity"], ["cohort", "voice", "Moderate propensity"], ["cohort", "voice", "Low propensity"], ["cohort", "vendor", "Highest propensity"], ["cohort", "vendor", "High propensity"],
     ["bot", "read", "Sent"], ["vendor", "read", "Sent"], ["voice", "disp", "Default"], ["read", "disp", "Default"],
     ["disp", "pay", "Will pay (link requested)"], ["disp", "oR3", "Promise to pay with date"], ["disp", "oPaid", "Already paid"], ["disp", "oHold", "Complaint or mis-selling"], ["disp", "oL3", "Wants to surrender"], ["disp", "sum", "Asked for a person"], ["disp", "wait", "Not reachable"], ["disp", "wait", "Default"],
     ["sum", "tc", "Packet"], ["tc", "oH", "Default"], ["pay", "oPaid", "Paid"], ["pay", "wait", "Not paid"], ["pay", "oL1", "Mandate problem"], ["wait", "oL1", "Done"],
@@ -202,9 +202,96 @@ const R4 = build(
     ["wp", "wait.payment", "Wait for payment file"],
     ["oPaid", "outcome.paid"],
     ["oHold", "outcome.routed", "Hold (X1)"],
-    ["oL1", "outcome.routed", "Early-lapse recovery (L1)"],
+    ["oL1", "outcome.routed", "Lapse Revival Campaign (L1)"],
   ],
   [["t", "hold"], ["hold", "oHold", "On hold"], ["hold", "field", "Clear"], ["field", "msg", "Yes"], ["field", "rem", "No"], ["msg", "pay", "Default"], ["pay", "oPaid", "Paid"], ["pay", "voice", "Not paid"], ["pay", "rem", "Mandate problem"], ["voice", "pay", "Will pay (link requested)"], ["voice", "rem", "Mandate problem"], ["voice", "wp", "Default"], ["rem", "wp", "Fixed"], ["rem", "wp", "Not fixed"], ["wp", "oPaid", "Paid"], ["wp", "oL1", "Not paid"]],
+);
+
+
+/** 13th Month Persistency: forks on renewal propensity, so a high-propensity policy gets WhatsApp and a low one gets a call. */
+const R1_FULL = build(
+  [
+    ["t", "trigger.due", "Due list at T minus 90", { days: 90 }],
+    ["hold", "check.hold"],
+    ["cohort", "decision.cohort", "Branch on renewal propensity"],
+    ["wa", "agent.message", "WhatsApp renewal reminder with payment link", { script: "13th month reminder", language: "Customer language" }],
+    ["w1", "wait.days", "Wait 3 days", { days: 3 }],
+    ["paid", "check.paid", "Paid since the reminder"],
+    ["call", "agent.voice", "Early renewal call", { script: "13th month renewal call", retries: 2, gapDays: 2, deadlineHours: 72, onTimeout: "Send to team lead", dispositions: ["Will pay (link requested)", "Promise to pay with date", "Wants to surrender", "Complaint or mis-selling", "Default"] }],
+    ["pay", "agent.payment", "Send payment link"],
+    ["w2", "wait.days", "Wait 2 days", { days: 2 }],
+    ["paid2", "check.paid", "Paid since the call"],
+    ["cls", "agent.classifier", "Tag the reason for non-payment"],
+    ["sum", "agent.summariser", "Write handoff packet"],
+    ["tc", "people.telecaller", "Telecaller call back"],
+    ["rem", "people.remittance", "Fix mandate"],
+    ["oPaid", "outcome.paid"],
+    ["oR3", "outcome.routed", "Promise follow-up (R3)"],
+    ["oL3", "outcome.routed", "ULIP Surrender Prevention (L3)"],
+    ["oHold", "outcome.routed", "Hold (X1)"],
+    ["oH", "outcome.handoff", "Telecaller owns the case"],
+    ["oBau", "outcome.bau", "Back to the renewal window"],
+  ],
+  [
+    ["t", "hold"], ["hold", "oHold", "On hold"], ["hold", "cohort", "Clear"],
+    ["cohort", "wa", "Highest propensity"], ["cohort", "wa", "High propensity"], ["cohort", "wa", "Moderate propensity"],
+    ["cohort", "call", "Low propensity"], ["cohort", "call", "Lowest propensity"],
+    ["wa", "w1", "Default"], ["w1", "paid", "Done"], ["paid", "oPaid", "Paid"], ["paid", "call", "Not paid"],
+    ["call", "pay", "Will pay (link requested)"], ["call", "oR3", "Promise to pay with date"], ["call", "oL3", "Wants to surrender"], ["call", "oHold", "Complaint or mis-selling"], ["call", "w2", "Default"],
+    ["w2", "paid2", "Done"], ["paid2", "oPaid", "Paid"], ["paid2", "cls", "Not paid"],
+    ["pay", "oPaid", "Paid"], ["pay", "cls", "Not paid"], ["pay", "rem", "Mandate problem"],
+    ["rem", "oBau", "Fixed"], ["rem", "oBau", "Not fixed"],
+    ["cls", "sum", "Reason"], ["cls", "sum", "Low confidence"], ["sum", "tc", "Packet"], ["tc", "oH", "Default"],
+  ],
+);
+
+/** Lapse Revival Campaign. */
+const L1_FULL = build(
+  [
+    ["t", "trigger.timer", "Policy lapsed 180 days or fewer"],
+    ["hold", "check.hold"],
+    ["paid", "check.paid", "Revived since the list"],
+    ["wa", "agent.message", "Revival link on WhatsApp", { script: "Revival link" }],
+    ["w1", "wait.days", "Wait 3 days", { days: 3 }],
+    ["paid2", "check.paid", "Revived since the message"],
+    ["call", "agent.voice", "Revival call", { script: "Revival call", retries: 2, gapDays: 3, dispositions: ["Will pay (link requested)", "Promise to pay with date", "Complaint or mis-selling", "Default"] }],
+    ["pay", "agent.payment", "Send revival payment link"],
+    ["vendor", "vendor.send", "Recovery call list", { executor: "Call-centre vendor (variable payout)" }],
+    ["oRev", "outcome.paid", "Policy revived"],
+    ["oR3", "outcome.routed", "Promise follow-up (R3)"],
+    ["oHold", "outcome.routed", "Hold (X1)"],
+    ["oL2", "outcome.routed", "Deep Lapse Revival (L2)"],
+    ["oBau", "outcome.bau", "Stays lapsed"],
+  ],
+  [
+    ["t", "hold"], ["hold", "oHold", "On hold"], ["hold", "paid", "Clear"], ["paid", "oRev", "Paid"], ["paid", "wa", "Not paid"],
+    ["wa", "w1", "Default"], ["w1", "paid2", "Done"], ["paid2", "oRev", "Paid"], ["paid2", "call", "Not paid"],
+    ["call", "pay", "Will pay (link requested)"], ["call", "oR3", "Promise to pay with date"], ["call", "oHold", "Complaint or mis-selling"], ["call", "vendor", "Default"],
+    ["pay", "oRev", "Paid"], ["pay", "vendor", "Not paid"], ["pay", "vendor", "Mandate problem"],
+    ["vendor", "oL2", "Sent"],
+  ],
+);
+
+/** ULIP Surrender Prevention. */
+const L3_FULL = build(
+  [
+    ["t", "trigger.event", "Customer asks to surrender"],
+    ["hold", "check.hold"],
+    ["cls", "agent.classifier", "Tag the surrender reason"],
+    ["sum", "agent.summariser", "Write handoff packet"],
+    ["fv", "decision.field", "Fund value above premiums paid", { condition: "Fund value is above premiums paid" }],
+    ["ret", "people.retention", "Retention desk call"],
+    ["call", "agent.voice", "Product explanation call", { script: "Product explanation", dispositions: ["Will pay (link requested)", "Wants to surrender", "Default"] }],
+    ["oKept", "outcome.bau", "Policy retained"],
+    ["oSur", "outcome.handoff", "Surrender processed"],
+    ["oHold", "outcome.routed", "Hold (X1)"],
+  ],
+  [
+    ["t", "hold"], ["hold", "oHold", "On hold"], ["hold", "cls", "Clear"], ["cls", "sum", "Reason"], ["cls", "sum", "Low confidence"], ["sum", "fv", "Packet"],
+    ["fv", "ret", "Yes"], ["fv", "call", "No"],
+    ["ret", "oKept", "Retained"], ["ret", "oSur", "Surrender"],
+    ["call", "ret", "Will pay (link requested)"], ["call", "oSur", "Wants to surrender"], ["call", "ret", "Default"],
+  ],
 );
 
 function r1Graph(v: number): WfGraph {
@@ -260,16 +347,16 @@ export const SEED_GRAPHS: Record<string, WfGraph> = {
   W1,
   W2: simple("trigger.station", "ULIP in policy year 1", [["v", "agent.voice", "Fund value and lock-in call"]], "Warming (W1)"),
   W3: simple("trigger.timer", "No active mandate before window", [["m", "agent.message", "e-NACH set-up link"], ["w", "wait.days", "Wait 2 days", { days: 2 }], ["p", "agent.payment", "Autopay set-up"]], "Renewal window"),
-  R1: r1Graph(4),
+  R1: R1_FULL,
   R2,
   R3: simple("trigger.timer", "Promise date tomorrow", [["m", "agent.message", "Promise reminder"], ["w", "wait.payment", "Wait for payment file"]], "Due-date collection (R2)"),
   R4,
   R5: simple("trigger.due", "Cash or cheque payer unpaid at due", [["paid", "check.paid"], ["v", "vendor.visit", "Visit list for sales officer"]], "Visit done"),
   R6: simple("trigger.due", "Bank-sourced policy in window", [["v", "vendor.send", "List to bank relationship manager", { executor: "Bank relationship manager" }]], "Relationship manager follows up"),
   R7: simple("trigger.due", "Ticket size above the high-value limit", [["h", "people.hv", "Personal call by high-value desk"]], "High-value desk owns the case"),
-  L1: simple("trigger.timer", "Lapsed 180 days or less", [["m", "agent.message", "Revival link"], ["v", "vendor.send", "Recovery call list", { executor: "Call-centre vendor (variable payout)" }]], "Revival or late lapse"),
+  L1: L1_FULL,
   L2: simple("trigger.timer", "Lapsed over 180 days", [["v", "vendor.send", "Revival offer call list"], ["u", "people.underwriting", "Health declaration review"]], "Revived or referred"),
-  L3: simple("trigger.event", "Customer says wants out", [["s", "agent.summariser", "Write handoff packet"], ["r", "people.retention", "Retention desk call"]], "Retained or surrendered"),
+  L3: L3_FULL,
   X1: simple("trigger.event", "Complaint, bereavement or do-not-call", [["h", "check.hold", "Set hold"], ["l", "people.lead", "Grievance or claims team"]], "Outreach frozen"),
   X2: simple("trigger.receipt", "Receipt arrives", [["p", "check.paid", "Match to pending tasks"]], "Open tasks cancelled"),
 };
@@ -284,9 +371,9 @@ export function seedWorkflowVersions(code: string): Version<WfGraph>[] {
       author: no % 2 ? "MIS and analytics" : "Head of Persistency",
       at: new Date(Date.UTC(2026, 3 + no, 3, 6)).toISOString(),
       note: NOTE_R1[no - 1]!,
-      approver: "Head of Persistency, Compliance and quality",
+      approver: "Head of Persistency",
       approvedAt: new Date(Date.UTC(2026, 3 + no, 5, 6)).toISOString(),
-      data: r1Graph(no),
+      data: no === 4 ? R1_FULL : r1Graph(no),
       sims: [{ id: `SIM-R1-${no}`, at: new Date(Date.UTC(2026, 3 + no, 4, 6)).toISOString(), by: "MIS and analytics", policyId: "SLI02400113", scenario: no >= 3 ? "Pays after the link" : "No answer", result: "Pass", steps: 4 + no }],
     }));
   }
@@ -295,14 +382,14 @@ export function seedWorkflowVersions(code: string): Version<WfGraph>[] {
     v1.nodes = v1.nodes.filter((n) => n.id !== "voice");
     v1.edges = v1.edges.filter((e) => e.from !== "voice" && e.to !== "voice").map((e) => (e.from === "pay" && e.label === "Not paid" ? { ...e, to: "wp" } : e));
     return [
-      { no: 1, status: "Retired", author: "MIS and analytics", at: "2026-05-10T06:00:00.000Z", note: "First release", approver: "Head of Persistency, Compliance and quality", approvedAt: "2026-05-12T06:00:00.000Z", data: v1, sims: [{ id: "SIM-R4-1", at: "2026-05-11T06:00:00.000Z", by: "MIS and analytics", policyId: "SLI02400347", scenario: "Pays after the link", result: "Pass", steps: 6 }] },
-      { no: 2, status: "Active", author: "Head of Persistency", at: "2026-08-20T06:00:00.000Z", note: "Recovery call when the link is not paid", approver: "Head of Persistency, Compliance and quality", approvedAt: "2026-08-22T06:00:00.000Z", data: R4, sims: [{ id: "SIM-R4-2", at: "2026-08-21T06:00:00.000Z", by: "Head of Persistency", policyId: "SLI02400347", scenario: "No answer", result: "Pass", steps: 8 }] },
+      { no: 1, status: "Retired", author: "MIS and analytics", at: "2026-05-10T06:00:00.000Z", note: "First release", approver: "Head of Persistency", approvedAt: "2026-05-12T06:00:00.000Z", data: v1, sims: [{ id: "SIM-R4-1", at: "2026-05-11T06:00:00.000Z", by: "MIS and analytics", policyId: "SLI02400347", scenario: "Pays after the link", result: "Pass", steps: 6 }] },
+      { no: 2, status: "Active", author: "Head of Persistency", at: "2026-08-20T06:00:00.000Z", note: "Recovery call when the link is not paid", approver: "Head of Persistency", approvedAt: "2026-08-22T06:00:00.000Z", data: R4, sims: [{ id: "SIM-R4-2", at: "2026-08-21T06:00:00.000Z", by: "Head of Persistency", policyId: "SLI02400347", scenario: "No answer", result: "Pass", steps: 8 }] },
     ];
   }
   const g = SEED_GRAPHS[code];
   if (!g) return [];
   const sims = code === "R2" ? [{ id: "SIM-R2-1", at: "2026-09-14T06:00:00.000Z", by: "MIS and analytics", policyId: "SLI02400113", scenario: "Promises a date", result: "Pass" as const, steps: 6 }] : code === "W1" ? [{ id: "SIM-W1-1", at: "2026-09-02T06:00:00.000Z", by: "MIS and analytics", policyId: "SLI02400210", scenario: "No answer", result: "Pass" as const, steps: 7 }] : undefined;
-  return [{ no: 1, status: "Active", author: "MIS and analytics", at: "2026-06-01T06:00:00.000Z", note: "First release", approver: "Head of Persistency, Compliance and quality", approvedAt: "2026-06-03T06:00:00.000Z", data: g, sims }];
+  return [{ no: 1, status: "Active", author: "MIS and analytics", at: "2026-06-01T06:00:00.000Z", note: "First release", approver: "Head of Persistency", approvedAt: "2026-06-03T06:00:00.000Z", data: g, sims }];
 }
 
 /* ---------- Prompt builder: two prepared descriptions ---------- */
