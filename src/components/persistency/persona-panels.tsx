@@ -532,7 +532,7 @@ function BranchComparison() {
   return (
     <div>
       <p className="mb-2 text-xs text-subtle">Zone {zone}</p>
-      <DataTable head={["Branch", "Policies", "Due so far", "Paid rate", "In grace"]} minWidth={460}>
+      <DataTable head={["Branch", "Policies", "Due so far", "Paid rate", "In Grace Period"]} minWidth={460}>
         {rows.map((r) => (
           <tr key={r.city}>
             <td className="font-semibold text-foreground">{r.city}</td>

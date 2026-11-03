@@ -6,7 +6,7 @@ import { usePolicies } from "@/store/persistency";
 import { activeVersion, useVersions } from "@/store/work";
 import type { Tone } from "./status-chip";
 
-export const POLICY_STATUSES = ["New", "Warming", "Due", "In grace", "Promised, not yet paid", "Paid", "Lapsed", "On hold", "Surrender in progress"] as const;
+export const POLICY_STATUSES = ["New", "Warming", "Due", "In Grace Period", "Promised, not yet paid", "Paid", "Lapsed", "On hold", "Surrender in progress"] as const;
 export type PolicyStatus = (typeof POLICY_STATUSES)[number];
 
 export function isOnHold(p: Pick<Policy, "state">): boolean {
@@ -18,7 +18,7 @@ export function policyStatus(p: Policy): PolicyStatus {
   if (p.state === "Surrender-intent") return "Surrender in progress";
   if (p.state === "Paid" || p.state === "Revived") return "Paid";
   if (p.state === "Promised") return "Promised, not yet paid";
-  if (p.state === "Grace") return "In grace";
+  if (p.state === "Grace") return "In Grace Period";
   if (p.state === "Renewal window open") return "Due";
   if (p.state === "Lapsed early" || p.state === "Lapsed late" || p.state === "Revival offered") return "Lapsed";
   if (p.state.startsWith("Warming")) return "Warming";
@@ -27,7 +27,7 @@ export function policyStatus(p: Policy): PolicyStatus {
 
 export function statusTone(s: PolicyStatus): Tone {
   if (s === "Paid") return "ok";
-  if (s === "In grace" || s === "Promised, not yet paid" || s === "Due") return "risk";
+  if (s === "In Grace Period" || s === "Promised, not yet paid" || s === "Due") return "risk";
   if (s === "Lapsed" || s === "On hold" || s === "Surrender in progress") return "off";
   return "neutral";
 }

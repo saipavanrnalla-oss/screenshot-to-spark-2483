@@ -4,7 +4,7 @@ import { validateGraph } from "@/engine/workflow";
 import { computeFunnel } from "@/components/r1/funnel-model";
 
 describe("Demo workflows and funnel", () => {
-  it.each(["R1", "L1", "L3", "R2", "R4", "W1"])("%s passes the publish checks", (code) => {
+  it.each(["R1", "L1", "L3", "R2", "R3", "R4", "W1", "W3", "S2", "L2", "X1"])("%s passes the publish checks", (code) => {
     expect(validateGraph(SEED_GRAPHS[code]!)).toEqual([]);
   });
 
