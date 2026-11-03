@@ -4,7 +4,7 @@ import type { ActivityRow } from "@/data/persistency/r1/types";
 import { usePolicy } from "@/store/persistency";
 import { useWork } from "@/store/work";
 
-const AGENT_IDS: Record<string, string> = { "Renewal voice agent": "renewal-voice", "Message agent": "message", "Payment assist agent": "payment-assist" };
+const AGENT_IDS: Record<string, string> = { "Premium Renewal Voice Agent": "renewal-voice", "Renewal Reminder Agent": "message", "Payment Link Dispatcher": "payment-assist" };
 
 /** Seeded and in-session Activity rows for one policy, newest first. Rows are never edited or deleted. */
 export function usePolicyActivity(policyId: string): ActivityRow[] {

@@ -16,6 +16,7 @@ import {
   Bot,
   Play,
   Activity,
+  Radio,
   Gauge,
 } from "lucide-react";
 import { MODULES, type ModuleId } from "@/config/modules";
@@ -38,12 +39,13 @@ const m = (id: ModuleId) => ({ module: id, label: MODULES[id].label, route: MODU
 export const NAV: NavEntry[] = [
   { key: "executive", ...m("executive"), icon: Gauge, group: "Analytics" },
   { key: "overview", ...m("overview"), icon: LayoutDashboard, group: "Analytics" },
-  { key: "performance", ...m("performance"), icon: Activity, group: "Analytics" },
   { key: "reports", ...m("measurement"), icon: LineChart, group: "Analytics" },
   { key: "cohorts", ...m("cohorts"), icon: Layers, group: "Analytics" },
   { key: "agents", ...m("agents"), icon: Bot, group: "Orchestration" },
   { key: "workflows", ...m("workflows"), icon: Workflow, group: "Orchestration" },
   { key: "launch", ...m("launch"), icon: Play, group: "Orchestration" },
+  { key: "performance", ...m("performance"), icon: Activity, group: "Observability" },
+  { key: "activity", ...m("activity"), icon: Radio, group: "Observability" },
   { key: "rules", ...m("rules"), icon: SlidersHorizontal, group: "Orchestration" },
   { key: "stages", ...m("journeys"), icon: Waypoints, group: "Operations" },
   { key: "policies", module: "journeys", label: "Policies", route: "/persistency/policies", icon: FileText, group: "Operations" },

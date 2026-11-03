@@ -392,8 +392,8 @@ function Funnel() {
         {[...new Set(TASKS.map((t) => t.workflow))].sort().map((w) => <option key={w}>{w}</option>)}
       </select>
       <div className="grid gap-4 lg:grid-cols-2">
-        <Panel title="Messages: Message agent">{bar(mf)}</Panel>
-        <Panel title="Calls: Renewal voice agent and call-centre vendors">{bar(vf)}</Panel>
+        <Panel title="Messages: Renewal Reminder Agent">{bar(mf)}</Panel>
+        <Panel title="Calls: Premium Renewal Voice Agent and call-centre vendors">{bar(vf)}</Panel>
       </div>
       <p className="text-[12px] text-muted-foreground">Last 30 days of agent tasks and the latest vendor results file.</p>
     </div>

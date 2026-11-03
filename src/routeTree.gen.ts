@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PersistencyRouteImport } from './routes/persistency'
 import { Route as PersistencyIndexRouteImport } from './routes/persistency.index'
+import { Route as PersistencyActivityRouteImport } from './routes/persistency.activity'
 import { Route as PersistencyAdminRouteImport } from './routes/persistency.admin'
 import { Route as PersistencyAgentsRouteImport } from './routes/persistency.agents'
 import { Route as PersistencyApprovalsRouteImport } from './routes/persistency.approvals'
@@ -65,6 +66,11 @@ const PersistencyRoute = PersistencyRouteImport.update({
 const PersistencyIndexRoute = PersistencyIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyActivityRoute = PersistencyActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
   getParentRoute: () => PersistencyRoute,
 } as any)
 const PersistencyAdminRoute = PersistencyAdminRouteImport.update({
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/persistency': typeof PersistencyRouteWithChildren
+  '/persistency/activity': typeof PersistencyActivityRoute
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
   '/persistency/approvals': typeof PersistencyApprovalsRoute
@@ -282,6 +289,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/persistency/activity': typeof PersistencyActivityRoute
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
   '/persistency/approvals': typeof PersistencyApprovalsRoute
@@ -322,6 +330,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/persistency': typeof PersistencyRouteWithChildren
+  '/persistency/activity': typeof PersistencyActivityRoute
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
   '/persistency/approvals': typeof PersistencyApprovalsRoute
@@ -363,6 +372,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/persistency'
+    | '/persistency/activity'
     | '/persistency/admin'
     | '/persistency/agents'
     | '/persistency/approvals'
@@ -401,6 +411,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/persistency/activity'
     | '/persistency/admin'
     | '/persistency/agents'
     | '/persistency/approvals'
@@ -440,6 +451,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/persistency'
+    | '/persistency/activity'
     | '/persistency/admin'
     | '/persistency/agents'
     | '/persistency/approvals'
@@ -510,6 +522,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/persistency/'
       preLoaderRoute: typeof PersistencyIndexRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/activity': {
+      id: '/persistency/activity'
+      path: '/activity'
+      fullPath: '/persistency/activity'
+      preLoaderRoute: typeof PersistencyActivityRouteImport
       parentRoute: typeof PersistencyRoute
     }
     '/persistency/admin': {
@@ -747,6 +766,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface PersistencyRouteChildren {
+  PersistencyActivityRoute: typeof PersistencyActivityRoute
   PersistencyAdminRoute: typeof PersistencyAdminRoute
   PersistencyAgentsRoute: typeof PersistencyAgentsRoute
   PersistencyApprovalsRoute: typeof PersistencyApprovalsRoute
@@ -784,6 +804,7 @@ interface PersistencyRouteChildren {
 }
 
 const PersistencyRouteChildren: PersistencyRouteChildren = {
+  PersistencyActivityRoute: PersistencyActivityRoute,
   PersistencyAdminRoute: PersistencyAdminRoute,
   PersistencyAgentsRoute: PersistencyAgentsRoute,
   PersistencyApprovalsRoute: PersistencyApprovalsRoute,

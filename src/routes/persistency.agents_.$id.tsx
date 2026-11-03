@@ -361,7 +361,7 @@ function Configure({ id }: { id: string }) {
           {section === "Confidence thresholds" && (
             <div className="grid gap-3 sm:grid-cols-2">
               {(["classifier", "voice"] as const).map((k) => (
-                <label key={k} className="block text-[12px] font-medium text-muted-foreground">{k === "classifier" ? "Reason classifier" : "Voice outcomes"} (0 to 1)
+                <label key={k} className="block text-[12px] font-medium text-muted-foreground">{k === "classifier" ? "Lapse Reason Classifier" : "Voice outcomes"} (0 to 1)
                   <input disabled={locked || !mayThreshold} type="number" step={0.05} min={0} max={1} value={cfg.thresholds[k]} onChange={(e) => setCfg({ ...cfg, thresholds: { ...cfg.thresholds, [k]: Math.min(1, Math.max(0, Number(e.target.value) || 0)) } })} className={`${inputCls} mt-1 tabular`} />
                 </label>
               ))}

@@ -201,12 +201,12 @@ function seedApprovals(): Approval[] {
   return [
     {
       id: "AP-201", kind: "rule", objectId: "R15", objectName: "Early risk call", versionNo: 1, requestedBy: "MIS and analytics", at: "2026-10-27T09:10:00.000Z",
-      summary: "New rule: Lowest propensity cohort within 90 days of due gets an early renewal call", reach: 0, diff: ["New rule", "When: cohort Lowest propensity, within 90 days of due date", "Then: Early renewal call by Renewal voice agent", "Priority 24"], conflicts: [],
+      summary: "New rule: Lowest propensity cohort within 90 days of due gets an early renewal call", reach: 0, diff: ["New rule", "When: cohort Lowest propensity, within 90 days of due date", "Then: Early renewal call by Premium Renewal Voice Agent", "Priority 24"], conflicts: [],
       needs: ["head"], signoffs: [], status: "waiting",
     },
     {
       id: "AP-202", kind: "rule", objectId: "R09", objectName: "Bank balance check", versionNo: 1, requestedBy: "MIS and analytics", at: "2026-10-26T11:40:00.000Z",
-      summary: "New rule: bank partner, auto-debit, balance check 5 days before the debit", reach: 0, diff: ["New rule", "When: channel Bancassurance, payment method mandate or UPI autopay, within 5 days of due date", "Then: Send account balance request by Message agent", "Priority 22"], conflicts: [],
+      summary: "New rule: bank partner, auto-debit, balance check 5 days before the debit", reach: 0, diff: ["New rule", "When: channel Bancassurance, payment method mandate or UPI autopay, within 5 days of due date", "Then: Send account balance request by Renewal Reminder Agent", "Priority 22"], conflicts: [],
       needs: ["head"], signoffs: [], status: "waiting",
     },
     {
@@ -216,7 +216,7 @@ function seedApprovals(): Approval[] {
       payload: { cohort: ["Moderate propensity", "Low propensity", "Medium", "Band 3"], priority: 24 },
     },
     {
-      id: "AP-204", kind: "agent", objectId: "message", objectName: "Message agent", versionNo: 7, requestedBy: "MIS and analytics", at: "2026-10-27T13:05:00.000Z",
+      id: "AP-204", kind: "agent", objectId: "message", objectName: "Renewal Reminder Agent", versionNo: 7, requestedBy: "MIS and analytics", at: "2026-10-27T13:05:00.000Z",
       summary: "Grace reminder template shortened; Tamil template added", reach: 0, diff: ["Template 'Grace reminder' text shortened", "Language added: Tamil template"], conflicts: [],
       needs: ["head"], signoffs: [{ role: "head", name: "Head of Persistency", at: "2026-10-27T15:00:00.000Z" }], status: "waiting",
     },

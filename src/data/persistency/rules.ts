@@ -57,7 +57,7 @@ export const SEED_RULES: Rule[] = [
   {
     id: "G3", name: "No collection messages during free-look", stage: "Sourcing", level: "guardrail", priority: 3, locked: true, source: INSURER,
     when: { state: ["Free-look open"] },
-    then: { workflowId: "S3", action: "Watch only, service messages allowed", executor: "Message agent", delayHours: 24, exclusions: "Renewal and payment content" },
+    then: { workflowId: "S3", action: "Watch only, service messages allowed", executor: "Renewal Reminder Agent", delayHours: 24, exclusions: "Renewal and payment content" },
     effectiveFrom: EFF, needsApprovalFrom: "Compliance",
   },
   {
@@ -123,7 +123,7 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R05", name: "Promise hold", version: 2, description: "Promise to pay open: hold collection touches until the day after the promised date.", stage: "Renewal window", level: "rule", priority: 30, source: PROPOSED,
     when: { state: ["Promised"] },
-    then: { workflowId: "R3", action: "Hold collection touches until the day after the promised date", executor: "Message agent", delayHours: 20 },
+    then: { workflowId: "R3", action: "Hold collection touches until the day after the promised date", executor: "Renewal Reminder Agent", delayHours: 20 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
@@ -141,7 +141,7 @@ export const SEED_RULES: Rule[] = [
   {
     id: "R08", name: "ULIP year 1: first-year protect", stage: "Warming", level: "rule", priority: 35, source: PROPOSED,
     when: { stage: ["Warming"], product: ["ULIP"], policyYear: ["1"] },
-    then: { workflowId: "W2", action: "Fund value and lock-in explainer call", executor: "Renewal voice agent", delayHours: 24, script: "ULIP first-year protect" },
+    then: { workflowId: "W2", action: "Fund value and lock-in explainer call", executor: "Premium Renewal Voice Agent", delayHours: 24, script: "ULIP first-year protect" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
@@ -149,25 +149,25 @@ export const SEED_RULES: Rule[] = [
     description: "Bank partner channel with auto-debit: balance check 5 days before the debit.",
     when: { channel: ["Bancassurance"], paymentMethod: ["NACH/ECS mandate", "UPI autopay"] },
     conds: [[{ dim: "calendar", op: "within N days of", values: ["due date"], n: 5 }]],
-    then: { workflowId: "R6", action: "Send account balance request", executor: "Message agent", delayHours: 2 },
+    then: { workflowId: "R6", action: "Send account balance request", executor: "Renewal Reminder Agent", delayHours: 2 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
     id: "R10", name: "Sourcing: PIVC and welcome call", stage: "Sourcing", level: "rule", priority: 50, source: PROPOSED, status: "Retired", version: 2,
     when: { stage: ["Sourcing"] },
-    then: { workflowId: "S2", action: "Welcome and PIVC call", executor: "Welcome and verification", delayHours: 6 },
+    then: { workflowId: "S2", action: "Welcome and PIVC call", executor: "Welcome and PIVC Agent", delayHours: 6 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
     id: "R11", name: "Term no calls", description: "Product Term: no automated calls, reminder message only.", stage: "Renewal window", level: "rule", priority: 45, source: PROPOSED,
     when: { stage: ["Renewal window"], product: ["Term"] },
-    then: { workflowId: "R1", action: "Reminder message only, no automated calls", executor: "Message agent", delayHours: 6, contactRule: "No automated calls" },
+    then: { workflowId: "R1", action: "Reminder message only, no automated calls", executor: "Renewal Reminder Agent", delayHours: 6, contactRule: "No automated calls" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
     id: "R12", name: "Early lapse: voice and WhatsApp recovery", stage: "Lapse and revival", level: "rule", priority: 50, source: PROPOSED,
     when: { stage: ["Early lapse"] },
-    then: { workflowId: "L1", action: "Revival link, premium plus late fee", executor: "Message agent", delayHours: 6, offer: "Late fee waiver up to ₹500 with approval" },
+    then: { workflowId: "L1", action: "Revival link, premium plus late fee", executor: "Renewal Reminder Agent", delayHours: 6, offer: "Late fee waiver up to ₹500 with approval" },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
@@ -187,7 +187,7 @@ export const SEED_RULES: Rule[] = [
     description: "Low cohort, 90 days to due: an early call from the renewal voice agent.",
     when: { cohort: ["Lowest propensity"] },
     conds: [[{ dim: "calendar", op: "within N days of", values: ["due date"], n: 90 }]],
-    then: { workflowId: "R1", action: "Early renewal call", executor: "Renewal voice agent", delayHours: 6 },
+    then: { workflowId: "R1", action: "Early renewal call", executor: "Premium Renewal Voice Agent", delayHours: 6 },
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {

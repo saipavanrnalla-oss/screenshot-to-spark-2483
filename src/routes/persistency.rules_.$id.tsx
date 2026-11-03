@@ -49,7 +49,7 @@ function blankRule(id: string): Rule {
     priority: 50,
     when: {},
     conds: [[]],
-    then: { workflowId: "R1", action: "", executor: "Message agent", delayHours: 4 },
+    then: { workflowId: "R1", action: "", executor: "Renewal Reminder Agent", delayHours: 4 },
     effectiveFrom: "2026-11-01",
     needsApprovalFrom: "Head of Persistency",
     source: "Insurer rule",

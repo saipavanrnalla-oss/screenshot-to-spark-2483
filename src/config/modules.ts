@@ -20,6 +20,7 @@ export type ModuleId =
   | "positioning"
   | "performance"
   | "launch"
+  | "activity"
   | "executive";
 
 export const MODULES: Record<ModuleId, { n: number | null; label: string; route: string; enabled: boolean }> = {
@@ -38,6 +39,7 @@ export const MODULES: Record<ModuleId, { n: number | null; label: string; route:
   positioning: { n: null, label: "Where Desible sits", route: "/persistency/where-desible-sits", enabled: false },
   executive:   { n: null, label: "Executive dashboard", route: "/persistency/executive", enabled: true  },
   performance: { n: null, label: "Workflow performance", route: "/persistency/performance", enabled: true  },
+  activity:    { n: null, label: "Agent activity",  route: "/persistency/activity",   enabled: true  },
   launch:      { n: null, label: "Run a workflow",   route: "/persistency/launch",     enabled: true  },
 };
 

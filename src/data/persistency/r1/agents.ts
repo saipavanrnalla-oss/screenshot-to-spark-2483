@@ -24,6 +24,10 @@ export const AGENT_META: Record<string, AgentMeta> = {
   revival: { inputs: ["Lapse extract"], outputs: ["Revival interest"], costPerTask: 0, channel: "Voice" },
   retention: { inputs: ["Surrender request"], outputs: ["Retention outcome"], costPerTask: 0, channel: "Voice" },
   "relationship-brief": { inputs: ["Policy facts", "Activity"], outputs: ["Brief"], costPerTask: 0, channel: "System" },
+  "mandate-recovery": { inputs: ["Mandate state", "Bounce reason"], outputs: ["New mandate link"], costPerTask: 0, channel: "WhatsApp" },
+  "fatigue-guard": { inputs: ["Contact history"], outputs: ["Allow or wait"], costPerTask: 0, channel: "System" },
+  "financial-stress": { inputs: ["Transcript", "Policy facts"], outputs: ["Offer for approval"], costPerTask: 0, channel: "Voice" },
+  reinstatement: { inputs: ["Lapse date", "Policy facts"], outputs: ["Reinstatement route"], costPerTask: 0, channel: "System" },
   learning: { inputs: ["Treated and untreated outcomes"], outputs: ["Proposed changes"], costPerTask: 0, channel: "System" },
 };
 
@@ -48,7 +52,7 @@ export const TOOL_KEYS = ["Look up policy facts", "Send payment link", "Record d
 export type ToolKey = (typeof TOOL_KEYS)[number];
 
 export const ROUTE_OPTIONS = [
-  "Payment assist agent",
+  "Payment Link Dispatcher",
   "R3 Promise-to-pay follow-up",
   "Telecaller",
   "ULIP Surrender Prevention (L3)",
@@ -80,7 +84,7 @@ export interface AgentConfig {
 }
 
 const DEFAULT_ROUTES: Record<Disposition, string> = {
-  "Will pay (link requested)": "Payment assist agent",
+  "Will pay (link requested)": "Payment Link Dispatcher",
   "Promise to pay with date": "R3 Promise-to-pay follow-up",
   "Already paid": "Close: paid",
   "Mandate problem": "Remittance and operations",

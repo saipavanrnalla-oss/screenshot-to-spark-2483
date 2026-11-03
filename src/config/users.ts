@@ -21,6 +21,7 @@ export type NavKey =
   | "positioning"
   | "performance"
   | "launch"
+  | "activity"
   | "executive";
 
 export type Permission =
@@ -126,7 +127,7 @@ export const USERS: TestUser[] = [
     role: "Operations lead",
     scope: "Whole book",
     landing: "agents",
-    nav: ["agents", "workflows", "launch", "performance", "approvals", "policies"],
+    nav: ["agents", "workflows", "launch", "performance", "activity", "approvals", "policies"],
     readOnly: [],
     can: [
       "rules.edit", "workflows.edit", "agents.edit", "agents.thresholds", "agents.pause", "stages.edit", "executors.edit",
