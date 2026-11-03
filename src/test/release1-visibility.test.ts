@@ -22,13 +22,13 @@ describe("Release 1 visibility", () => {
   });
 
   it("shows each user the sidebar items for the demo", () => {
-    expect(visibleFor("ops")).toEqual(["policies", "approvals", "workflows", "agents", "performance", "launch"]);
-    expect(visibleFor("head")).toEqual(["policies", "approvals", "workflows", "reports", "performance"]);
+    expect(visibleFor("ops")).toEqual(["performance", "agents", "workflows", "launch", "policies", "approvals"]);
+    expect(visibleFor("head")).toEqual(["executive", "performance", "reports", "workflows", "policies", "approvals"]);
   });
 
   it("lands each user on the page for the demo", () => {
     const landing = Object.fromEntries(USERS.map((u) => [u.id, MODULES[u.landing].label]));
-    expect(landing).toEqual({ ops: "Agents", head: "Workflow performance" });
+    expect(landing).toEqual({ ops: "Agents", head: "Executive dashboard" });
   });
 
   it("keeps Head of Persistency read-only on workflows", () => {

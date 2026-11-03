@@ -9,7 +9,8 @@ import { CanvasBox } from "@/components/r1/canvas-box";
 import { Kpi } from "@/components/r1/kpi";
 import { selectCls } from "@/components/r1/tabs";
 import { PERIODS, PERIOD_FACTOR, computeFunnel, type Period } from "@/components/r1/funnel-model";
-import { prepare, useWorkflowRows, wfVersions } from "@/components/r1/wf-model";
+import { useWorkflowRows, wfVersions } from "@/components/r1/wf-model";
+import { layoutGraph } from "@/engine/workflow";
 import { PALETTE_BY_TYPE } from "@/data/persistency/r1/wf";
 import { hashId } from "@/data/persistency/derived";
 import { useScopedPolicies } from "@/hooks/use-shell";
@@ -53,7 +54,7 @@ function PerformancePage() {
     const g = (list.find((v) => v.status === "Active") ?? list[list.length - 1])?.data;
     if (!g) return undefined;
     const base = Math.max(stats.count.get(c) ?? 0, 140 + (hashId(c) % 220));
-    const graph = prepare(g);
+    const graph = layoutGraph(g, "TB");
     return { graph, f: computeFunnel(graph, base * PERIOD_FACTOR[per], scoped, c + per) };
   };
 
@@ -64,7 +65,8 @@ function PerformancePage() {
         const x = funnelFor(r.code, period);
         const paid = x?.f.outcomes.filter((o) => o.type === "outcome.paid").reduce((a, o) => a + o.count, 0) ?? 0;
         const person = x?.f.outcomes.filter((o) => o.type === "outcome.handoff").reduce((a, o) => a + o.count, 0) ?? 0;
-        return { r, total: x?.f.total ?? 0, paid, person };
+        const canPay = !!x?.graph.nodes.some((n) => n.type === "outcome.paid");
+        return { r, total: x?.f.total ?? 0, paid, person, canPay };
       }),
     [rows, period, saved, scoped, stats.count], // eslint-disable-line react-hooks/exhaustive-deps
   );
@@ -102,7 +104,7 @@ function PerformancePage() {
       )}
       {current && f && (
         <div className={`grid gap-4 ${node ? "xl:grid-cols-[1fr_340px]" : ""}`}>
-          <CanvasBox graph={current.graph} funnel={{ total: f.total, edges: f.edges }} counts={f.nodes} selectedId={s.node ?? null} height={600} onSelectNode={(n) => set({ node: n ?? undefined })} />
+          <CanvasBox graph={current.graph} funnel={{ total: f.total, edges: f.edges, vertical: true }} counts={f.nodes} selectedId={s.node ?? null} height={900} onSelectNode={(n) => set({ node: n ?? undefined })} />
           {node && (
             <aside className="panel space-y-3 p-4">
               <div className="flex items-start justify-between gap-2">
@@ -151,12 +153,12 @@ function PerformancePage() {
             </tr>
           </thead>
           <tbody>
-            {table.map(({ r, total, paid: p, person: h }) => (
+            {table.map(({ r, total, paid: p, person: h, canPay }) => (
               <tr key={r.code} onClick={() => set({ wf: r.code, node: undefined })} className={`cursor-pointer border-t border-border/60 hover:bg-surface-translucent ${r.code === code ? "bg-brand-tint" : ""}`}>
                 <td className="px-4 py-2 font-medium text-foreground">{r.name}</td>
                 <td className="px-4 py-2 text-right tabular">{num(total)}</td>
-                <td className="px-4 py-2 text-right tabular">{num(p)}</td>
-                <td className="px-4 py-2 text-right tabular">{pct(p / Math.max(1, total))}</td>
+                <td className="px-4 py-2 text-right tabular">{canPay ? num(p) : "n/a"}</td>
+                <td className="px-4 py-2 text-right tabular">{canPay ? pct(p / Math.max(1, total)) : "n/a"}</td>
                 <td className="px-4 py-2 text-right tabular">{num(h)}</td>
               </tr>
             ))}

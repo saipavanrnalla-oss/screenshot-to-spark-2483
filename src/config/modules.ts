@@ -19,7 +19,8 @@ export type ModuleId =
   | "overview"
   | "positioning"
   | "performance"
-  | "launch";
+  | "launch"
+  | "executive";
 
 export const MODULES: Record<ModuleId, { n: number | null; label: string; route: string; enabled: boolean }> = {
   journeys:    { n: 1,  label: "Policy stages",    route: "/persistency/stages",     enabled: true  },
@@ -35,6 +36,7 @@ export const MODULES: Record<ModuleId, { n: number | null; label: string; route:
   admin:       { n: 11, label: "Administration",   route: "/persistency/admin",      enabled: false },
   overview:    { n: null, label: "Overview",       route: "/persistency",            enabled: false },
   positioning: { n: null, label: "Where Desible sits", route: "/persistency/where-desible-sits", enabled: false },
+  executive:   { n: null, label: "Executive dashboard", route: "/persistency/executive", enabled: true  },
   performance: { n: null, label: "Workflow performance", route: "/persistency/performance", enabled: true  },
   launch:      { n: null, label: "Run a workflow",   route: "/persistency/launch",     enabled: true  },
 };

@@ -21,6 +21,7 @@ import { Route as PersistencyCollectionsRouteImport } from './routes/persistency
 import { Route as PersistencyConfigurationRouteImport } from './routes/persistency.configuration'
 import { Route as PersistencyContactPolicyRouteImport } from './routes/persistency.contact-policy'
 import { Route as PersistencyDataRouteImport } from './routes/persistency.data'
+import { Route as PersistencyExecutiveRouteImport } from './routes/persistency.executive'
 import { Route as PersistencyGuardrailsRouteImport } from './routes/persistency.guardrails'
 import { Route as PersistencyLaunchRouteImport } from './routes/persistency.launch'
 import { Route as PersistencyLifecycleRouteImport } from './routes/persistency.lifecycle'
@@ -106,6 +107,11 @@ const PersistencyContactPolicyRoute =
 const PersistencyDataRoute = PersistencyDataRouteImport.update({
   id: '/data',
   path: '/data',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyExecutiveRoute = PersistencyExecutiveRouteImport.update({
+  id: '/executive',
+  path: '/executive',
   getParentRoute: () => PersistencyRoute,
 } as any)
 const PersistencyGuardrailsRoute = PersistencyGuardrailsRouteImport.update({
@@ -246,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/persistency/configuration': typeof PersistencyConfigurationRoute
   '/persistency/contact-policy': typeof PersistencyContactPolicyRoute
   '/persistency/data': typeof PersistencyDataRoute
+  '/persistency/executive': typeof PersistencyExecutiveRoute
   '/persistency/guardrails': typeof PersistencyGuardrailsRoute
   '/persistency/launch': typeof PersistencyLaunchRoute
   '/persistency/lifecycle': typeof PersistencyLifecycleRoute
@@ -283,6 +290,7 @@ export interface FileRoutesByTo {
   '/persistency/configuration': typeof PersistencyConfigurationRoute
   '/persistency/contact-policy': typeof PersistencyContactPolicyRoute
   '/persistency/data': typeof PersistencyDataRoute
+  '/persistency/executive': typeof PersistencyExecutiveRoute
   '/persistency/guardrails': typeof PersistencyGuardrailsRoute
   '/persistency/launch': typeof PersistencyLaunchRoute
   '/persistency/lifecycle': typeof PersistencyLifecycleRoute
@@ -322,6 +330,7 @@ export interface FileRoutesById {
   '/persistency/configuration': typeof PersistencyConfigurationRoute
   '/persistency/contact-policy': typeof PersistencyContactPolicyRoute
   '/persistency/data': typeof PersistencyDataRoute
+  '/persistency/executive': typeof PersistencyExecutiveRoute
   '/persistency/guardrails': typeof PersistencyGuardrailsRoute
   '/persistency/launch': typeof PersistencyLaunchRoute
   '/persistency/lifecycle': typeof PersistencyLifecycleRoute
@@ -362,6 +371,7 @@ export interface FileRouteTypes {
     | '/persistency/configuration'
     | '/persistency/contact-policy'
     | '/persistency/data'
+    | '/persistency/executive'
     | '/persistency/guardrails'
     | '/persistency/launch'
     | '/persistency/lifecycle'
@@ -399,6 +409,7 @@ export interface FileRouteTypes {
     | '/persistency/configuration'
     | '/persistency/contact-policy'
     | '/persistency/data'
+    | '/persistency/executive'
     | '/persistency/guardrails'
     | '/persistency/launch'
     | '/persistency/lifecycle'
@@ -437,6 +448,7 @@ export interface FileRouteTypes {
     | '/persistency/configuration'
     | '/persistency/contact-policy'
     | '/persistency/data'
+    | '/persistency/executive'
     | '/persistency/guardrails'
     | '/persistency/launch'
     | '/persistency/lifecycle'
@@ -554,6 +566,13 @@ declare module '@tanstack/react-router' {
       path: '/data'
       fullPath: '/persistency/data'
       preLoaderRoute: typeof PersistencyDataRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/executive': {
+      id: '/persistency/executive'
+      path: '/executive'
+      fullPath: '/persistency/executive'
+      preLoaderRoute: typeof PersistencyExecutiveRouteImport
       parentRoute: typeof PersistencyRoute
     }
     '/persistency/guardrails': {
@@ -736,6 +755,7 @@ interface PersistencyRouteChildren {
   PersistencyConfigurationRoute: typeof PersistencyConfigurationRoute
   PersistencyContactPolicyRoute: typeof PersistencyContactPolicyRoute
   PersistencyDataRoute: typeof PersistencyDataRoute
+  PersistencyExecutiveRoute: typeof PersistencyExecutiveRoute
   PersistencyGuardrailsRoute: typeof PersistencyGuardrailsRoute
   PersistencyLaunchRoute: typeof PersistencyLaunchRoute
   PersistencyLifecycleRoute: typeof PersistencyLifecycleRoute
@@ -772,6 +792,7 @@ const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyConfigurationRoute: PersistencyConfigurationRoute,
   PersistencyContactPolicyRoute: PersistencyContactPolicyRoute,
   PersistencyDataRoute: PersistencyDataRoute,
+  PersistencyExecutiveRoute: PersistencyExecutiveRoute,
   PersistencyGuardrailsRoute: PersistencyGuardrailsRoute,
   PersistencyLaunchRoute: PersistencyLaunchRoute,
   PersistencyLifecycleRoute: PersistencyLifecycleRoute,

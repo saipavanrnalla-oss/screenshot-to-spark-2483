@@ -33,6 +33,7 @@ interface NodeData extends Record<string, unknown> {
   mark?: Mark | undefined;
   count?: number | undefined;
   funnel?: boolean | undefined;
+  vertical?: boolean | undefined;
   total?: number | undefined;
   paused?: boolean | undefined;
 }
@@ -40,7 +41,7 @@ interface NodeData extends Record<string, unknown> {
 type FlowNode = Node<NodeData, "wf">;
 
 function NodeView({ data }: NodeProps<FlowNode>) {
-  const { node, selected, active, mark, count, paused, funnel, total } = data;
+  const { node, selected, active, mark, count, paused, funnel, total, vertical } = data;
   const item = PALETTE_BY_TYPE[node.type];
   const outreach = isOutreach(node);
   return (
@@ -54,7 +55,7 @@ function NodeView({ data }: NodeProps<FlowNode>) {
         paused && "border-destructive",
       )}
     >
-      <Handle type="target" position={Position.Left} className="!size-2.5 !border !border-border !bg-card" />
+      <Handle type="target" position={vertical ? Position.Top : Position.Left} className="!size-2.5 !border !border-border !bg-card" />
       <div className="flex items-center justify-between gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">{item?.group ?? "Step"}</span>
         {!funnel && count !== undefined && count > 0 && <span className="rounded-pill bg-brand-tint px-1.5 text-[10px] font-semibold text-primary tabular">{count}</span>}
@@ -74,7 +75,7 @@ function NodeView({ data }: NodeProps<FlowNode>) {
         </p>
       )}
       {mark && <p className="mt-1 text-[10px] font-semibold uppercase">{mark}</p>}
-      <Handle type="source" position={Position.Right} className="!size-2.5 !border !border-border !bg-primary" />
+      <Handle type="source" position={vertical ? Position.Bottom : Position.Right} className="!size-2.5 !border !border-border !bg-primary" />
     </div>
   );
 }
@@ -122,7 +123,7 @@ export interface WfCanvasProps {
   marks?: Record<string, Mark> | undefined;
   counts?: Record<string, number> | undefined;
   /** Funnel mode: big counts on nodes, counts on edges. */
-  funnel?: { total: number; edges: Record<string, number> } | undefined;
+  funnel?: { total: number; edges: Record<string, number>; vertical?: boolean } | undefined;
   pausedExecutors?: string[] | undefined;
   height?: number | string | undefined;
   onSelectNode?: ((id: string | null) => void) | undefined;
@@ -142,7 +143,7 @@ function Inner(p: WfCanvasProps) {
         id: n.id,
         type: "wf" as const,
         position: { x: n.x, y: n.y },
-        data: { node: n, selected: n.id === p.selectedId, active: n.id === p.activeId, mark: p.marks?.[n.id], count: p.counts?.[n.id], funnel: !!p.funnel, total: p.funnel?.total, paused: !!n.config.executor && !!p.pausedExecutors?.includes(n.config.executor) },
+        data: { node: n, selected: n.id === p.selectedId, active: n.id === p.activeId, mark: p.marks?.[n.id], count: p.counts?.[n.id], funnel: !!p.funnel, vertical: !!p.funnel?.vertical, total: p.funnel?.total, paused: !!n.config.executor && !!p.pausedExecutors?.includes(n.config.executor) },
         draggable: !!p.editable,
       })),
     [p.graph, p.selectedId, p.activeId, p.marks, p.counts, p.funnel, p.editable, p.pausedExecutors],

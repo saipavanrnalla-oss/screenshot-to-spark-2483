@@ -5,9 +5,9 @@ const NODE_W = 220;
 const NODE_H = 76;
 
 /** Left-to-right layout. */
-export function layoutGraph(g: WfGraph): WfGraph {
+export function layoutGraph(g: WfGraph, dir: "LR" | "TB" = "LR"): WfGraph {
   const d = new dagre.graphlib.Graph();
-  d.setGraph({ rankdir: "LR", nodesep: 28, ranksep: 70 });
+  d.setGraph(dir === "TB" ? { rankdir: "TB", nodesep: 40, ranksep: 56 } : { rankdir: "LR", nodesep: 28, ranksep: 70 });
   d.setDefaultEdgeLabel(() => ({}));
   for (const n of g.nodes) d.setNode(n.id, { width: NODE_W, height: NODE_H });
   for (const e of g.edges) d.setEdge(e.from, e.to);

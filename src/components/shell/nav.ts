@@ -16,6 +16,7 @@ import {
   Bot,
   Play,
   Activity,
+  Gauge,
 } from "lucide-react";
 import { MODULES, type ModuleId } from "@/config/modules";
 import type { NavKey } from "@/config/users";
@@ -27,29 +28,32 @@ export interface NavEntry {
   label: string;
   route: string;
   icon: typeof LayoutDashboard;
+  /** Sidebar section heading. */
+  group: string;
 }
 
 const m = (id: ModuleId) => ({ module: id, label: MODULES[id].label, route: MODULES[id].route });
 
 /** Sidebar order. Labels and routes of modules come from the registry. */
 export const NAV: NavEntry[] = [
-  { key: "overview", ...m("overview"), icon: LayoutDashboard },
-  { key: "stages", ...m("journeys"), icon: Waypoints },
-  { key: "policies", module: "journeys", label: "Policies", route: "/persistency/policies", icon: FileText },
-  { key: "approvals", module: null, label: "Approvals", route: "/persistency/approvals", icon: CheckSquare },
-  { key: "cohorts", ...m("cohorts"), icon: Layers },
-  { key: "rules", ...m("rules"), icon: SlidersHorizontal },
-  { key: "workflows", ...m("workflows"), icon: Workflow },
-  { key: "agents", ...m("agents"), icon: Bot },
-  { key: "work", ...m("roles"), icon: ListChecks },
-  { key: "collections", ...m("collections"), icon: Flame },
-  { key: "data", ...m("data"), icon: Database },
-  { key: "contact-policy", ...m("guardrails"), icon: ShieldCheck },
-  { key: "reports", ...m("measurement"), icon: LineChart },
-  { key: "admin", ...m("admin"), icon: Settings2 },
-  { key: "positioning", ...m("positioning"), icon: Network },
-  { key: "performance", ...m("performance"), icon: Activity },
-  { key: "launch", ...m("launch"), icon: Play },
+  { key: "executive", ...m("executive"), icon: Gauge, group: "Analytics" },
+  { key: "overview", ...m("overview"), icon: LayoutDashboard, group: "Analytics" },
+  { key: "performance", ...m("performance"), icon: Activity, group: "Analytics" },
+  { key: "reports", ...m("measurement"), icon: LineChart, group: "Analytics" },
+  { key: "cohorts", ...m("cohorts"), icon: Layers, group: "Analytics" },
+  { key: "agents", ...m("agents"), icon: Bot, group: "Orchestration" },
+  { key: "workflows", ...m("workflows"), icon: Workflow, group: "Orchestration" },
+  { key: "launch", ...m("launch"), icon: Play, group: "Orchestration" },
+  { key: "rules", ...m("rules"), icon: SlidersHorizontal, group: "Orchestration" },
+  { key: "stages", ...m("journeys"), icon: Waypoints, group: "Operations" },
+  { key: "policies", module: "journeys", label: "Policies", route: "/persistency/policies", icon: FileText, group: "Operations" },
+  { key: "approvals", module: null, label: "Approvals", route: "/persistency/approvals", icon: CheckSquare, group: "Operations" },
+  { key: "work", ...m("roles"), icon: ListChecks, group: "Operations" },
+  { key: "collections", ...m("collections"), icon: Flame, group: "Operations" },
+  { key: "data", ...m("data"), icon: Database, group: "Operations" },
+  { key: "contact-policy", ...m("guardrails"), icon: ShieldCheck, group: "Compliance" },
+  { key: "admin", ...m("admin"), icon: Settings2, group: "Settings" },
+  { key: "positioning", ...m("positioning"), icon: Network, group: "Settings" },
 ];
 
 export const NAV_BY_KEY = Object.fromEntries(NAV.map((n) => [n.key, n])) as Record<NavKey, NavEntry>;
