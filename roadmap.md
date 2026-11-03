@@ -28,3 +28,11 @@ Source: call with Anurag, 2 Nov 2026. Two personas only (Operations lead, Head o
 - [x] Run a workflow (`/persistency/launch`): CSV import, routing by renewal propensity, posts the list to an address set under Connection, follows each policy.
 - [x] Cohorts A1 to A5 renamed Highest to Lowest propensity.
 - [x] Reason classifier and Handoff summariser: sample run on the agent page.
+
+## Demo build, round 2 (3 Nov 2026)
+- Agents renamed in insurance terms (Renewal Reminder Agent, Premium Renewal Voice Agent, Lapse Reason Classifier, Payment Link Dispatcher, Advisor Callback Brief Agent, Compliance Guard) and four new "not enabled" agents added.
+- New Agent activity page under Observability (running now, 24-hour activity, task history).
+- Full canvases for R1, R2, R3, R4, W1, W3, S2, L1, L2, L3, X1, all sharing one skeleton: guards, route by propensity, channel, response branches, promise tracking, escalation, exit.
+- Workflow performance rebuilt: portfolio grouped by lifecycle, per-workflow Flow, Agents, History and Outcomes by reason.
+- Executive dashboard: decisions first, India state heat map, top at-risk districts, glossary terms (13M/25M/61M Persistency, RYP at risk, Grace Period, Product Mix, Channel Mix). State and district are derived from city, so seeded numbers did not change.
+- Not done: Lapse cohort analytics page; 49M Persistency and Policy Persistency (not in the seeded series).
