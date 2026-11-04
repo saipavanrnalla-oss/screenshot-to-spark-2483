@@ -13,6 +13,7 @@ import { StatusChip, versionTone } from "@/components/r1/status-chip";
 import { PageTabs } from "@/components/r1/tabs";
 import { ConfirmDialog } from "@/components/r1/confirm";
 import { SimConsole } from "@/components/r1/wf-sim";
+import { ExampleRun } from "@/components/r1/wf-example";
 import { executorsOf, nodeCounts, prepare, useWorkflowRows, versionAt, wfVersions } from "@/components/r1/wf-model";
 import type { Mark } from "@/components/r1/wf-canvas";
 import { PALETTE_BY_TYPE, type WfGraph, type WfNode } from "@/data/persistency/r1/wf";
@@ -69,6 +70,8 @@ function WorkflowPage() {
   const attachSim = useWork((st) => st.attachSim);
   const createWorkflow = useWork((st) => st.createWorkflow);
   const [simOpen, setSimOpen] = useState(false);
+  const [exOpen, setExOpen] = useState(false);
+  const [pathIds, setPathIds] = useState<string[]>([]);
   const [activeNode, setActiveNode] = useState<string | null>(null);
   const tab = s.tab ?? "canvas";
   const author = user?.name ?? "User";
@@ -104,6 +107,7 @@ function WorkflowPage() {
         <span className="text-[12px] text-muted-foreground">{row.stage} · {num(inIt.length)} policies in it now</span>
         <div className="ml-auto flex gap-2">
           {mayEdit && <Button size="sm" onClick={edit}><Pencil /> Edit</Button>}
+          <Button size="sm" onClick={() => { navigate({ search: (p) => ({ ...p, tab: undefined }) }); setExOpen(true); }}><Play /> Run an example</Button>
           <Button size="sm" variant="outline" onClick={() => { navigate({ search: (p) => ({ ...p, tab: undefined }) }); setSimOpen(true); }}><Play /> Simulate</Button>
           {mayEdit && (
             <Button
@@ -135,9 +139,10 @@ function WorkflowPage() {
       {tab === "canvas" && (
         <div className="space-y-4">
           <div className={`grid gap-4 ${node ? "xl:grid-cols-[1fr_380px]" : ""}`}>
-            <CanvasBox graph={graph} counts={counts} selectedId={s.node ?? null} activeId={activeNode} onSelectNode={(n) => navigate({ search: (p) => ({ ...p, node: n ?? undefined }), replace: true })} />
+            <CanvasBox graph={graph} height={graph.nodes.length > 30 ? 680 : 560} counts={counts} marks={Object.fromEntries(pathIds.map((i) => [i, "path" as const]))} selectedId={s.node ?? null} activeId={activeNode} onSelectNode={(n) => navigate({ search: (p) => ({ ...p, node: n ?? undefined }), replace: true })} />
             {node && <NodePanel code={id} node={node} policies={byNode[node.id] ?? []} graph={graph} onClose={() => navigate({ search: (p) => ({ ...p, node: undefined }), replace: true })} />}
           </div>
+          {exOpen && <ExampleRun graph={graph} suggested={inIt} onPath={(path, act) => { setPathIds(path); setActiveNode(act); }} onClose={() => { setExOpen(false); setPathIds([]); setActiveNode(null); }} />}
           {simOpen && <SimConsole graph={graph} policies={inIt} by={author} onActive={setActiveNode} onStored={(r) => attachSim(`workflow:${id}`, r)} onClose={() => setSimOpen(false)} />}
         </div>
       )}

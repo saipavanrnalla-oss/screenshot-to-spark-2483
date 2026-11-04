@@ -103,6 +103,12 @@ export const SEED_RULES: Rule[] = [
     effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
   },
   {
+    id: "R17", name: "Second policy year in the renewal window: 25th month journey", stage: "Renewal window", level: "rule", priority: 45, source: PROPOSED,
+    when: { stage: ["Renewal window"], policyYear: ["2"] },
+    then: { workflowId: "R8", action: "25th month journey by payment behaviour", executor: "WhatsApp vendor", delayHours: 3, script: "25th month reminder" },
+    effectiveFrom: EFF, needsApprovalFrom: "Head of Persistency",
+  },
+  {
     id: "R02", name: "Grace: telecall on due-date collection", stage: "Renewal window", level: "rule", priority: 40, source: PROPOSED,
     when: { state: ["Grace"] },
     then: { workflowId: "R2", action: "Collection call", executor: "Call-centre vendor (fixed payout)", delayHours: 2, script: "Due-date collection" },

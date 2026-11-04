@@ -24,7 +24,7 @@ import { isOutreach } from "@/engine/workflow";
 import { useSession } from "@/store/session";
 import { cn } from "@/lib/utils";
 
-export type Mark = "added" | "removed" | "changed";
+export type Mark = "added" | "removed" | "changed" | "path";
 
 interface NodeData extends Record<string, unknown> {
   node: WfNode;
@@ -52,6 +52,7 @@ function NodeView({ data }: NodeProps<FlowNode>) {
         mark === "added" && "border-ok ring-1 ring-ok",
         mark === "removed" && "border-destructive opacity-70 ring-1 ring-destructive",
         mark === "changed" && "border-attention ring-1 ring-attention",
+        mark === "path" && "border-primary bg-brand-tint ring-1 ring-primary",
         paused && "border-destructive",
       )}
     >
@@ -74,7 +75,7 @@ function NodeView({ data }: NodeProps<FlowNode>) {
           <ShieldCheck className="size-3 text-ok" aria-hidden /> Paid · Hold · Contact
         </p>
       )}
-      {mark && <p className="mt-1 text-[10px] font-semibold uppercase">{mark}</p>}
+      {mark && mark !== "path" && <p className="mt-1 text-[10px] font-semibold uppercase">{mark}</p>}
       <Handle type="source" position={vertical ? Position.Bottom : Position.Right} className="!size-2.5 !border !border-border !bg-primary" />
     </div>
   );
@@ -163,6 +164,13 @@ function Inner(p: WfCanvasProps) {
       })),
     [p.graph, p.editable, p.onInsert, p.selectedEdge, p.funnel],
   );
+  // Follow the step being played so a large journey stays readable.
+  useEffect(() => {
+    if (!p.activeId) return;
+    const n = p.graph.nodes.find((x) => x.id === p.activeId);
+    if (n) rf.setCenter(n.x + 110, n.y + 40, { zoom: Math.max(rf.getZoom(), 0.85), duration: 350 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.activeId]);
   const onDrop = (e: DragEvent) => {
     const type = e.dataTransfer.getData("application/wf-node");
     if (!type || !p.onDropType) return;

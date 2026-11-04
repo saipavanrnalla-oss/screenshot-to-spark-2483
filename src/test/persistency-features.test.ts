@@ -41,7 +41,7 @@ describe("personas and workflows", () => {
   });
 
   it("has 18 workflows with full canvases for W1, R2, R4, L2, L3 and X1", () => {
-    expect(WORKFLOWS).toHaveLength(18);
+    expect(WORKFLOWS).toHaveLength(19);
     expect(Object.keys(WORKFLOW_GRAPHS).sort()).toEqual(["L2", "L3", "R2", "R4", "W1", "X1"]);
     for (const g of Object.values(WORKFLOW_GRAPHS)) {
       expect(g.nodes.length).toBeGreaterThanOrEqual(8);

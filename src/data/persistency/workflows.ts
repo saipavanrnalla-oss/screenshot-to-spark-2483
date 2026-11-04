@@ -23,6 +23,7 @@ export const WORKFLOWS: WorkflowDef[] = [
   { id: "W2", name: "First-Year ULIP Protect", stage: "Warming", products: ["ULIP"], trigger: "ULIP in policy year 1", executor: "Desible voice", tier: "live-channels", hasCanvas: true },
   { id: "W3", name: "e-NACH Mandate Readiness", stage: "Warming", products: ["ULIP", "Traditional"], trigger: "No active mandate before window", executor: "Desible", tier: "simulated", hasCanvas: true },
   { id: "R1", name: "13th Month Persistency", stage: "Renewal window", products: ALL, trigger: "90 days before the 13th-month due date", executor: "WhatsApp vendor", tier: "live-channels", hasCanvas: true },
+  { id: "R8", name: "25th Month Persistency", stage: "Renewal window", products: ALL, trigger: "90 days before the 25th-month due date", executor: "WhatsApp vendor", tier: "live-channels", hasCanvas: true },
   { id: "R2", name: "Grace-Period Recovery", stage: "Renewal window", products: ALL, trigger: "Due date passed, unpaid", executor: "Call-centre vendor (fixed payout)", tier: "live-engine", hasCanvas: true },
   { id: "R3", name: "Promise-to-Pay Follow-up", stage: "Renewal window", products: ALL, trigger: "Customer promised a date", executor: "WhatsApp vendor", tier: "live-engine", hasCanvas: true },
   { id: "R4", name: "Failed Autopay and ECS Bounce Recovery", stage: "Renewal window", products: ALL, trigger: "Bounce or mandate failure in file", executor: "Voice bot vendor", tier: "simulated", hasCanvas: true },

@@ -1,5 +1,6 @@
 import type { Version } from "./types";
 import { DISPOSITIONS } from "./common";
+import { M13_NODES, M13_EDGES, M25_NODES, M25_EDGES } from "./wf-flows";
 
 /* ---------- Palette ---------- */
 
@@ -385,42 +386,11 @@ const X1_FULL = build(
   ],
 );
 
-/** 13th Month Persistency: forks on renewal propensity, so a high-propensity policy gets WhatsApp and a low one gets a call. */
-const R1_FULL = build(
-  [
-    ["t", "trigger.due", "Due list at T minus 90", { days: 90 }],
-    ["hold", "check.hold"],
-    ["cohort", "decision.cohort", "Branch on renewal propensity"],
-    ["wa", "agent.message", "WhatsApp renewal reminder with payment link", { script: "13th month reminder", language: "Customer language" }],
-    ["w1", "wait.days", "Wait 3 days", { days: 3 }],
-    ["paid", "check.paid", "Paid since the reminder"],
-    ["call", "agent.voice", "Early renewal call", { script: "13th month renewal call", retries: 2, gapDays: 2, deadlineHours: 72, onTimeout: "Send to team lead", dispositions: ["Will pay (link requested)", "Promise to pay with date", "Wants to surrender", "Complaint or mis-selling", "Default"] }],
-    ["pay", "agent.payment", "Send payment link"],
-    ["w2", "wait.days", "Wait 2 days", { days: 2 }],
-    ["paid2", "check.paid", "Paid since the call"],
-    ["cls", "agent.classifier", "Tag the reason for non-payment"],
-    ["sum", "agent.summariser", "Write handoff packet"],
-    ["tc", "people.telecaller", "Telecaller call back"],
-    ["rem", "people.remittance", "Fix mandate"],
-    ["oPaid", "outcome.paid"],
-    ["oR3", "outcome.routed", "Promise follow-up (R3)"],
-    ["oL3", "outcome.routed", "ULIP Surrender Prevention (L3)"],
-    ["oHold", "outcome.routed", "Hold (X1)"],
-    ["oH", "outcome.handoff", "Telecaller owns the case"],
-    ["oBau", "outcome.bau", "Back to the renewal window"],
-  ],
-  [
-    ["t", "hold"], ["hold", "oHold", "On hold"], ["hold", "cohort", "Clear"],
-    ["cohort", "wa", "Highest propensity"], ["cohort", "wa", "High propensity"], ["cohort", "wa", "Moderate propensity"],
-    ["cohort", "call", "Low propensity"], ["cohort", "call", "Lowest propensity"],
-    ["wa", "w1", "Default"], ["w1", "paid", "Done"], ["paid", "oPaid", "Paid"], ["paid", "call", "Not paid"],
-    ["call", "pay", "Will pay (link requested)"], ["call", "oR3", "Promise to pay with date"], ["call", "oL3", "Wants to surrender"], ["call", "oHold", "Complaint or mis-selling"], ["call", "w2", "Default"],
-    ["w2", "paid2", "Done"], ["paid2", "oPaid", "Paid"], ["paid2", "cls", "Not paid"],
-    ["pay", "oPaid", "Paid"], ["pay", "cls", "Not paid"], ["pay", "rem", "Mandate problem"],
-    ["rem", "oBau", "Fixed"], ["rem", "oBau", "Not fixed"],
-    ["cls", "sum", "Reason"], ["cls", "sum", "Low confidence"], ["sum", "tc", "Packet"], ["tc", "oH", "Default"],
-  ],
-);
+/** 13th Month Persistency: the approved journey from the due list at T-90 to Renewed, Renewed in the Grace Period, Revived or Closed. */
+const R1_FULL = build(M13_NODES, M13_EDGES);
+
+/** 25th Month Persistency: segments by past payment behaviour, then the same renewal and Grace Period journey. */
+const R8_FULL = build(M25_NODES, M25_EDGES);
 
 /** Lapse Revival Campaign. */
 const L1_FULL = build(
@@ -525,6 +495,7 @@ export const SEED_GRAPHS: Record<string, WfGraph> = {
   W2: simple("trigger.station", "ULIP in policy year 1", [["v", "agent.voice", "Fund value and lock-in call"]], "Warming (W1)"),
   W3: W3_FULL,
   R1: R1_FULL,
+  R8: R8_FULL,
   R2,
   R3: R3_FULL,
   R4,
@@ -538,7 +509,7 @@ export const SEED_GRAPHS: Record<string, WfGraph> = {
   X2: simple("trigger.receipt", "Receipt arrives", [["p", "check.paid", "Match to pending tasks"]], "Open tasks cancelled"),
 };
 
-const NOTE_R1 = ["First release", "Added call-centre vendor after the reminder", "Payment link for customers who will pay", "Complaints route to hold"];
+const NOTE_R1 = ["First release", "Added call-centre vendor after the reminder", "Payment link for customers who will pay", "Full 13th month journey, as approved"];
 
 export function seedWorkflowVersions(code: string): Version<WfGraph>[] {
   if (code === "R1") {
