@@ -123,6 +123,10 @@ function TopBar() {
         </div>
         <GlobalSearch />
         <div className="ml-auto flex items-center gap-1">
+          <span className="mr-2 hidden items-center gap-1.5 rounded-pill border border-border bg-card px-3 py-1 text-xs font-semibold text-subtle lg:inline-flex">
+            <Building2 className="size-3.5 text-primary" aria-hidden />
+            {INSURER_NAME}
+          </span>
           <NotificationBell />
           <HelpMenu />
           <UserMenu />
@@ -142,6 +146,10 @@ function Breadcrumb() {
   const deeper = pathname.replace(/\/$/, "") !== entry.route;
   return (
     <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1 text-[12px] text-muted-foreground">
+      <span>desible.ai</span>
+      <ChevronRight className="size-3.5 text-dim" aria-hidden />
+      <span>Insurance</span>
+      <ChevronRight className="size-3.5 text-dim" aria-hidden />
       <span>Persistency</span>
       <ChevronRight className="size-3.5 text-dim" aria-hidden />
       {deeper ? (
@@ -190,29 +198,34 @@ function Sidebar() {
         </button>
       </div>
       <nav className="scrollbar-prism flex-1 overflow-y-auto py-2">
-        <ul className="space-y-0.5 px-2">
-          {items.map((item) => {
-            const active = current?.key === item.key;
-            const Icon = item.icon;
-            return (
-              <li key={item.key}>
-                <Link
-                  to={item.route as "/persistency/stages"}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md py-2 text-[13px] font-medium transition-colors",
-                    collapsed ? "justify-center px-0" : "px-3",
-                    active ? "bg-brand-tint text-primary" : "text-sidebar-foreground hover:bg-surface-translucent hover:text-foreground",
-                  )}
-                  aria-current={active ? "page" : undefined}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <Icon className="size-4 shrink-0" aria-hidden />
-                  {!collapsed && item.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        {[...new Set(items.map((i) => i.group))].map((g) => (
+          <div key={g} className="mb-3">
+            {!collapsed && <p className="px-5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">{g}</p>}
+            <ul className="space-y-0.5 px-2">
+              {items.filter((i) => i.group === g).map((item) => {
+                const active = current?.key === item.key;
+                const Icon = item.icon;
+                return (
+                  <li key={item.key}>
+                    <Link
+                      to={item.route as "/persistency/stages"}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg py-2 text-[13px] font-medium transition-colors",
+                        collapsed ? "justify-center px-0" : "px-3",
+                        active ? "bg-brand-tint text-primary" : "text-sidebar-foreground hover:bg-surface-translucent hover:text-foreground",
+                      )}
+                      aria-current={active ? "page" : undefined}
+                      title={collapsed ? item.label : undefined}
+                    >
+                      <Icon className="size-4 shrink-0" aria-hidden />
+                      {!collapsed && item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </nav>
       {!collapsed && <div className="border-t border-sidebar-border px-4 py-3 text-[12px] text-muted-foreground">Sample data</div>}
     </aside>

@@ -5,9 +5,9 @@ const NODE_W = 220;
 const NODE_H = 76;
 
 /** Left-to-right layout. */
-export function layoutGraph(g: WfGraph): WfGraph {
+export function layoutGraph(g: WfGraph, dir: "LR" | "TB" = "LR"): WfGraph {
   const d = new dagre.graphlib.Graph();
-  d.setGraph({ rankdir: "LR", nodesep: 28, ranksep: 70 });
+  d.setGraph(dir === "TB" ? { rankdir: "TB", nodesep: 40, ranksep: 56 } : { rankdir: "LR", nodesep: 28, ranksep: 70 });
   d.setDefaultEdgeLabel(() => ({}));
   for (const n of g.nodes) d.setNode(n.id, { width: NODE_W, height: NODE_H });
   for (const e of g.edges) d.setEdge(e.from, e.to);
@@ -176,8 +176,8 @@ export function simulate(g: WfGraph, scenario: Scenario): SimResult {
       if (HALT.has(disposition)) haltSeen = true;
       if (disposition === "Already paid") paidSeen = true;
     } else if (cur.type === "decision.cohort") {
-      chosen = pick("A4") ?? edges[0];
-      disposition = "Cohort A4";
+      chosen = pick("Low propensity") ?? edges[0];
+      disposition = "Cohort Low propensity";
     } else if (cur.type === "decision.product") {
       chosen = pick("ULIP") ?? edges[0];
       disposition = "ULIP";

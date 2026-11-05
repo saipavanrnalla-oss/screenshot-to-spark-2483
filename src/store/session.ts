@@ -17,13 +17,13 @@ export const useSession = create<SessionState>()(
   persist(
     (set) => ({
       userId: null,
-      theme: "dark",
+      theme: "light",
       signIn: (id) => set({ userId: id }),
       signOut: () => set({ userId: null }),
       setTheme: (theme) => set({ theme }),
     }),
     {
-      name: "pct-session-v1",
+      name: "pct-session-v2",
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({ userId: s.userId, theme: s.theme }),
     },

@@ -106,7 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 // Applies the saved theme before first paint so a light-theme reload does not flash dark.
-const THEME_BOOT = `try{var s=JSON.parse(localStorage.getItem("pct-session-v1")||"{}");if(s.state&&s.state.theme==="light")document.documentElement.classList.add("light")}catch(e){}`;
+const THEME_BOOT = `try{var s=JSON.parse(localStorage.getItem("pct-session-v2")||"{}");if(!s.state||s.state.theme!=="dark")document.documentElement.classList.add("light")}catch(e){}`;
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
@@ -142,7 +142,7 @@ function RootComponent() {
       <ThemeSync />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
-      <Toaster theme={mounted ? theme : "dark"} position="bottom-right" />
+      <Toaster theme={mounted ? theme : "light"} position="bottom-right" />
     </QueryClientProvider>
   );
 }

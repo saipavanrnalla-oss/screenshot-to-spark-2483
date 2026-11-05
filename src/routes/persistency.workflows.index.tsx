@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Archive, Copy, Plus } from "lucide-react";
+import { Archive, ChevronDown, Copy, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/ds/primitives";
@@ -16,6 +16,12 @@ import { gate } from "@/lib/gate";
 import { num, time } from "@/lib/format";
 import { useWork } from "@/store/work";
 import type { WfGraph } from "@/data/persistency/r1/wf";
+
+const FEATURED = ["R1", "R8"];
+const FEATURED_BLURB: Record<string, string> = {
+  R1: "From the due list at T-90 to Renewed, Renewed in the Grace Period, Revived or Closed. Early service call for P1 to P5, templates at T-60, T-45 and T-30, auto-debit balance check, payment links, Grace Period recovery, deep lapse vendors and revival.",
+  R8: "Starts from past payment behaviour, not the propensity score. Four segments get different starting points, then the same renewal and Grace Period journey, with the Reduced Paid-up and ULIP routes at the end of the Grace Period.",
+};
 
 export const Route = createFileRoute("/persistency/workflows/")({
   beforeLoad: ({ search }) => gate("workflows", search),
@@ -46,6 +52,7 @@ function WorkflowLibrary() {
   const [name, setName] = useState("");
   const [stage, setStage] = useState<string>("Renewal window");
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [showOthers, setShowOthers] = useState(false);
   const author = user?.name ?? "User";
 
   const create = (n: string, st: string, graph: WfGraph, note: string) => {
@@ -87,6 +94,35 @@ function WorkflowLibrary() {
           )
         }
       />
+      <div className="grid gap-3 md:grid-cols-2" aria-label="Featured workflows">
+        {rows.filter((r) => FEATURED.includes(r.code)).sort((a, b) => FEATURED.indexOf(a.code) - FEATURED.indexOf(b.code)).map((r) => (
+          <button
+            key={r.code}
+            type="button"
+            onClick={() => navigate({ to: "/persistency/workflows/$id", params: { id: r.code } })}
+            className="rounded-card border border-border bg-card p-4 text-left transition-colors hover:border-brand-tint-border hover:bg-brand-tint focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-[12px] font-semibold text-primary">{r.code}</span>
+              <StatusChip tone={versionTone(r.status)}>{r.status}{r.version ? ` · v${r.version}` : ""}</StatusChip>
+              {r.code === "R1" && <StatusChip tone="accent">Live demo</StatusChip>}
+            </div>
+            <p className="mt-1 text-[16px] font-semibold text-foreground">{r.name}</p>
+            <p className="mt-1 text-[13px] text-subtle">{FEATURED_BLURB[r.code]}</p>
+            <p className="mt-2 text-[12px] text-muted-foreground">Starts {r.trigger.toLowerCase()} · {num(stats.count.get(r.code) ?? 0)} policies in it now</p>
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        aria-expanded={showOthers}
+        onClick={() => setShowOthers((v) => !v)}
+        className="inline-flex items-center gap-1.5 text-[13px] font-medium text-primary hover:underline"
+      >
+        <ChevronDown className={`size-4 transition-transform ${showOthers ? "rotate-180" : ""}`} />
+        Other workflows ({rows.filter((r) => !FEATURED.includes(r.code) && !r.archived).length})
+      </button>
+      {showOthers && (
       <div className="overflow-x-auto rounded-card border border-border">
         <table className="w-full min-w-[1100px] text-[13px]">
           <thead className="bg-card">
@@ -99,7 +135,7 @@ function WorkflowLibrary() {
           </thead>
           <tbody>
             {WF_STAGES.map((st) => {
-              const list = rows.filter((r) => r.stage === st);
+              const list = rows.filter((r) => r.stage === st && !FEATURED.includes(r.code));
               if (!list.length) return null;
               return [
                 <tr key={st}>
@@ -138,6 +174,7 @@ function WorkflowLibrary() {
           </tbody>
         </table>
       </div>
+      )}
 
       <Dialog open={newOpen} onOpenChange={setNewOpen}>
         <DialogContent className="max-w-md rounded-card border-border bg-card">

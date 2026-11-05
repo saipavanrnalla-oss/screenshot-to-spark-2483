@@ -93,7 +93,7 @@ export const ALL_STATES: PolicyState[] = [
   "Do-not-contact",
 ];
 
-export const INSURER_COHORTS = ["A1", "A2", "A3", "A4", "A5"] as const;
+export const INSURER_COHORTS = ["Highest propensity", "High propensity", "Moderate propensity", "Low propensity", "Lowest propensity"] as const;
 export type InsurerCohort = (typeof INSURER_COHORTS)[number] | "Unscored";
 export const RULES_COHORTS = ["High", "Medium", "Low"] as const;
 export type RulesCohort = (typeof RULES_COHORTS)[number] | "Unscored";

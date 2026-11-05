@@ -7,7 +7,7 @@ import { cohortLabel } from "@/engine/persistency";
 import { usePersistencyStore } from "@/store/persistency";
 import { num } from "@/lib/format";
 
-const HIGH = new Set(["A4", "A5", "High", "Band 4", "Band 5"]);
+const HIGH = new Set(["Low propensity", "Lowest propensity", "High", "Band 4", "Band 5"]);
 const ACTIVE = new Set(["Renewal window", "Early lapse", "Late lapse"]);
 
 export function vendorChange(name: string, mode: VendorMode, n: number, slice: number, payout: string): string {

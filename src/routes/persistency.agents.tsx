@@ -319,7 +319,7 @@ function HandoffRules() {
 
 /* ---------- Task queue ---------- */
 
-const MOVE_TO = ["Telecaller", "Renewal voice agent", "Call-centre vendor (fixed payout)", "Call-centre vendor (variable payout)", "Sales officer", "High-value desk", "Remittance and operations"];
+const MOVE_TO = ["Telecaller", "Premium Renewal Voice Agent", "Call-centre vendor (fixed payout)", "Call-centre vendor (variable payout)", "Sales officer", "High-value desk", "Remittance and operations"];
 
 function Queue() {
   const s = Route.useSearch();

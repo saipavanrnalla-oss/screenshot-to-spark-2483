@@ -75,7 +75,7 @@ describe("engine precedence", () => {
   });
 
   it("logs a conflict when two rules tie on level, dimensions and priority", () => {
-    const p = { ...find((x) => x.state === "Grace"), paymentMethod: "Cash/cheque" as const, insurerCohort: "A5" as const, product: "ULIP" as const, channel: "Agency" as const, annualisedPremium: 60000, reasonCode: "Not reached" as const, touchesLast30d: 2 };
+    const p = { ...find((x) => x.state === "Grace"), paymentMethod: "Cash/cheque" as const, insurerCohort: "Lowest propensity" as const, product: "ULIP" as const, channel: "Agency" as const, annualisedPremium: 60000, reasonCode: "Not reached" as const, touchesLast30d: 2 };
     const d = evaluate(p, SEED_RULES, ctx);
     expect(["R03", "R04"]).toContain(d.ruleId);
     expect(d.conflictWith?.length).toBe(1);

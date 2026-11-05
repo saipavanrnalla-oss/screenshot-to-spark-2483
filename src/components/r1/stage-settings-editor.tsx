@@ -84,7 +84,7 @@ export function StageSettingsEditor() {
       reach: affected.n,
       diff: diffLines(active.data, draft),
       conflicts: [],
-      needs: second ? ["head", "compliance"] : ["head"],
+      needs: second ? ["head"] : ["head"],
       secondApproverReason: second ? `Moves more than ${num(SECOND_APPROVER_LIMIT)} policies between stages` : undefined,
     });
     toast.success(`Version ${no} sent for review`, { description: second ? "Needs a second approver: more than 5,000 policies move." : "Waiting for Head of Persistency." });

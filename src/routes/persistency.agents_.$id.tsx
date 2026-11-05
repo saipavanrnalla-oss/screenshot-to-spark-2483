@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ChevronLeft, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { DataGrid } from "@/components/r1/data-grid";
 import { EditFooter } from "@/components/r1/edit-footer";
 import { StatusChip, versionTone } from "@/components/r1/status-chip";
 import { PageTabs, inputCls, selectCls } from "@/components/r1/tabs";
+import { AgentTryIt, TRY_IT_AGENTS } from "@/components/r1/agent-try-it";
+import { WorthTryIt } from "@/components/r1/worth-try-it";
 import { agentDef, agentDiff, agentVersions, routeAffects } from "@/components/r1/agent-model";
 import { AGENT_META, DISPOSITIONS, ROUTE_OPTIONS, TOOL_KEYS, type AgentConfig, type ScriptDoc } from "@/data/persistency/r1/agents";
 import { TASKS, THREADS, TRANSCRIPTS, agentStats, type AgentTask } from "@/data/persistency/r1/tasks";
@@ -83,12 +85,80 @@ function AgentPage() {
           ]}
         />
       )}
+      {tab === "overview" && (TRY_IT_AGENTS as readonly string[]).includes(id) && <AgentTryIt id={id} />}
+      {tab === "overview" && id === "worth-score" && <WorthTryIt />}
       {tab === "overview" && <Overview id={id} />}
       {tab === "configure" && <Configure id={id} />}
       {tab === "versions" && <Versions id={id} />}
       {tab === "tasks" && <Tasks id={id} />}
       {tab === "test" && <TestTab id={id} />}
     </div>
+  );
+}
+
+const SAMPLES: Record<string, { label: string; input: string; output: [string, string][] }[]> = {
+  "reason-classifier": [
+    {
+      label: "ULIP, fund value fell",
+      input: "Call transcript, 13th-month premium due 12 Dec. Customer: \"The fund has gone down since last year. Why should I put in more money now? I will think about it after the market recovers.\"",
+      output: [["Reason", "Market-linked concern: fund value below premiums paid"], ["Confidence", "0.91"], ["Suggested next step", "Retention desk call with fund value statement"], ["Route", "ULIP Surrender Prevention (L3) if the customer mentions surrender"]],
+    },
+    {
+      label: "Traditional, mandate failed",
+      input: "WhatsApp reply to the debit failed message: \"My bank changed the account number last month. The auto debit did not go through.\"",
+      output: [["Reason", "Mandate failure: bank account changed"], ["Confidence", "0.96"], ["Suggested next step", "New e-NACH mandate link and payment link"], ["Route", "Failed Autopay and ECS Bounce Recovery (R4)"]],
+    },
+    {
+      label: "Term, cash short",
+      input: "Call transcript, grace period day 12. Customer: \"Salary is delayed this month. I can pay on the 20th, please do not cancel my policy.\"",
+      output: [["Reason", "Affordability: short of cash this month"], ["Confidence", "0.88"], ["Promise to pay", "Recorded as stated: 20th"], ["Route", "Promise-to-Pay Follow-up (R3)"]],
+    },
+  ],
+  "handoff-summariser": [
+    {
+      label: "Customer asked for a person",
+      input: "Policy SLI02400113, ULIP, premium \u20b948,000 half-yearly, 13th-month due 12 Dec. Two calls, one WhatsApp reminder read. Customer asked to speak to someone about fund options.",
+      output: [["Who the customer is", "Mr Customer A, ULIP, policy year 1, half-yearly mode"], ["Why the case moved", "Customer asked for a person about fund options"], ["What was said", "Doubts about fund performance; open to continuing if switch options are explained"], ["What was offered", "Payment link, not used"], ["What the customer asked for", "Call from a person this week"], ["Next step", "Telecaller call by 6 Dec; payment due 12 Dec"]],
+    },
+    {
+      label: "Wants to surrender",
+      input: "Policy SLI02400347, Traditional, \u20b936,000 yearly, lapsed 20 days. Customer said on the call that the policy is no longer needed and asked how to surrender.",
+      output: [["Who the customer is", "Mrs Customer B, Traditional, policy year 4, yearly mode"], ["Why the case moved", "Customer wants to surrender"], ["What was said", "Policy no longer needed after a job change"], ["What was offered", "Premium holiday not offered yet"], ["What the customer asked for", "Surrender process"], ["Next step", "Surrender retention desk call within 24 hours"]],
+    },
+  ],
+};
+
+function SampleRun({ id }: { id: string }) {
+  const samples = SAMPLES[id];
+  const [i, setI] = useState(0);
+  const [ran, setRan] = useState(false);
+  if (!samples) return null;
+  const sample = samples[i]!;
+  return (
+    <Panel title="Try it on a sample">
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="text-[12px] font-medium text-muted-foreground">Sample
+          <select value={i} onChange={(e) => { setI(Number(e.target.value)); setRan(false); }} className={`${selectCls} mt-1 block`} aria-label="Sample">{samples.map((x, k) => <option key={x.label} value={k}>{x.label}</option>)}</select>
+        </label>
+        <Button size="sm" onClick={() => setRan(true)}>Run</Button>
+      </div>
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <div>
+          <p className="text-[12px] font-medium text-muted-foreground">Input</p>
+          <p className="mt-1 rounded-input border border-border bg-surface-translucent p-3 text-[13px]">{sample.input}</p>
+        </div>
+        <div>
+          <p className="text-[12px] font-medium text-muted-foreground">Output</p>
+          {ran ? (
+            <dl className="mt-1 grid grid-cols-[150px_1fr] gap-y-1.5 rounded-input border border-border p-3 text-[13px]">
+              {sample.output.map(([k, v]) => (<Fragment key={k}><dt className="text-muted-foreground">{k}</dt><dd>{v}</dd></Fragment>))}
+            </dl>
+          ) : (
+            <p className="mt-1 rounded-input border border-dashed border-border p-3 text-[13px] text-muted-foreground">Run the agent to see the output.</p>
+          )}
+        </div>
+      </div>
+    </Panel>
   );
 }
 
@@ -106,6 +176,7 @@ function Overview({ id }: { id: string }) {
   );
   return (
     <div className="grid gap-4 lg:grid-cols-2">
+      {(id === "reason-classifier" || id === "handoff-summariser") && <div className="lg:col-span-2"><SampleRun id={id} /></div>}
       <Panel title="What it does">
         <p className="text-[13px]">{def.does}</p>
         {id === "renewal-voice" && <p className="mt-2 text-[13px] font-medium">Decisions: none. It converses and records.</p>}
@@ -294,7 +365,7 @@ function Configure({ id }: { id: string }) {
           {section === "Confidence thresholds" && (
             <div className="grid gap-3 sm:grid-cols-2">
               {(["classifier", "voice"] as const).map((k) => (
-                <label key={k} className="block text-[12px] font-medium text-muted-foreground">{k === "classifier" ? "Reason classifier" : "Voice outcomes"} (0 to 1)
+                <label key={k} className="block text-[12px] font-medium text-muted-foreground">{k === "classifier" ? "Lapse Reason Classifier" : "Voice outcomes"} (0 to 1)
                   <input disabled={locked || !mayThreshold} type="number" step={0.05} min={0} max={1} value={cfg.thresholds[k]} onChange={(e) => setCfg({ ...cfg, thresholds: { ...cfg.thresholds, [k]: Math.min(1, Math.max(0, Number(e.target.value) || 0)) } })} className={`${inputCls} mt-1 tabular`} />
                 </label>
               ))}
@@ -355,7 +426,7 @@ function Configure({ id }: { id: string }) {
                 reach: agentStats(id, 30).tasks,
                 diff: agentDiff(active?.data, cfg),
                 conflicts: [],
-                needs: ["head", "compliance"],
+                needs: ["head"],
               });
               toast.success(`Version ${no} sent for review`, { description: "Needs Head of Persistency and Compliance and quality." });
             }}

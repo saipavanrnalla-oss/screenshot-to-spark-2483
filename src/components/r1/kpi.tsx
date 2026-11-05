@@ -10,6 +10,8 @@ export function Kpi({
   good,
   onClick,
   className,
+  icon,
+  accent,
 }: {
   label: string;
   value: ReactNode;
@@ -18,15 +20,20 @@ export function Kpi({
   good?: boolean | undefined;
   onClick?: () => void;
   className?: string;
+  icon?: ReactNode;
+  /** Colour of the top edge. */
+  accent?: string;
 }) {
   const Comp = onClick ? "button" : "div";
   return (
     <Comp
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className={cn("panel flex flex-col items-start px-4 py-3 text-left", onClick && "cursor-pointer hover:border-primary", className)}
+      style={{ borderTop: `3px solid ${accent ?? "var(--primary)"}` }}
+      className={cn("panel relative flex flex-col items-start px-4 py-3 text-left", onClick && "cursor-pointer hover:border-primary", className)}
     >
-      <span className="text-[12px] font-medium text-muted-foreground">{label}</span>
+      <span className="text-[12px] font-medium uppercase tracking-[0.04em] text-muted-foreground">{label}</span>
+      {icon && <span className="absolute right-4 top-3 text-muted-foreground">{icon}</span>}
       <span className="mt-1 text-[24px] font-semibold leading-tight text-foreground tabular">{value}</span>
       {change !== undefined && (
         <span className={cn("mt-1 inline-flex items-center gap-1 text-[12px]", good === undefined ? "text-muted-foreground" : good ? "text-healthy" : "text-failed")}>
