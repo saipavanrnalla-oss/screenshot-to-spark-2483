@@ -13,6 +13,7 @@ import { DataGrid } from "@/components/r1/data-grid";
 import { EditFooter } from "@/components/r1/edit-footer";
 import { StatusChip, versionTone } from "@/components/r1/status-chip";
 import { PageTabs, inputCls, selectCls } from "@/components/r1/tabs";
+import { AgentTryIt, TRY_IT_AGENTS } from "@/components/r1/agent-try-it";
 import { agentDef, agentDiff, agentVersions, routeAffects } from "@/components/r1/agent-model";
 import { AGENT_META, DISPOSITIONS, ROUTE_OPTIONS, TOOL_KEYS, type AgentConfig, type ScriptDoc } from "@/data/persistency/r1/agents";
 import { TASKS, THREADS, TRANSCRIPTS, agentStats, type AgentTask } from "@/data/persistency/r1/tasks";
@@ -83,6 +84,7 @@ function AgentPage() {
           ]}
         />
       )}
+      {tab === "overview" && (TRY_IT_AGENTS as readonly string[]).includes(id) && <AgentTryIt id={id} />}
       {tab === "overview" && <Overview id={id} />}
       {tab === "configure" && <Configure id={id} />}
       {tab === "versions" && <Versions id={id} />}

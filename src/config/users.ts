@@ -25,7 +25,8 @@ export type NavKey =
   | "executive"
   | "queue"
   | "cohort"
-  | "initiatives";
+  | "initiatives"
+  | "scripts";
 
 export type Permission =
   | "rules.edit"
@@ -130,7 +131,7 @@ export const USERS: TestUser[] = [
     role: "Operations lead",
     scope: "Whole book",
     landing: "agents",
-    nav: ["agents", "workflows", "launch", "queue", "initiatives", "performance", "activity", "approvals", "policies"],
+    nav: ["agents", "workflows", "scripts", "launch", "queue", "initiatives", "performance", "activity", "approvals", "policies"],
     readOnly: [],
     can: [
       "rules.edit", "workflows.edit", "agents.edit", "agents.thresholds", "agents.pause", "stages.edit", "executors.edit",
@@ -143,7 +144,7 @@ export const USERS: TestUser[] = [
     role: "Head of Persistency",
     scope: "Whole book",
     landing: "executive",
-    nav: ["executive", "cohort", "initiatives", "performance", "reports", "policies", "approvals", "workflows"],
+    nav: ["executive", "cohort", "initiatives", "performance", "reports", "policies", "approvals", "workflows", "scripts"],
     readOnly: ["workflows"],
     can: ["rules.approve", "workflows.approve", "agents.approve", "stages.approve", "policies.act", "policies.hold", "reports.packs", "experiments.edit"],
   },

@@ -21,6 +21,7 @@ import {
   Inbox,
   Grid3x3,
   Target,
+  ScrollText,
 } from "lucide-react";
 import { MODULES, type ModuleId } from "@/config/modules";
 import type { NavKey } from "@/config/users";
@@ -48,6 +49,7 @@ export const NAV: NavEntry[] = [
   { key: "cohorts", ...m("cohorts"), icon: Layers, group: "Analytics" },
   { key: "agents", ...m("agents"), icon: Bot, group: "Orchestration" },
   { key: "workflows", ...m("workflows"), icon: Workflow, group: "Orchestration" },
+  { key: "scripts", module: null, label: "Scripts and templates", route: "/persistency/scripts", icon: ScrollText, group: "Orchestration" },
   { key: "launch", ...m("launch"), icon: Play, group: "Orchestration" },
   { key: "performance", ...m("performance"), icon: Activity, group: "Observability" },
   { key: "activity", ...m("activity"), icon: Radio, group: "Observability" },
