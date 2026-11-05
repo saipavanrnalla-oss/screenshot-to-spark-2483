@@ -22,7 +22,7 @@ describe("Release 1 visibility", () => {
   });
 
   it("shows each user the sidebar items for the demo", () => {
-    expect(visibleFor("ops")).toEqual(["agents", "workflows", "launch", "performance", "activity", "policies", "approvals"]);
+    expect(visibleFor("ops")).toEqual(["agents", "workflows", "launch", "performance", "activity", "policies", "queue", "approvals"]);
     expect(visibleFor("head")).toEqual(["executive", "reports", "workflows", "performance", "policies", "approvals"]);
   });
 

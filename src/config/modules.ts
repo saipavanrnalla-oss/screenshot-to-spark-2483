@@ -40,7 +40,7 @@ export const MODULES: Record<ModuleId, { n: number | null; label: string; route:
   executive:   { n: null, label: "Executive dashboard", route: "/persistency/executive", enabled: true  },
   performance: { n: null, label: "Workflow performance", route: "/persistency/performance", enabled: true  },
   activity:    { n: null, label: "Agent activity",  route: "/persistency/activity",   enabled: true  },
-  launch:      { n: null, label: "Run a workflow",   route: "/persistency/launch",     enabled: true  },
+  launch:      { n: null, label: "Load the due list", route: "/persistency/launch",     enabled: true  },
 };
 
 export const CHROME = {

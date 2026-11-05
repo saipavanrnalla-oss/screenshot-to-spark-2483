@@ -29,6 +29,7 @@ import { Route as PersistencyLifecycleRouteImport } from './routes/persistency.l
 import { Route as PersistencyMeasurementRouteImport } from './routes/persistency.measurement'
 import { Route as PersistencyPerformanceRouteImport } from './routes/persistency.performance'
 import { Route as PersistencyPoliciesRouteImport } from './routes/persistency.policies'
+import { Route as PersistencyQueueRouteImport } from './routes/persistency.queue'
 import { Route as PersistencyReportsRouteImport } from './routes/persistency.reports'
 import { Route as PersistencyRulesRouteImport } from './routes/persistency.rules'
 import { Route as PersistencySetupRouteImport } from './routes/persistency.setup'
@@ -40,6 +41,7 @@ import { Route as PersistencyAgentsIdRouteImport } from './routes/persistency.ag
 import { Route as PersistencyPoliciesIdRouteImport } from './routes/persistency.policies_.$id'
 import { Route as PersistencyQueuesPersonaRouteImport } from './routes/persistency.queues.$persona'
 import { Route as PersistencyRulesIdRouteImport } from './routes/persistency.rules_.$id'
+import { Route as PersistencyRunsPolicyRouteImport } from './routes/persistency.runs.$policy'
 import { Route as PersistencyWorkPersonaRouteImport } from './routes/persistency.work.$persona'
 import { Route as PersistencyWorkflowsIndexRouteImport } from './routes/persistency.workflows.index'
 import { Route as PersistencyWorkflowsIdRouteImport } from './routes/persistency.workflows.$id'
@@ -150,6 +152,11 @@ const PersistencyPoliciesRoute = PersistencyPoliciesRouteImport.update({
   path: '/policies',
   getParentRoute: () => PersistencyRoute,
 } as any)
+const PersistencyQueueRoute = PersistencyQueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
+  getParentRoute: () => PersistencyRoute,
+} as any)
 const PersistencyReportsRoute = PersistencyReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -205,6 +212,11 @@ const PersistencyQueuesPersonaRoute =
 const PersistencyRulesIdRoute = PersistencyRulesIdRouteImport.update({
   id: '/rules_/$id',
   path: '/rules/$id',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyRunsPolicyRoute = PersistencyRunsPolicyRouteImport.update({
+  id: '/runs/$policy',
+  path: '/runs/$policy',
   getParentRoute: () => PersistencyRoute,
 } as any)
 const PersistencyWorkPersonaRoute = PersistencyWorkPersonaRouteImport.update({
@@ -266,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/persistency/measurement': typeof PersistencyMeasurementRoute
   '/persistency/performance': typeof PersistencyPerformanceRoute
   '/persistency/policies': typeof PersistencyPoliciesRoute
+  '/persistency/queue': typeof PersistencyQueueRoute
   '/persistency/reports': typeof PersistencyReportsRoute
   '/persistency/rules': typeof PersistencyRulesRoute
   '/persistency/setup': typeof PersistencySetupRoute
@@ -278,6 +291,7 @@ export interface FileRoutesByFullPath {
   '/persistency/policies/$id': typeof PersistencyPoliciesIdRoute
   '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
   '/persistency/rules/$id': typeof PersistencyRulesIdRoute
+  '/persistency/runs/$policy': typeof PersistencyRunsPolicyRoute
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows/': typeof PersistencyWorkflowsIndexRoute
@@ -305,6 +319,7 @@ export interface FileRoutesByTo {
   '/persistency/measurement': typeof PersistencyMeasurementRoute
   '/persistency/performance': typeof PersistencyPerformanceRoute
   '/persistency/policies': typeof PersistencyPoliciesRoute
+  '/persistency/queue': typeof PersistencyQueueRoute
   '/persistency/reports': typeof PersistencyReportsRoute
   '/persistency/rules': typeof PersistencyRulesRoute
   '/persistency/setup': typeof PersistencySetupRoute
@@ -317,6 +332,7 @@ export interface FileRoutesByTo {
   '/persistency/policies/$id': typeof PersistencyPoliciesIdRoute
   '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
   '/persistency/rules/$id': typeof PersistencyRulesIdRoute
+  '/persistency/runs/$policy': typeof PersistencyRunsPolicyRoute
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows': typeof PersistencyWorkflowsIndexRoute
@@ -346,6 +362,7 @@ export interface FileRoutesById {
   '/persistency/measurement': typeof PersistencyMeasurementRoute
   '/persistency/performance': typeof PersistencyPerformanceRoute
   '/persistency/policies': typeof PersistencyPoliciesRoute
+  '/persistency/queue': typeof PersistencyQueueRoute
   '/persistency/reports': typeof PersistencyReportsRoute
   '/persistency/rules': typeof PersistencyRulesRoute
   '/persistency/setup': typeof PersistencySetupRoute
@@ -358,6 +375,7 @@ export interface FileRoutesById {
   '/persistency/policies_/$id': typeof PersistencyPoliciesIdRoute
   '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
   '/persistency/rules_/$id': typeof PersistencyRulesIdRoute
+  '/persistency/runs/$policy': typeof PersistencyRunsPolicyRoute
   '/persistency/work/$persona': typeof PersistencyWorkPersonaRoute
   '/persistency/workflows/$id': typeof PersistencyWorkflowsIdRoute
   '/persistency/workflows/': typeof PersistencyWorkflowsIndexRoute
@@ -388,6 +406,7 @@ export interface FileRouteTypes {
     | '/persistency/measurement'
     | '/persistency/performance'
     | '/persistency/policies'
+    | '/persistency/queue'
     | '/persistency/reports'
     | '/persistency/rules'
     | '/persistency/setup'
@@ -400,6 +419,7 @@ export interface FileRouteTypes {
     | '/persistency/policies/$id'
     | '/persistency/queues/$persona'
     | '/persistency/rules/$id'
+    | '/persistency/runs/$policy'
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows/'
@@ -427,6 +447,7 @@ export interface FileRouteTypes {
     | '/persistency/measurement'
     | '/persistency/performance'
     | '/persistency/policies'
+    | '/persistency/queue'
     | '/persistency/reports'
     | '/persistency/rules'
     | '/persistency/setup'
@@ -439,6 +460,7 @@ export interface FileRouteTypes {
     | '/persistency/policies/$id'
     | '/persistency/queues/$persona'
     | '/persistency/rules/$id'
+    | '/persistency/runs/$policy'
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows'
@@ -467,6 +489,7 @@ export interface FileRouteTypes {
     | '/persistency/measurement'
     | '/persistency/performance'
     | '/persistency/policies'
+    | '/persistency/queue'
     | '/persistency/reports'
     | '/persistency/rules'
     | '/persistency/setup'
@@ -479,6 +502,7 @@ export interface FileRouteTypes {
     | '/persistency/policies_/$id'
     | '/persistency/queues/$persona'
     | '/persistency/rules_/$id'
+    | '/persistency/runs/$policy'
     | '/persistency/work/$persona'
     | '/persistency/workflows/$id'
     | '/persistency/workflows/'
@@ -636,6 +660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersistencyPoliciesRouteImport
       parentRoute: typeof PersistencyRoute
     }
+    '/persistency/queue': {
+      id: '/persistency/queue'
+      path: '/queue'
+      fullPath: '/persistency/queue'
+      preLoaderRoute: typeof PersistencyQueueRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
     '/persistency/reports': {
       id: '/persistency/reports'
       path: '/reports'
@@ -713,6 +744,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersistencyRulesIdRouteImport
       parentRoute: typeof PersistencyRoute
     }
+    '/persistency/runs/$policy': {
+      id: '/persistency/runs/$policy'
+      path: '/runs/$policy'
+      fullPath: '/persistency/runs/$policy'
+      preLoaderRoute: typeof PersistencyRunsPolicyRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
     '/persistency/work/$persona': {
       id: '/persistency/work/$persona'
       path: '/work/$persona'
@@ -782,6 +820,7 @@ interface PersistencyRouteChildren {
   PersistencyMeasurementRoute: typeof PersistencyMeasurementRoute
   PersistencyPerformanceRoute: typeof PersistencyPerformanceRoute
   PersistencyPoliciesRoute: typeof PersistencyPoliciesRoute
+  PersistencyQueueRoute: typeof PersistencyQueueRoute
   PersistencyReportsRoute: typeof PersistencyReportsRoute
   PersistencyRulesRoute: typeof PersistencyRulesRoute
   PersistencySetupRoute: typeof PersistencySetupRoute
@@ -794,6 +833,7 @@ interface PersistencyRouteChildren {
   PersistencyPoliciesIdRoute: typeof PersistencyPoliciesIdRoute
   PersistencyQueuesPersonaRoute: typeof PersistencyQueuesPersonaRoute
   PersistencyRulesIdRoute: typeof PersistencyRulesIdRoute
+  PersistencyRunsPolicyRoute: typeof PersistencyRunsPolicyRoute
   PersistencyWorkPersonaRoute: typeof PersistencyWorkPersonaRoute
   PersistencyWorkflowsIdRoute: typeof PersistencyWorkflowsIdRoute
   PersistencyWorkflowsIndexRoute: typeof PersistencyWorkflowsIndexRoute
@@ -820,6 +860,7 @@ const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyMeasurementRoute: PersistencyMeasurementRoute,
   PersistencyPerformanceRoute: PersistencyPerformanceRoute,
   PersistencyPoliciesRoute: PersistencyPoliciesRoute,
+  PersistencyQueueRoute: PersistencyQueueRoute,
   PersistencyReportsRoute: PersistencyReportsRoute,
   PersistencyRulesRoute: PersistencyRulesRoute,
   PersistencySetupRoute: PersistencySetupRoute,
@@ -832,6 +873,7 @@ const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyPoliciesIdRoute: PersistencyPoliciesIdRoute,
   PersistencyQueuesPersonaRoute: PersistencyQueuesPersonaRoute,
   PersistencyRulesIdRoute: PersistencyRulesIdRoute,
+  PersistencyRunsPolicyRoute: PersistencyRunsPolicyRoute,
   PersistencyWorkPersonaRoute: PersistencyWorkPersonaRoute,
   PersistencyWorkflowsIdRoute: PersistencyWorkflowsIdRoute,
   PersistencyWorkflowsIndexRoute: PersistencyWorkflowsIndexRoute,
