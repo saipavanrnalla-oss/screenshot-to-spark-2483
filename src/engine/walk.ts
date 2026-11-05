@@ -37,11 +37,11 @@ export interface WalkResult {
 }
 
 const FORCED: Record<Exclude<ExampleBehaviour, "Follow the policy">, Record<string, string>> = {
-  "Pays by the due date": { paid: "Yes", debDec: "Yes", balDec: "Yes", out1: "Will pay", out2: "Will pay" },
-  "Pays in the Grace Period": { paid: "No", debDec: "Bounced", balDec: "No", out1: "Will pay", out2: "Will pay", resp: "Will pay", gpaid: "Yes" },
-  "Lapses, then revives": { paid: "No", debDec: "Bounced", resp: "Refuses", third: "Yes", days: "Under 180", vres: "Yes", rein: "Yes", out1: "Refused", out2: "Refused" },
-  "Refuses and is closed": { paid: "No", debDec: "Bounced", resp: "Refuses", third: "Yes", days: "180 and over", vres: "No", out1: "Refused", out2: "Refused" },
-  "Traditional plan goes Reduced Paid-up": { paid: "No", debDec: "Bounced", resp: "No response", gpaid: "No", prod: "Traditional", days: "180 and over", vres: "No" },
+  "Pays by the due date": { paid: "Yes", debDec: "Yes", balDec: "Yes", out1: "Will pay", out2: "Will pay", ep: "Yes", lp1: "Yes" },
+  "Pays in the Grace Period": { paid: "No", debDec: "Bounced", balDec: "No", out1: "Will pay", out2: "Will pay", resp: "Will pay", gpaid: "Yes", ep: "No", lp1: "No", lp2: "No" },
+  "Lapses, then revives": { paid: "No", debDec: "Bounced", resp: "Refuses", wdec: "No", days: "Under 180", vres: "Yes", rein: "Yes", out1: "Refused", out2: "Refused", lp1: "No", lp2: "No" },
+  "Refuses and is closed": { paid: "No", debDec: "Bounced", resp: "Refuses", wdec: "No", days: "180 and over", vres: "No", out1: "Refused", out2: "Refused", lp1: "No", lp2: "No" },
+  "Traditional plan goes Reduced Paid-up": { paid: "No", debDec: "Bounced", resp: "No response", gpaid: "No", prod: "Traditional", days: "180 and over", vres: "No", ep: "No", lp1: "No", lp2: "No" },
 };
 
 const REASONS = ["Financial", "Service", "Product", "Mis-selling", "Not contactable"] as const;
@@ -79,7 +79,10 @@ export function walkPolicy(graph: WfGraph, p: Policy, behaviour: ExampleBehaviou
       case "debDec": return r("deb") < 88 ? "Yes" : "Bounced";
       case "paid": return r("paid") < (goodPayer ? (mandate ? 94 : 82) : mandate ? 72 : 52) ? "Yes" : "No";
       case "resp": { const x = r("resp"); return x < 35 ? "Will pay" : x < 60 ? "Refuses" : x < 75 ? "Needs a person" : "No response"; }
-      case "third": return r("third") < 50 ? "Yes" : "No";
+      case "wdec": return visit === 0 && r("wd") < 50 ? "Yes" : "No";
+      case "ep": return r("ep") < 40 ? "Yes" : "No";
+      case "lp1": return r("lp1") < (goodPayer ? 40 : 20) ? "Yes" : "No";
+      case "lp2": return r("lp2") < (goodPayer ? 30 : 12) ? "Yes" : "No";
       case "cont": return r("cont") < 45 ? "Yes" : "Stop";
       case "gpaid": return r("gp") < 40 ? "Yes" : "No";
       case "prod": return p.product === "ULIP" ? "ULIP" : "Traditional";

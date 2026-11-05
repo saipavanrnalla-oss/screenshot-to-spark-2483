@@ -13,7 +13,7 @@ export function AgentTryIt({ id }: { id: string }) {
   const [text, setText] = useState(CLASSIFIER_EXAMPLES[0]!);
   const [res, setRes] = useState<ReasonResult | HandoffPacket | null>(null);
   const run = () =>
-    setRes(isClassifier ? classifyReason(text) : summariseHandoff(text, { name: "Anil Verma", policy: "SLI02409001", premium: "Rs 36,000", due: "14 Jan 2027", stage: "Renewal window, T-78", attempts: 2 }));
+    setRes(isClassifier ? classifyReason(text) : summariseHandoff(text, { name: "Sunil Kapoor", policy: "SLI02409101", premium: "Rs 36,000", due: "14 Jan 2027", stage: "Renewal window, T-78", attempts: 2 }));
   return (
     <section className="panel space-y-3 p-4" aria-label="Try the agent">
       <header>

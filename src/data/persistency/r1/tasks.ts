@@ -135,7 +135,7 @@ function workflowFor(p: Policy, agentId: string): [string, string, string] {
 function generate(): AgentTask[] {
   const rng = new Rng(40_400);
   const book = pool();
-  const counts: [string, number][] = [["message", 1600], ["renewal-voice", 900], ["reason-classifier", 700], ["payment-assist", 350], ["handoff-summariser", 200], ["quality", 250]];
+  const counts: [string, number][] = [["message", 1600], ["renewal-voice", 900], ["reason-classifier", 700], ["payment-assist", 350], ["handoff-summariser", 200], ["quality", 250], ["worth-score", 180]];
   const out: AgentTask[] = [];
   let seq = 1;
   for (const [agentId, n] of counts) {
@@ -195,6 +195,16 @@ function generate(): AgentTask[] {
         if (t.confidence < 0.62 && rng.chance(0.4)) {
           t.result = "Handed off";
           t.handoffTo = "Team lead";
+        }
+        t.durationSec = 1;
+      } else if (agentId === "worth-score") {
+        t.workflow = "R1";
+        t.step = "Score: still worth calling?";
+        t.trigger = "Customer refused in the Grace Period";
+        t.confidence = +(0.08 + rng.next() * 0.6).toFixed(2);
+        if (t.confidence < 0.25) {
+          t.result = "Handed off";
+          t.handoffTo = "Specialist vendor (ATS), variable payout";
         }
         t.durationSec = 1;
       } else if (agentId === "payment-assist") {

@@ -15,3 +15,19 @@ export function runStatus(r: RunState): { word: string; tone: Tone } {
   if (r.waitingCase) return { word: `With ${r.waitingCase.team}`, tone: "risk" };
   return { word: "Running", tone: "accent" };
 }
+
+export type Channel = "Call" | "WhatsApp" | "Brief" | "Score" | "Vendor" | "Wait" | "Person" | "Step";
+
+/** The channel a workflow step uses, in the words shown on the board. */
+export function channelOf(type: string, label: string): Channel {
+  if (type === "agent.voice" || (type === "agent.payment" && /call/i.test(label))) return "Call";
+  if (type === "agent.message" || type === "agent.payment") return "WhatsApp";
+  if (type === "agent.summariser") return "Brief";
+  if (type === "agent.score") return "Score";
+  if (type.startsWith("vendor.")) return "Vendor";
+  if (type.startsWith("wait.")) return "Wait";
+  if (type.startsWith("people.")) return "Person";
+  return "Step";
+}
+
+export const CHANNEL_TONE: Record<Channel, Tone> = { Call: "accent", WhatsApp: "ok", Brief: "neutral", Score: "risk", Vendor: "off", Wait: "neutral", Person: "risk", Step: "neutral" };

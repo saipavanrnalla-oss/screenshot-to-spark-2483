@@ -4,7 +4,7 @@ export type AgentStatus = "Active" | "Paused" | "Not enabled";
 export interface AgentDef {
   id: string;
   name: string;
-  type: "Messaging" | "Voice" | "Classifier" | "Payments" | "Summary" | "Quality" | "Learning";
+  type: "Messaging" | "Voice" | "Classifier" | "Payments" | "Summary" | "Quality" | "Learning" | "Scoring";
   status: AgentStatus;
   version: number;
   does: string;
@@ -19,6 +19,7 @@ export const AGENTS: AgentDef[] = [
   { id: "payment-assist", name: "Payment Link Dispatcher", type: "Payments", status: "Active", version: 2, does: "Sends the payment link or autopay set-up and follows the payment until it lands.", workflows: ["R2", "R4", "R5"] },
   { id: "handoff-summariser", name: "Advisor Callback Brief Agent", type: "Summary", status: "Active", version: 2, does: "Writes the six-field packet when a case moves to a person or another agent.", workflows: ["R2", "R7", "L2", "L3"] },
   { id: "quality", name: "Compliance Guard", type: "Quality", status: "Active", version: 3, does: "Checks calls and messages against the contact policy and the script.", workflows: ["R1", "R2", "R3", "L1"] },
+  { id: "worth-score", name: "Worth Pursuing Model", type: "Scoring", status: "Active", version: 1, does: "Scores the chance a premium is still collected after each contact, and says when to stop in-house calls and hand the case to the variable-payout vendor.", workflows: ["R1", "R8"] },
   { id: "welcome", name: "Welcome and PIVC Agent", type: "Voice", status: "Not enabled", version: 1, does: "Welcome call and verification after issuance.", workflows: ["S1", "S2"] },
   { id: "revival", name: "Lapse Revival Agent", type: "Voice", status: "Not enabled", version: 1, does: "Revival conversations for lapsed policies.", workflows: ["L1", "L2"] },
   { id: "retention", name: "Surrender Retention Agent", type: "Voice", status: "Not enabled", version: 1, does: "Conversations with customers who ask to surrender.", workflows: ["L3"] },

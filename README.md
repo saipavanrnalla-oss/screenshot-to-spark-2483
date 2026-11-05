@@ -10,16 +10,59 @@ Open your project in the [Lovable editor](https://lovable.dev) and keep building
 - **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
 - **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
 
-## Development
+## Run it on your computer
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+You need Node.js 20 or newer. Bun is optional but faster; the repo ships a `bun.lock`.
+
+### Mac or Linux
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+git clone -b demo-two-personas https://github.com/saipavanrnalla-oss/screenshot-to-spark-2483.git persistency-demo
+cd persistency-demo
+npm install        # or: bun install
+npm run dev        # or: bun run dev
+```
+
+### Windows (PowerShell)
+
+1. Install Node.js LTS from nodejs.org (tick "Add to PATH"), then open a new PowerShell window.
+2. Unzip the folder, or clone it with Git for Windows:
+
+```powershell
+git clone -b demo-two-personas https://github.com/saipavanrnalla-oss/screenshot-to-spark-2483.git persistency-demo
+cd persistency-demo
+npm install
 npm run dev
 ```
+
+If PowerShell refuses to run `npm` scripts, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or use Command Prompt instead.
+
+Open the address it prints (usually http://localhost:5173), pick a role on the sign-in page and press Sign in. Runs, approvals and reviews are kept in that browser; use one browser for a demo and switch roles from the role switcher. To start fresh, clear the site data for localhost.
+
+For a faster build to demo from: `npm run build` then `npm run preview`.
+
+## The booth demo
+
+Sign in as the Ops lead, open **Load the due list**, press **Four booth scenarios**, then **Check and stage** and **Start**. Each card plays its story when you press Run:
+
+| Scenario | Customer | What it shows |
+| --- | --- | --- |
+| A | Sunil Kapoor, P2, Hindi, T-80 | Voice call, disposition read from the call, the payment link on WhatsApp as the next step, paid |
+| B | Meera Iyer, P8, T-14 | WhatsApp first, no payment in 2 days, a second WhatsApp on the same channel, paid |
+| C | Farhan Ali, P4, T-13 | Two WhatsApp messages unpaid, the channel switches to a call, an explanation call, paid on the link |
+| D | Kiran Rao, P1, Grace day 4 | Two refusals; the Worth Pursuing Model drops below 25% and hands the case to the variable-payout vendor |
+
+The staging table and the "Same step, different words" table show which approved script each customer gets and why. On a workflow page, **Show highlights** pins the six steps worth pointing at.
+
+## Placing real calls and WhatsApp messages
+
+By default every call and message is simulated in the browser. To send them for real, set an address in a `.env.local` file at the project root:
+
+```
+VITE_DISPATCH_URL=http://localhost:8787/dispatch
+```
+
+Each call or message step then POSTs one JSON action to that address. The payload and the result the platform sends back are in `docs/dispatch-contract.md`.
 
 ## Built with
 

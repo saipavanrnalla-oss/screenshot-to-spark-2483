@@ -20,6 +20,7 @@ export const AGENT_META: Record<string, AgentMeta> = {
   "payment-assist": { inputs: ["Policy facts", "Payment method", "Mandate state"], outputs: ["Payment link sent", "Autopay set-up", "Payment status"], costPerTask: 2.1, channel: "WhatsApp" },
   "handoff-summariser": { inputs: ["Activity history", "Transcript", "Disposition"], outputs: ["Six-field packet"], costPerTask: 0.6, channel: "System" },
   quality: { inputs: ["Transcript or message", "Script version", "Contact policy"], outputs: ["Conduct check results", "Breach flag"], costPerTask: 0.5, channel: "System" },
+  "worth-score": { inputs: ["Propensity band", "Calls and outcomes", "Links sent and paid", "Promises", "Days past due", "Reason tag", "Premium"], outputs: ["Chance to collect", "Factors", "Keep calling or hand over"], costPerTask: 0.2, channel: "System" },
   welcome: { inputs: ["New business file"], outputs: ["Verification result"], costPerTask: 0, channel: "Voice" },
   revival: { inputs: ["Lapse extract"], outputs: ["Revival interest"], costPerTask: 0, channel: "Voice" },
   retention: { inputs: ["Surrender request"], outputs: ["Retention outcome"], costPerTask: 0, channel: "Voice" },

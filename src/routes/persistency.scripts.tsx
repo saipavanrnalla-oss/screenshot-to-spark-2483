@@ -59,7 +59,7 @@ function ScriptsPage() {
                 <tr className="cursor-pointer border-t border-border hover:bg-surface-translucent" onClick={() => setOpen(open === v.id ? null : v.id)}>
                   <td className="px-3 py-2 text-foreground">{v.name}</td>
                   <td className="px-3 py-2">{v.channel}</td>
-                  <td className="px-3 py-2">{v.when.length ? v.when.join(", ") : "Everyone"}</td>
+                  <td className="px-3 py-2">{v.when.length ? v.when.map((w) => (w === "Low propensity" ? "P1 to P5" : w === "High propensity" ? "P6 to P10" : w)).join(", ") : "Everyone"}</td>
                   <td className="px-3 py-2">{v.language}</td>
                   <td className="px-3 py-2 text-[12px] text-subtle">{v.nodes.map((n) => STEP_NAMES[n] ?? n).join("; ")}</td>
                   {TEAMS.map((t) => <td key={t} className="px-3 py-2"><StatusChip tone={a[t] === "Approved" ? "ok" : a[t] === "In review" ? "risk" : "neutral"}>{a[t]}</StatusChip></td>)}

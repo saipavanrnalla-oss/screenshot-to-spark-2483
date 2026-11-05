@@ -2,10 +2,11 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { SEED_GRAPHS } from "@/data/persistency/r1/wf";
 import { prepare } from "@/components/r1/wf-model";
-import { resolveCase, runStep, startRun, stagePolicy, type DueRow, type Reply, type RunState } from "@/engine/live-run";
+import { resolveCase, runStep, settle, startRun, stagePolicy, type DueRow, type Reply, type RunState } from "@/engine/live-run";
+import { dispatch } from "@/engine/dispatch";
 
 /** Uploaded due lists and the policies running from them. Kept in the browser; no backend. */
-export const LIVE_KEY = "pct-live-v1";
+export const LIVE_KEY = "pct-live-v2";
 
 const graphs = { R1: prepare(SEED_GRAPHS["R1"]!), R8: prepare(SEED_GRAPHS["R8"]!) };
 export const liveGraph = (id: "R1" | "R8") => graphs[id];
@@ -48,7 +49,7 @@ export const useLive = create<LiveState>()(
             skipped.push({ policy: r.policy, why: st.reasons[0] ?? "Not in these workflows" });
             continue;
           }
-          runs[r.policy] = run;
+          runs[r.policy] = settle(graphs[run.graphId], run);
           started += 1;
         }
         const up: Upload = { id: `UP-${Date.now().toString(36)}`, fileName, at: new Date().toISOString(), rows: rows.length, started, skipped };
@@ -60,15 +61,21 @@ export const useLive = create<LiveState>()(
         const run = get().runs[policy];
         if (!run) return;
         const next = runStep(graphs[run.graphId], run, get().replies[policy] ?? "As the customer would");
+        dispatch(next.row, next.handoffs.slice(run.handoffs.length));
         set({ runs: { ...get().runs, [policy]: next }, replies: { ...get().replies, [policy]: "As the customer would" } });
       },
       stepAll: (policies) => {
         const runs = { ...get().runs };
         for (const p of policies) {
           const run = runs[p];
-          if (run && !run.done && !run.waitingCase) runs[p] = runStep(graphs[run.graphId], run, get().replies[p] ?? "As the customer would");
+          if (run && !run.done && !run.waitingCase) {
+            runs[p] = runStep(graphs[run.graphId], run, get().replies[p] ?? "As the customer would");
+            dispatch(runs[p]!.row, runs[p]!.handoffs.slice(run.handoffs.length));
+          }
         }
-        set({ runs });
+        const replies = { ...get().replies };
+        for (const p of policies) delete replies[p];
+        set({ runs, replies });
       },
       resolve: (policy, by, outcome) => {
         const run = get().runs[policy];
@@ -80,3 +87,14 @@ export const useLive = create<LiveState>()(
     { name: LIVE_KEY, storage: createJSONStorage(() => localStorage), version: 1 },
   ),
 );
+
+/** The first step a policy will act on once started, with the words it will use there. */
+export function previewEntry(row: DueRow): { nodeId: string; label: string; type: string } | undefined {
+  const st = stagePolicy(row);
+  const run = startRun(row, st, "preview");
+  if (!run) return undefined;
+  const g = graphs[run.graphId];
+  const s = settle(g, run);
+  const n = g.nodes.find((x) => x.id === s.nodeId);
+  return n ? { nodeId: n.id, label: n.label, type: n.type } : undefined;
+}

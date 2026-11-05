@@ -4,13 +4,14 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ChevronLeft, Copy, Pencil, Play } from "lucide-react";
+import { ChevronLeft, Copy, Pencil, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EmptyState, NoteBanner, Panel } from "@/components/ds/primitives";
 import { DataGrid } from "@/components/r1/data-grid";
 import { StatusChip, versionTone } from "@/components/r1/status-chip";
 import { PageTabs } from "@/components/r1/tabs";
+import { WF_HIGHLIGHTS } from "@/data/persistency/r1/wf-highlights";
 import { ConfirmDialog } from "@/components/r1/confirm";
 import { SimConsole } from "@/components/r1/wf-sim";
 import { ExampleRun } from "@/components/r1/wf-example";
@@ -73,6 +74,9 @@ function WorkflowPage() {
   const [exOpen, setExOpen] = useState(false);
   const [pathIds, setPathIds] = useState<string[]>([]);
   const [activeNode, setActiveNode] = useState<string | null>(null);
+  const [showPins, setShowPins] = useState(false);
+  const highlights = WF_HIGHLIGHTS[id]?.filter((h) => graph?.nodes.some((n) => n.id === h.nodeId)) ?? [];
+  const pins = showPins ? Object.fromEntries(highlights.map((h, i) => [h.nodeId, i + 1])) : undefined;
   const tab = s.tab ?? "canvas";
   const author = user?.name ?? "User";
 
@@ -138,8 +142,28 @@ function WorkflowPage() {
       />
       {tab === "canvas" && (
         <div className="space-y-4">
+          {highlights.length > 0 && (
+            <section className="space-y-2" aria-label="Highlights">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" variant={showPins ? "default" : "outline"} onClick={() => setShowPins(!showPins)}><Sparkles /> {showPins ? "Hide highlights" : "Show highlights"}</Button>
+                <span className="text-[12px] text-muted-foreground">{showPins ? "Click a highlight to go to its step." : `${highlights.length} steps to point at when you walk someone through this journey.`}</span>
+              </div>
+              {showPins && (
+                <ol className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                  {highlights.map((h, i) => (
+                    <li key={h.nodeId}>
+                      <button type="button" onClick={() => { setActiveNode(h.nodeId); navigate({ search: (p) => ({ ...p, node: h.nodeId }), replace: true }); }} className={`flex h-full w-full gap-2 rounded-card border p-3 text-left transition-colors hover:border-attention ${activeNode === h.nodeId ? "border-attention bg-surface-translucent" : "border-border bg-card"}`}>
+                        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-attention text-[12px] font-semibold text-background">{i + 1}</span>
+                        <span><span className="block text-[13px] font-semibold text-foreground">{h.title}</span><span className="block text-[12px] text-muted-foreground">{h.text}</span></span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
+          )}
           <div className={`grid gap-4 ${node ? "xl:grid-cols-[1fr_380px]" : ""}`}>
-            <CanvasBox graph={graph} height={graph.nodes.length > 30 ? 680 : 560} counts={counts} marks={Object.fromEntries(pathIds.map((i) => [i, "path" as const]))} selectedId={s.node ?? null} activeId={activeNode} onSelectNode={(n) => navigate({ search: (p) => ({ ...p, node: n ?? undefined }), replace: true })} />
+            <CanvasBox graph={graph} height={graph.nodes.length > 30 ? 680 : 560} counts={counts} marks={Object.fromEntries(pathIds.map((i) => [i, "path" as const]))} selectedId={s.node ?? null} activeId={activeNode} pins={pins} onSelectNode={(n) => navigate({ search: (p) => ({ ...p, node: n ?? undefined }), replace: true })} />
             {node && <NodePanel code={id} node={node} policies={byNode[node.id] ?? []} graph={graph} onClose={() => navigate({ search: (p) => ({ ...p, node: undefined }), replace: true })} />}
           </div>
           {exOpen && <ExampleRun graph={graph} suggested={inIt} onPath={(path, act) => { setPathIds(path); setActiveNode(act); }} onClose={() => { setExOpen(false); setPathIds([]); setActiveNode(null); }} />}

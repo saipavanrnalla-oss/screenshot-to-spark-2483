@@ -36,12 +36,13 @@ interface NodeData extends Record<string, unknown> {
   vertical?: boolean | undefined;
   total?: number | undefined;
   paused?: boolean | undefined;
+  pin?: number | undefined;
 }
 
 type FlowNode = Node<NodeData, "wf">;
 
 function NodeView({ data }: NodeProps<FlowNode>) {
-  const { node, selected, active, mark, count, paused, funnel, total, vertical } = data;
+  const { node, selected, active, mark, count, paused, funnel, total, vertical, pin } = data;
   const item = PALETTE_BY_TYPE[node.type];
   const outreach = isOutreach(node);
   return (
@@ -54,8 +55,11 @@ function NodeView({ data }: NodeProps<FlowNode>) {
         mark === "changed" && "border-attention ring-1 ring-attention",
         mark === "path" && "border-primary bg-brand-tint ring-1 ring-primary",
         paused && "border-destructive",
+        pin !== undefined && "border-attention ring-2 ring-attention",
+        "relative",
       )}
     >
+      {pin !== undefined && <span className="absolute -left-3 -top-3 flex size-6 items-center justify-center rounded-full bg-attention text-[12px] font-semibold text-background shadow" aria-label={`Highlight ${pin}`}>{pin}</span>}
       <Handle type="target" position={vertical ? Position.Top : Position.Left} className="!size-2.5 !border !border-border !bg-card" />
       <div className="flex items-center justify-between gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-[0.04em] text-muted-foreground">{item?.group ?? "Step"}</span>
@@ -126,6 +130,8 @@ export interface WfCanvasProps {
   /** Funnel mode: big counts on nodes, counts on edges. */
   funnel?: { total: number; edges: Record<string, number>; vertical?: boolean } | undefined;
   pausedExecutors?: string[] | undefined;
+  /** Numbered highlights shown on nodes. */
+  pins?: Record<string, number> | undefined;
   height?: number | string | undefined;
   onSelectNode?: ((id: string | null) => void) | undefined;
   onSelectEdge?: ((id: string) => void) | undefined;
@@ -144,10 +150,10 @@ function Inner(p: WfCanvasProps) {
         id: n.id,
         type: "wf" as const,
         position: { x: n.x, y: n.y },
-        data: { node: n, selected: n.id === p.selectedId, active: n.id === p.activeId, mark: p.marks?.[n.id], count: p.counts?.[n.id], funnel: !!p.funnel, vertical: !!p.funnel?.vertical, total: p.funnel?.total, paused: !!n.config.executor && !!p.pausedExecutors?.includes(n.config.executor) },
+        data: { node: n, selected: n.id === p.selectedId, active: n.id === p.activeId, mark: p.marks?.[n.id], count: p.counts?.[n.id], funnel: !!p.funnel, vertical: !!p.funnel?.vertical, total: p.funnel?.total, paused: !!n.config.executor && !!p.pausedExecutors?.includes(n.config.executor), pin: p.pins?.[n.id] },
         draggable: !!p.editable,
       })),
-    [p.graph, p.selectedId, p.activeId, p.marks, p.counts, p.funnel, p.editable, p.pausedExecutors],
+    [p.graph, p.selectedId, p.activeId, p.marks, p.counts, p.funnel, p.editable, p.pausedExecutors, p.pins],
   );
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<FlowNode>(nodes);
   useEffect(() => setRfNodes(nodes), [nodes, setRfNodes]);

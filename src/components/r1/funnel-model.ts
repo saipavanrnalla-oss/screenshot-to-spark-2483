@@ -88,9 +88,22 @@ export function computeFunnel(g: WfGraph, total: number, policies: Policy[], sal
     byCohort[t.id] = Object.fromEntries(Object.entries(mix).map(([k, v]) => [k, (nodes[t.id] ?? 0) * v]));
   }
 
+  // A step whose only way on is a loop back (wait, then call again) counts toward the steps it returns to,
+  // so the funnel splits only across edges that lead forward to an outcome.
+  const byNode = new Map(g.nodes.map((n) => [n.id, n]));
+  const dead = new Set<string>();
+  for (const id of [...order].reverse()) {
+    const n = byNode.get(id);
+    if (!n || isOutcome(n)) continue;
+    const fwd = (out.get(id) ?? []).filter((e) => !back.has(e.id));
+    if (fwd.every((e) => dead.has(e.to))) dead.add(id);
+  }
+
   for (const id of order) {
     const flow = nodes[id] ?? 0;
-    const es = (out.get(id) ?? []).filter((e) => !back.has(e.id));
+    const all = (out.get(id) ?? []).filter((e) => !back.has(e.id));
+    const live = all.filter((e) => !dead.has(e.to));
+    const es = live.length ? live : all;
     if (!es.length || flow === 0) continue;
     const isCohortSplit = es.some((e) => e.label && mix[e.label] !== undefined);
     const weights = es.map((e) => {
