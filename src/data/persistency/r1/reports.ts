@@ -1,16 +1,28 @@
 import { hashId } from "../derived";
-import type { ConditionRow, Rule } from "../types";
+import type { ConditionRow, Policy, Rule } from "../types";
+import { BASE_POLICIES } from "../index";
+import { persistency } from "../metrics";
 
 export const PERIODS = [13, 25, 37, 49, 61] as const;
 export type Period = (typeof PERIODS)[number];
 
-const BASE: Record<Period, number> = { 13: 83.2, 25: 74.1, 37: 66.4, 49: 58.3, 61: 52.1 };
+/**
+ * The series ends on the persistency measured from the policies themselves, so the latest month on
+ * every chart equals what Cohorts and Reports compute from the book. Earlier months trend into it.
+ */
+const pctOf = (ps: Policy[]): Record<Period, number> =>
+  Object.fromEntries(persistency(ps).map((r) => [r.period, +(r.premiumWeighted * 100).toFixed(1)])) as Record<Period, number>;
+const BOOK = pctOf(BASE_POLICIES);
+const BASE: Record<Period, number> = BOOK;
+const off = (pred: (p: Policy) => boolean) => +(pctOf(BASE_POLICIES.filter(pred))[13] - BOOK[13]).toFixed(1);
+const ticketOf = (p: Policy) => (p.annualisedPremium < 200_000 ? "Below ₹2 lakh" : p.annualisedPremium < 500_000 ? "₹2 lakh to ₹5 lakh" : "₹5 lakh and above");
 
 export const OFFSETS = {
-  channel: { Agency: -0.8, Bancassurance: -3.4, Online: 2.1, Direct: 1.2 } as Record<string, number>,
-  product: { ULIP: -1.6, Traditional: 1.1, Term: 2.3 } as Record<string, number>,
-  ticket: { "Below ₹2 lakh": -1.1, "₹2 lakh to ₹5 lakh": 1.2, "₹5 lakh and above": 2.6 } as Record<string, number>,
-  region: { North: 0.4, South: 1.6, East: -2.7, West: 0.1 } as Record<string, number>,
+  channel: Object.fromEntries(["Agency", "Bancassurance", "Online", "Direct"].map((c) => [c, off((p) => p.channel === c)])) as Record<string, number>,
+  product: Object.fromEntries(["ULIP", "Traditional", "Term"].map((c) => [c, off((p) => p.product === c)])) as Record<string, number>,
+  ticket: Object.fromEntries(["Below ₹2 lakh", "₹2 lakh to ₹5 lakh", "₹5 lakh and above"].map((c) => [c, off((p) => ticketOf(p) === c)])) as Record<string, number>,
+  region: Object.fromEntries(["North", "South", "East", "West"].map((c) => [c, off((p) => p.region === c)])) as Record<string, number>,
+  cohort: Object.fromEntries(["Highest propensity", "High propensity", "Moderate propensity", "Low propensity", "Lowest propensity"].map((c) => [c, off((p) => p.insurerCohort === c)])) as Record<string, number>,
 };
 
 export interface SeriesFilter {
@@ -38,7 +50,7 @@ function offsetFor(f: SeriesFilter): number {
   if (f.ticket) o += OFFSETS.ticket[f.ticket] ?? 0;
   if (f.region) o += OFFSETS.region[f.region] ?? 0;
   if (f.branch) o += ((hashId(f.branch) % 70) - 35) / 10;
-  if (f.cohort) o += ({ "Highest propensity": 4.5, "High propensity": 2.2, "Moderate propensity": 0, "Low propensity": -3.1, "Lowest propensity": -6.4 } as Record<string, number>)[f.cohort] ?? 0;
+  if (f.cohort) o += OFFSETS.cohort[f.cohort] ?? 0;
   return o;
 }
 
@@ -57,10 +69,11 @@ export function persistencySeries(f: SeriesFilter = {}): SeriesPoint[] {
   const o = offsetFor(f);
   const salt = JSON.stringify(f);
   return SERIES_MONTHS.map((m, i) => {
+    const lastPoint = i === SERIES_MONTHS.length - 1;
     const trend = (i - 35) * 0.035;
     const pt = { key: m.key, label: m.label } as SeriesPoint;
     for (const p of PERIODS) {
-      const noise = ((hashId(`${salt}${m.key}${p}`) % 100) - 50) / 90;
+      const noise = lastPoint ? 0 : ((hashId(`${salt}${m.key}${p}`) % 100) - 50) / 90;
       const scale = p === 13 ? 1 : 0.8;
       (pt as unknown as Record<string, number>)[`p${p}`] = +Math.min(98, Math.max(20, BASE[p] + o * scale + trend + noise)).toFixed(1);
     }

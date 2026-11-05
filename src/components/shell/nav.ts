@@ -19,6 +19,8 @@ import {
   Radio,
   Gauge,
   Inbox,
+  Grid3x3,
+  Target,
 } from "lucide-react";
 import { MODULES, type ModuleId } from "@/config/modules";
 import type { NavKey } from "@/config/users";
@@ -40,6 +42,8 @@ const m = (id: ModuleId) => ({ module: id, label: MODULES[id].label, route: MODU
 export const NAV: NavEntry[] = [
   { key: "executive", ...m("executive"), icon: Gauge, group: "Analytics" },
   { key: "overview", ...m("overview"), icon: LayoutDashboard, group: "Analytics" },
+  { key: "cohort", module: null, label: "Cohorts", route: "/persistency/cohort", icon: Grid3x3, group: "Analytics" },
+  { key: "initiatives", module: null, label: "Initiatives", route: "/persistency/initiatives", icon: Target, group: "Analytics" },
   { key: "reports", ...m("measurement"), icon: LineChart, group: "Analytics" },
   { key: "cohorts", ...m("cohorts"), icon: Layers, group: "Analytics" },
   { key: "agents", ...m("agents"), icon: Bot, group: "Orchestration" },
