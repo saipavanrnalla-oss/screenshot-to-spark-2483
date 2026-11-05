@@ -19,8 +19,10 @@ export function ticketOf(p: Policy): string {
 export function sellerOf(p: Policy): string {
   if (p.channel === "Agency") return p.sourceBankOrAdvisor.replace(/^Advisor /, "");
   if (p.channel === "Bancassurance") {
-    const h = hashId(branchOf(p) + p.policyId.slice(-2));
-    return `${FLS[h % FLS.length]} ${FLS_LAST[(h >> 4) % FLS_LAST.length]} (FLS)`;
+    // Five front-line sellers per bank branch.
+    const b = hashId(branchOf(p));
+    const k = hashId(p.policyId) % 5;
+    return `${FLS[(b + k * 5) % FLS.length]} ${FLS_LAST[((b >>> 3) + k * 3) % FLS_LAST.length]} (FLS)`;
   }
   return p.channel === "Online" ? "Website" : "Direct sales team";
 }

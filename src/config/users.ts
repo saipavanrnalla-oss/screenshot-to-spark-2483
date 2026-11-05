@@ -1,6 +1,6 @@
 import type { ModuleId } from "./modules";
 
-export type RoleId = "ops" | "head" | "mis" | "compliance" | "remittance" | "executive";
+export type RoleId = "ops" | "head" | "mis" | "compliance" | "remittance" | "executive" | "caller" | "gm" | "qa" | "branch";
 
 /** Sidebar entries. Each belongs to a module (or none, for shared pages such as Approvals). */
 export type NavKey =
@@ -26,7 +26,10 @@ export type NavKey =
   | "queue"
   | "cohort"
   | "initiatives"
-  | "scripts";
+  | "scripts"
+  | "decisions"
+  | "quality"
+  | "branch";
 
 export type Permission =
   | "rules.edit"
@@ -147,6 +150,46 @@ export const USERS: TestUser[] = [
     nav: ["executive", "cohort", "initiatives", "performance", "reports", "policies", "approvals", "workflows", "scripts"],
     readOnly: ["workflows"],
     can: ["rules.approve", "workflows.approve", "agents.approve", "stages.approve", "policies.act", "policies.hold", "reports.packs", "experiments.edit"],
+  },
+  {
+    id: "caller",
+    name: "Team lead, persistency callers",
+    role: "Queue agent / team lead",
+    scope: "Cases handed to people",
+    landing: "peopleQueue",
+    nav: ["queue", "policies", "launch"],
+    readOnly: ["launch"],
+    can: ["policies.act"],
+  },
+  {
+    id: "gm",
+    name: "GM, Persistency",
+    role: "GM approver",
+    scope: "Whole book",
+    landing: "waivers",
+    nav: ["decisions", "approvals", "scripts", "initiatives", "policies"],
+    readOnly: ["initiatives"],
+    can: ["rules.approve", "workflows.approve", "agents.approve", "policies.act"],
+  },
+  {
+    id: "qa",
+    name: "Quality auditor",
+    role: "Quality auditor",
+    scope: "All renewal calls",
+    landing: "callQuality",
+    nav: ["quality", "scripts", "agents", "policies"],
+    readOnly: ["agents", "scripts"],
+    can: [],
+  },
+  {
+    id: "branch",
+    name: "Branch manager, bank partner",
+    role: "Branch or bank partner",
+    scope: "One branch",
+    landing: "myBranch",
+    nav: ["branch"],
+    readOnly: [],
+    can: ["policies.act"],
   },
 ];
 

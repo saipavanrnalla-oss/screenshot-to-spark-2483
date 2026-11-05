@@ -17,8 +17,8 @@ describe("Release 1 visibility", () => {
     expect(Object.values(CHROME).every((v) => v === false)).toBe(true);
   });
 
-  it("lists two demo users", () => {
-    expect(USERS.map((u) => u.id)).toEqual(["ops", "head"]);
+  it("lists the two lead users first, then the four supporting roles", () => {
+    expect(USERS.map((u) => u.id)).toEqual(["ops", "head", "caller", "gm", "qa", "branch"]);
   });
 
   it("shows each user the sidebar items for the demo", () => {
@@ -28,7 +28,7 @@ describe("Release 1 visibility", () => {
 
   it("lands each user on the page for the demo", () => {
     const landing = Object.fromEntries(USERS.map((u) => [u.id, MODULES[u.landing].label]));
-    expect(landing).toEqual({ ops: "Agents", head: "Executive dashboard" });
+    expect(landing).toEqual({ ops: "Agents", head: "Executive dashboard", caller: "People queue", gm: "Waivers and changes", qa: "Call quality", branch: "My branch" });
   });
 
   it("keeps Head of Persistency read-only on workflows", () => {

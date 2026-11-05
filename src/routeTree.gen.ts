@@ -17,12 +17,14 @@ import { Route as PersistencyActivityRouteImport } from './routes/persistency.ac
 import { Route as PersistencyAdminRouteImport } from './routes/persistency.admin'
 import { Route as PersistencyAgentsRouteImport } from './routes/persistency.agents'
 import { Route as PersistencyApprovalsRouteImport } from './routes/persistency.approvals'
+import { Route as PersistencyBranchRouteImport } from './routes/persistency.branch'
 import { Route as PersistencyCohortRouteImport } from './routes/persistency.cohort'
 import { Route as PersistencyCohortsRouteImport } from './routes/persistency.cohorts'
 import { Route as PersistencyCollectionsRouteImport } from './routes/persistency.collections'
 import { Route as PersistencyConfigurationRouteImport } from './routes/persistency.configuration'
 import { Route as PersistencyContactPolicyRouteImport } from './routes/persistency.contact-policy'
 import { Route as PersistencyDataRouteImport } from './routes/persistency.data'
+import { Route as PersistencyDecisionsRouteImport } from './routes/persistency.decisions'
 import { Route as PersistencyExecutiveRouteImport } from './routes/persistency.executive'
 import { Route as PersistencyGuardrailsRouteImport } from './routes/persistency.guardrails'
 import { Route as PersistencyInitiativesRouteImport } from './routes/persistency.initiatives'
@@ -31,6 +33,7 @@ import { Route as PersistencyLifecycleRouteImport } from './routes/persistency.l
 import { Route as PersistencyMeasurementRouteImport } from './routes/persistency.measurement'
 import { Route as PersistencyPerformanceRouteImport } from './routes/persistency.performance'
 import { Route as PersistencyPoliciesRouteImport } from './routes/persistency.policies'
+import { Route as PersistencyQualityRouteImport } from './routes/persistency.quality'
 import { Route as PersistencyQueueRouteImport } from './routes/persistency.queue'
 import { Route as PersistencyReportsRouteImport } from './routes/persistency.reports'
 import { Route as PersistencyRulesRouteImport } from './routes/persistency.rules'
@@ -93,6 +96,11 @@ const PersistencyApprovalsRoute = PersistencyApprovalsRouteImport.update({
   path: '/approvals',
   getParentRoute: () => PersistencyRoute,
 } as any)
+const PersistencyBranchRoute = PersistencyBranchRouteImport.update({
+  id: '/branch',
+  path: '/branch',
+  getParentRoute: () => PersistencyRoute,
+} as any)
 const PersistencyCohortRoute = PersistencyCohortRouteImport.update({
   id: '/cohort',
   path: '/cohort',
@@ -123,6 +131,11 @@ const PersistencyContactPolicyRoute =
 const PersistencyDataRoute = PersistencyDataRouteImport.update({
   id: '/data',
   path: '/data',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyDecisionsRoute = PersistencyDecisionsRouteImport.update({
+  id: '/decisions',
+  path: '/decisions',
   getParentRoute: () => PersistencyRoute,
 } as any)
 const PersistencyExecutiveRoute = PersistencyExecutiveRouteImport.update({
@@ -163,6 +176,11 @@ const PersistencyPerformanceRoute = PersistencyPerformanceRouteImport.update({
 const PersistencyPoliciesRoute = PersistencyPoliciesRouteImport.update({
   id: '/policies',
   path: '/policies',
+  getParentRoute: () => PersistencyRoute,
+} as any)
+const PersistencyQualityRoute = PersistencyQualityRouteImport.update({
+  id: '/quality',
+  path: '/quality',
   getParentRoute: () => PersistencyRoute,
 } as any)
 const PersistencyQueueRoute = PersistencyQueueRouteImport.update({
@@ -284,12 +302,14 @@ export interface FileRoutesByFullPath {
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
   '/persistency/approvals': typeof PersistencyApprovalsRoute
+  '/persistency/branch': typeof PersistencyBranchRoute
   '/persistency/cohort': typeof PersistencyCohortRoute
   '/persistency/cohorts': typeof PersistencyCohortsRoute
   '/persistency/collections': typeof PersistencyCollectionsRoute
   '/persistency/configuration': typeof PersistencyConfigurationRoute
   '/persistency/contact-policy': typeof PersistencyContactPolicyRoute
   '/persistency/data': typeof PersistencyDataRoute
+  '/persistency/decisions': typeof PersistencyDecisionsRoute
   '/persistency/executive': typeof PersistencyExecutiveRoute
   '/persistency/guardrails': typeof PersistencyGuardrailsRoute
   '/persistency/initiatives': typeof PersistencyInitiativesRoute
@@ -298,6 +318,7 @@ export interface FileRoutesByFullPath {
   '/persistency/measurement': typeof PersistencyMeasurementRoute
   '/persistency/performance': typeof PersistencyPerformanceRoute
   '/persistency/policies': typeof PersistencyPoliciesRoute
+  '/persistency/quality': typeof PersistencyQualityRoute
   '/persistency/queue': typeof PersistencyQueueRoute
   '/persistency/reports': typeof PersistencyReportsRoute
   '/persistency/rules': typeof PersistencyRulesRoute
@@ -328,12 +349,14 @@ export interface FileRoutesByTo {
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
   '/persistency/approvals': typeof PersistencyApprovalsRoute
+  '/persistency/branch': typeof PersistencyBranchRoute
   '/persistency/cohort': typeof PersistencyCohortRoute
   '/persistency/cohorts': typeof PersistencyCohortsRoute
   '/persistency/collections': typeof PersistencyCollectionsRoute
   '/persistency/configuration': typeof PersistencyConfigurationRoute
   '/persistency/contact-policy': typeof PersistencyContactPolicyRoute
   '/persistency/data': typeof PersistencyDataRoute
+  '/persistency/decisions': typeof PersistencyDecisionsRoute
   '/persistency/executive': typeof PersistencyExecutiveRoute
   '/persistency/guardrails': typeof PersistencyGuardrailsRoute
   '/persistency/initiatives': typeof PersistencyInitiativesRoute
@@ -342,6 +365,7 @@ export interface FileRoutesByTo {
   '/persistency/measurement': typeof PersistencyMeasurementRoute
   '/persistency/performance': typeof PersistencyPerformanceRoute
   '/persistency/policies': typeof PersistencyPoliciesRoute
+  '/persistency/quality': typeof PersistencyQualityRoute
   '/persistency/queue': typeof PersistencyQueueRoute
   '/persistency/reports': typeof PersistencyReportsRoute
   '/persistency/rules': typeof PersistencyRulesRoute
@@ -374,12 +398,14 @@ export interface FileRoutesById {
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
   '/persistency/approvals': typeof PersistencyApprovalsRoute
+  '/persistency/branch': typeof PersistencyBranchRoute
   '/persistency/cohort': typeof PersistencyCohortRoute
   '/persistency/cohorts': typeof PersistencyCohortsRoute
   '/persistency/collections': typeof PersistencyCollectionsRoute
   '/persistency/configuration': typeof PersistencyConfigurationRoute
   '/persistency/contact-policy': typeof PersistencyContactPolicyRoute
   '/persistency/data': typeof PersistencyDataRoute
+  '/persistency/decisions': typeof PersistencyDecisionsRoute
   '/persistency/executive': typeof PersistencyExecutiveRoute
   '/persistency/guardrails': typeof PersistencyGuardrailsRoute
   '/persistency/initiatives': typeof PersistencyInitiativesRoute
@@ -388,6 +414,7 @@ export interface FileRoutesById {
   '/persistency/measurement': typeof PersistencyMeasurementRoute
   '/persistency/performance': typeof PersistencyPerformanceRoute
   '/persistency/policies': typeof PersistencyPoliciesRoute
+  '/persistency/quality': typeof PersistencyQualityRoute
   '/persistency/queue': typeof PersistencyQueueRoute
   '/persistency/reports': typeof PersistencyReportsRoute
   '/persistency/rules': typeof PersistencyRulesRoute
@@ -421,12 +448,14 @@ export interface FileRouteTypes {
     | '/persistency/admin'
     | '/persistency/agents'
     | '/persistency/approvals'
+    | '/persistency/branch'
     | '/persistency/cohort'
     | '/persistency/cohorts'
     | '/persistency/collections'
     | '/persistency/configuration'
     | '/persistency/contact-policy'
     | '/persistency/data'
+    | '/persistency/decisions'
     | '/persistency/executive'
     | '/persistency/guardrails'
     | '/persistency/initiatives'
@@ -435,6 +464,7 @@ export interface FileRouteTypes {
     | '/persistency/measurement'
     | '/persistency/performance'
     | '/persistency/policies'
+    | '/persistency/quality'
     | '/persistency/queue'
     | '/persistency/reports'
     | '/persistency/rules'
@@ -465,12 +495,14 @@ export interface FileRouteTypes {
     | '/persistency/admin'
     | '/persistency/agents'
     | '/persistency/approvals'
+    | '/persistency/branch'
     | '/persistency/cohort'
     | '/persistency/cohorts'
     | '/persistency/collections'
     | '/persistency/configuration'
     | '/persistency/contact-policy'
     | '/persistency/data'
+    | '/persistency/decisions'
     | '/persistency/executive'
     | '/persistency/guardrails'
     | '/persistency/initiatives'
@@ -479,6 +511,7 @@ export interface FileRouteTypes {
     | '/persistency/measurement'
     | '/persistency/performance'
     | '/persistency/policies'
+    | '/persistency/quality'
     | '/persistency/queue'
     | '/persistency/reports'
     | '/persistency/rules'
@@ -510,12 +543,14 @@ export interface FileRouteTypes {
     | '/persistency/admin'
     | '/persistency/agents'
     | '/persistency/approvals'
+    | '/persistency/branch'
     | '/persistency/cohort'
     | '/persistency/cohorts'
     | '/persistency/collections'
     | '/persistency/configuration'
     | '/persistency/contact-policy'
     | '/persistency/data'
+    | '/persistency/decisions'
     | '/persistency/executive'
     | '/persistency/guardrails'
     | '/persistency/initiatives'
@@ -524,6 +559,7 @@ export interface FileRouteTypes {
     | '/persistency/measurement'
     | '/persistency/performance'
     | '/persistency/policies'
+    | '/persistency/quality'
     | '/persistency/queue'
     | '/persistency/reports'
     | '/persistency/rules'
@@ -612,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersistencyApprovalsRouteImport
       parentRoute: typeof PersistencyRoute
     }
+    '/persistency/branch': {
+      id: '/persistency/branch'
+      path: '/branch'
+      fullPath: '/persistency/branch'
+      preLoaderRoute: typeof PersistencyBranchRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
     '/persistency/cohort': {
       id: '/persistency/cohort'
       path: '/cohort'
@@ -652,6 +695,13 @@ declare module '@tanstack/react-router' {
       path: '/data'
       fullPath: '/persistency/data'
       preLoaderRoute: typeof PersistencyDataRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/decisions': {
+      id: '/persistency/decisions'
+      path: '/decisions'
+      fullPath: '/persistency/decisions'
+      preLoaderRoute: typeof PersistencyDecisionsRouteImport
       parentRoute: typeof PersistencyRoute
     }
     '/persistency/executive': {
@@ -708,6 +758,13 @@ declare module '@tanstack/react-router' {
       path: '/policies'
       fullPath: '/persistency/policies'
       preLoaderRoute: typeof PersistencyPoliciesRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
+    '/persistency/quality': {
+      id: '/persistency/quality'
+      path: '/quality'
+      fullPath: '/persistency/quality'
+      preLoaderRoute: typeof PersistencyQualityRouteImport
       parentRoute: typeof PersistencyRoute
     }
     '/persistency/queue': {
@@ -865,12 +922,14 @@ interface PersistencyRouteChildren {
   PersistencyAdminRoute: typeof PersistencyAdminRoute
   PersistencyAgentsRoute: typeof PersistencyAgentsRoute
   PersistencyApprovalsRoute: typeof PersistencyApprovalsRoute
+  PersistencyBranchRoute: typeof PersistencyBranchRoute
   PersistencyCohortRoute: typeof PersistencyCohortRoute
   PersistencyCohortsRoute: typeof PersistencyCohortsRoute
   PersistencyCollectionsRoute: typeof PersistencyCollectionsRoute
   PersistencyConfigurationRoute: typeof PersistencyConfigurationRoute
   PersistencyContactPolicyRoute: typeof PersistencyContactPolicyRoute
   PersistencyDataRoute: typeof PersistencyDataRoute
+  PersistencyDecisionsRoute: typeof PersistencyDecisionsRoute
   PersistencyExecutiveRoute: typeof PersistencyExecutiveRoute
   PersistencyGuardrailsRoute: typeof PersistencyGuardrailsRoute
   PersistencyInitiativesRoute: typeof PersistencyInitiativesRoute
@@ -879,6 +938,7 @@ interface PersistencyRouteChildren {
   PersistencyMeasurementRoute: typeof PersistencyMeasurementRoute
   PersistencyPerformanceRoute: typeof PersistencyPerformanceRoute
   PersistencyPoliciesRoute: typeof PersistencyPoliciesRoute
+  PersistencyQualityRoute: typeof PersistencyQualityRoute
   PersistencyQueueRoute: typeof PersistencyQueueRoute
   PersistencyReportsRoute: typeof PersistencyReportsRoute
   PersistencyRulesRoute: typeof PersistencyRulesRoute
@@ -908,12 +968,14 @@ const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyAdminRoute: PersistencyAdminRoute,
   PersistencyAgentsRoute: PersistencyAgentsRoute,
   PersistencyApprovalsRoute: PersistencyApprovalsRoute,
+  PersistencyBranchRoute: PersistencyBranchRoute,
   PersistencyCohortRoute: PersistencyCohortRoute,
   PersistencyCohortsRoute: PersistencyCohortsRoute,
   PersistencyCollectionsRoute: PersistencyCollectionsRoute,
   PersistencyConfigurationRoute: PersistencyConfigurationRoute,
   PersistencyContactPolicyRoute: PersistencyContactPolicyRoute,
   PersistencyDataRoute: PersistencyDataRoute,
+  PersistencyDecisionsRoute: PersistencyDecisionsRoute,
   PersistencyExecutiveRoute: PersistencyExecutiveRoute,
   PersistencyGuardrailsRoute: PersistencyGuardrailsRoute,
   PersistencyInitiativesRoute: PersistencyInitiativesRoute,
@@ -922,6 +984,7 @@ const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyMeasurementRoute: PersistencyMeasurementRoute,
   PersistencyPerformanceRoute: PersistencyPerformanceRoute,
   PersistencyPoliciesRoute: PersistencyPoliciesRoute,
+  PersistencyQualityRoute: PersistencyQualityRoute,
   PersistencyQueueRoute: PersistencyQueueRoute,
   PersistencyReportsRoute: PersistencyReportsRoute,
   PersistencyRulesRoute: PersistencyRulesRoute,

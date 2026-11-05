@@ -21,7 +21,11 @@ export type ModuleId =
   | "performance"
   | "launch"
   | "activity"
-  | "executive";
+  | "executive"
+  | "peopleQueue"
+  | "callQuality"
+  | "myBranch"
+  | "waivers";
 
 export const MODULES: Record<ModuleId, { n: number | null; label: string; route: string; enabled: boolean }> = {
   journeys:    { n: 1,  label: "Policy stages",    route: "/persistency/stages",     enabled: true  },
@@ -41,6 +45,10 @@ export const MODULES: Record<ModuleId, { n: number | null; label: string; route:
   performance: { n: null, label: "Workflow performance", route: "/persistency/performance", enabled: true  },
   activity:    { n: null, label: "Agent activity",  route: "/persistency/activity",   enabled: true  },
   launch:      { n: null, label: "Load the due list", route: "/persistency/launch",     enabled: true  },
+  peopleQueue: { n: null, label: "People queue",     route: "/persistency/queue",      enabled: true  },
+  callQuality: { n: null, label: "Call quality",     route: "/persistency/quality",    enabled: true  },
+  myBranch:    { n: null, label: "My branch",        route: "/persistency/branch",     enabled: true  },
+  waivers:     { n: null, label: "Waivers and changes", route: "/persistency/decisions", enabled: true  },
 };
 
 export const CHROME = {

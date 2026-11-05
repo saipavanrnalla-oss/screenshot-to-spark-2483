@@ -22,6 +22,9 @@ import {
   Grid3x3,
   Target,
   ScrollText,
+  BadgeCheck,
+  Headphones,
+  Building2,
 } from "lucide-react";
 import { MODULES, type ModuleId } from "@/config/modules";
 import type { NavKey } from "@/config/users";
@@ -56,7 +59,10 @@ export const NAV: NavEntry[] = [
   { key: "rules", ...m("rules"), icon: SlidersHorizontal, group: "Orchestration" },
   { key: "stages", ...m("journeys"), icon: Waypoints, group: "Operations" },
   { key: "policies", module: "journeys", label: "Policies", route: "/persistency/policies", icon: FileText, group: "Operations" },
-  { key: "queue", module: null, label: "People queue", route: "/persistency/queue", icon: Inbox, group: "Operations" },
+  { key: "queue", ...m("peopleQueue"), icon: Inbox, group: "Operations" },
+  { key: "decisions", ...m("waivers"), icon: BadgeCheck, group: "Operations" },
+  { key: "quality", ...m("callQuality"), icon: Headphones, group: "Operations" },
+  { key: "branch", ...m("myBranch"), icon: Building2, group: "Operations" },
   { key: "approvals", module: null, label: "Approvals", route: "/persistency/approvals", icon: CheckSquare, group: "Operations" },
   { key: "work", ...m("roles"), icon: ListChecks, group: "Operations" },
   { key: "collections", ...m("collections"), icon: Flame, group: "Operations" },
