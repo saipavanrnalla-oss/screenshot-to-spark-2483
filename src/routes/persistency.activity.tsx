@@ -30,9 +30,9 @@ export const Route = createFileRoute("/persistency/activity")({
   validateSearch: zodValidator(search),
   head: () => ({
     meta: [
-      { title: "Agent activity · Persistency · desible.ai" },
+      { title: "AI work logs · Persistency · desible.ai" },
       { name: "description", content: "Which agents are running, what each is working on, and the history of what they did." },
-      { property: "og:title", content: "Agent activity · Persistency · desible.ai" },
+      { property: "og:title", content: "AI work logs · Persistency · desible.ai" },
       { property: "og:description", content: "Which agents are running, what each is working on, and the history of what they did." },
     ],
   }),
@@ -96,7 +96,7 @@ function ActivityPage() {
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-4">
-      <PageHeader title="Agent activity" meta={`${running.length} of ${enabled.length} agents running · as of ${dateTime(NOW)}`} />
+      <PageHeader title="AI work logs" meta={`${running.length} of ${enabled.length} agents running · as of ${dateTime(NOW)}`} />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Kpi label="Agents running" value={`${running.length} of ${enabled.length}`} change={paused ? `${paused} paused` : "None paused"} accent="#3fb968" />
         <Kpi label="Tasks, last 24 hours" value={num(last24.length)} change="Across all agents" />

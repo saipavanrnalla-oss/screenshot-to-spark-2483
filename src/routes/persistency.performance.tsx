@@ -137,7 +137,7 @@ function PerformancePage() {
           <Kpi label="Policies entered" value={num(entered)} change="Across all workflows" />
           <Kpi label="Paid or revived" value={num(paid)} change={`${pct(paid / Math.max(1, entered))} of entered`} accent="#3fb968" />
           <Kpi label="With a person" value={num(person)} change={`${pct(person / Math.max(1, entered))} of entered`} accent="#E8A21A" />
-          <Kpi label="Agent tasks" value={num(tasks)} change="See Agent activity" accent="#8B5A2B" />
+          <Kpi label="Agent tasks" value={num(tasks)} change="See AI work logs" accent="#8B5A2B" />
         </div>
         <section className="panel overflow-x-auto">
           <table className="w-full min-w-[980px] text-[13px]">

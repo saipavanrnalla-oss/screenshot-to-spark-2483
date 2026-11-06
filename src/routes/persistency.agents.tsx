@@ -52,7 +52,7 @@ function AgentsPage() {
   const overdue = queue.filter((q) => !q.closed && q.status === "Overdue").length;
   return (
     <div className="mx-auto max-w-[1600px] space-y-4">
-      <PageHeader title="Agents" meta={`${AGENTS.filter((a) => a.status === "Active").length} active · ${AGENTS.filter((a) => a.status === "Not enabled").length} not enabled`} />
+      <PageHeader title="AI workforce" meta={`${AGENTS.filter((a) => a.status === "Active").length} active · ${AGENTS.filter((a) => a.status === "Not enabled").length} not enabled`} />
       <PageTabs
         label="Agents"
         value={tab}

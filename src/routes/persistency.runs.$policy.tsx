@@ -38,7 +38,7 @@ function TrailPage() {
     return (
       <div className="mx-auto max-w-[1100px] space-y-4">
         <PageHeader title="Policy trail" meta={policy} />
-        <EmptyState title="This policy is not in a run. Load a due list first." action={<Link to="/persistency/launch" className="text-[13px] font-medium text-primary hover:underline">Load the due list</Link>} />
+        <EmptyState title="This policy is not in a run. Import a due list first." action={<Link to="/persistency/launch" className="text-[13px] font-medium text-primary hover:underline">Import due list</Link>} />
       </div>
     );
   }

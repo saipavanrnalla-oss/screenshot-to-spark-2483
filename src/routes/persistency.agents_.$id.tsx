@@ -55,14 +55,14 @@ function AgentPage() {
   const saved = useWork((st) => st.versions);
   const pauses = useWork((st) => st.agentPause);
   const list = useMemo(() => agentVersions(saved, id), [saved, id]);
-  if (!def) return <EmptyState title={`There is no agent called ${id}.`} action={<Link to="/persistency/agents" className="text-[13px] text-primary hover:underline">Back to Agents</Link>} />;
+  if (!def) return <EmptyState title={`There is no agent called ${id}.`} action={<Link to="/persistency/agents" className="text-[13px] text-primary hover:underline">Back to AI workforce</Link>} />;
   const disabled = def.status === "Not enabled";
   const active = list.find((v) => v.status === "Active");
   const tab = disabled ? "overview" : (s.tab ?? "overview");
   const paused = pauses[id];
   return (
     <div className="mx-auto max-w-[1500px] space-y-4">
-      <Link to="/persistency/agents" className="inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground"><ChevronLeft className="size-3.5" /> Agents</Link>
+      <Link to="/persistency/agents" className="inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground"><ChevronLeft className="size-3.5" /> AI workforce</Link>
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-[20px] font-semibold text-foreground">{def.name}</h1>
         <StatusChip tone={disabled ? "off" : paused ? "risk" : "ok"}>{disabled ? "Not enabled" : paused ? "Paused" : "Active"}</StatusChip>

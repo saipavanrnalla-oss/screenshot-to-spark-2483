@@ -4,7 +4,7 @@ The prototype runs the 13th and 25th month workflows step by step in the browser
 
 ## When an action is sent
 
-When the operator presses **Run** (or **Run next step for all**) on **Load the due list**, the step runs and each new action is POSTed once. A call step that turns into a product explanation sends two actions: the call and the explanation call.
+When the operator presses **Run** (or **Run next step for all**) on **Import due list**, the step runs and each new action is POSTed once. A call step that turns into a product explanation sends two actions: the call and the explanation call.
 
 ## Request
 

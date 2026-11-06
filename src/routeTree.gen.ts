@@ -36,6 +36,7 @@ import { Route as PersistencyPoliciesRouteImport } from './routes/persistency.po
 import { Route as PersistencyQualityRouteImport } from './routes/persistency.quality'
 import { Route as PersistencyQueueRouteImport } from './routes/persistency.queue'
 import { Route as PersistencyReportsRouteImport } from './routes/persistency.reports'
+import { Route as PersistencyReviewRouteImport } from './routes/persistency.review'
 import { Route as PersistencyRulesRouteImport } from './routes/persistency.rules'
 import { Route as PersistencyScriptsRouteImport } from './routes/persistency.scripts'
 import { Route as PersistencySetupRouteImport } from './routes/persistency.setup'
@@ -193,6 +194,11 @@ const PersistencyReportsRoute = PersistencyReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => PersistencyRoute,
 } as any)
+const PersistencyReviewRoute = PersistencyReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => PersistencyRoute,
+} as any)
 const PersistencyRulesRoute = PersistencyRulesRouteImport.update({
   id: '/rules',
   path: '/rules',
@@ -321,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/persistency/quality': typeof PersistencyQualityRoute
   '/persistency/queue': typeof PersistencyQueueRoute
   '/persistency/reports': typeof PersistencyReportsRoute
+  '/persistency/review': typeof PersistencyReviewRoute
   '/persistency/rules': typeof PersistencyRulesRoute
   '/persistency/scripts': typeof PersistencyScriptsRoute
   '/persistency/setup': typeof PersistencySetupRoute
@@ -368,6 +375,7 @@ export interface FileRoutesByTo {
   '/persistency/quality': typeof PersistencyQualityRoute
   '/persistency/queue': typeof PersistencyQueueRoute
   '/persistency/reports': typeof PersistencyReportsRoute
+  '/persistency/review': typeof PersistencyReviewRoute
   '/persistency/rules': typeof PersistencyRulesRoute
   '/persistency/scripts': typeof PersistencyScriptsRoute
   '/persistency/setup': typeof PersistencySetupRoute
@@ -417,6 +425,7 @@ export interface FileRoutesById {
   '/persistency/quality': typeof PersistencyQualityRoute
   '/persistency/queue': typeof PersistencyQueueRoute
   '/persistency/reports': typeof PersistencyReportsRoute
+  '/persistency/review': typeof PersistencyReviewRoute
   '/persistency/rules': typeof PersistencyRulesRoute
   '/persistency/scripts': typeof PersistencyScriptsRoute
   '/persistency/setup': typeof PersistencySetupRoute
@@ -467,6 +476,7 @@ export interface FileRouteTypes {
     | '/persistency/quality'
     | '/persistency/queue'
     | '/persistency/reports'
+    | '/persistency/review'
     | '/persistency/rules'
     | '/persistency/scripts'
     | '/persistency/setup'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/persistency/quality'
     | '/persistency/queue'
     | '/persistency/reports'
+    | '/persistency/review'
     | '/persistency/rules'
     | '/persistency/scripts'
     | '/persistency/setup'
@@ -562,6 +573,7 @@ export interface FileRouteTypes {
     | '/persistency/quality'
     | '/persistency/queue'
     | '/persistency/reports'
+    | '/persistency/review'
     | '/persistency/rules'
     | '/persistency/scripts'
     | '/persistency/setup'
@@ -781,6 +793,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersistencyReportsRouteImport
       parentRoute: typeof PersistencyRoute
     }
+    '/persistency/review': {
+      id: '/persistency/review'
+      path: '/review'
+      fullPath: '/persistency/review'
+      preLoaderRoute: typeof PersistencyReviewRouteImport
+      parentRoute: typeof PersistencyRoute
+    }
     '/persistency/rules': {
       id: '/persistency/rules'
       path: '/rules'
@@ -941,6 +960,7 @@ interface PersistencyRouteChildren {
   PersistencyQualityRoute: typeof PersistencyQualityRoute
   PersistencyQueueRoute: typeof PersistencyQueueRoute
   PersistencyReportsRoute: typeof PersistencyReportsRoute
+  PersistencyReviewRoute: typeof PersistencyReviewRoute
   PersistencyRulesRoute: typeof PersistencyRulesRoute
   PersistencyScriptsRoute: typeof PersistencyScriptsRoute
   PersistencySetupRoute: typeof PersistencySetupRoute
@@ -987,6 +1007,7 @@ const PersistencyRouteChildren: PersistencyRouteChildren = {
   PersistencyQualityRoute: PersistencyQualityRoute,
   PersistencyQueueRoute: PersistencyQueueRoute,
   PersistencyReportsRoute: PersistencyReportsRoute,
+  PersistencyReviewRoute: PersistencyReviewRoute,
   PersistencyRulesRoute: PersistencyRulesRoute,
   PersistencyScriptsRoute: PersistencyScriptsRoute,
   PersistencySetupRoute: PersistencySetupRoute,

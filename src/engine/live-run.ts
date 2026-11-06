@@ -40,18 +40,28 @@ export interface DueRow {
   branch: string;
   age: number | null;
   occupation: string;
+  /** Money already held against the policy; the amount to collect is the premium less this. */
+  suspense: number;
+  netCollectable: number;
+  afyp: number | null;
+  ppt: string;
+  pt: string;
+  insured: string;
+  status: string;
+  state: string;
+  email: string;
 }
 
 export const FILE_COLUMNS: { key: string; label: string; required: boolean; aliases: string[]; example: string }[] = [
   { key: "policy_number", label: "Policy number", required: true, aliases: ["policy_no", "policy"], example: "SLI02409101" },
-  { key: "customer_name", label: "Customer name", required: true, aliases: ["name", "policyholder"], example: "Sunil Kapoor" },
-  { key: "phone", label: "Registered mobile", required: true, aliases: ["mobile", "phone_number"], example: "+919800000001" },
+  { key: "customer_name", label: "Customer name", required: true, aliases: ["name", "policyholder", "po_name", "policy_owner_name", "proposer_name"], example: "Sunil Kapoor" },
+  { key: "phone", label: "Registered mobile", required: true, aliases: ["mobile", "phone_number", "contact_number", "mobile_number"], example: "+919800000001" },
   { key: "due_date", label: "Due date", required: true, aliases: ["next_due_date"], example: "2027-01-14" },
   { key: "mode", label: "Payment mode", required: true, aliases: ["frequency", "payment_mode"], example: "Annual" },
   { key: "premium", label: "Modal premium (Rs)", required: true, aliases: ["modal_premium", "installment"], example: "36000" },
   { key: "premiums_paid", label: "Premiums paid", required: false, aliases: ["installments_paid"], example: "1" },
   { key: "issue_date", label: "Issue date", required: false, aliases: ["effective_date", "risk_commencement"], example: "2026-01-14" },
-  { key: "product", label: "Product type", required: false, aliases: ["plan_type"], example: "Traditional" },
+  { key: "product", label: "Product type", required: false, aliases: ["plan_type", "product_category"], example: "Traditional" },
   { key: "plan", label: "Plan name", required: false, aliases: ["product_name"], example: "Assured Savings Plan" },
   { key: "propensity_band", label: "Propensity band (P1 to P10)", required: false, aliases: ["band", "score"], example: "P2" },
   { key: "autopay", label: "Autopay", required: false, aliases: ["mandate", "mandate_type"], example: "None" },
@@ -61,7 +71,36 @@ export const FILE_COLUMNS: { key: string; label: string; required: boolean; alia
   { key: "branch", label: "Branch", required: false, aliases: [], example: "Lucknow Main" },
   { key: "age", label: "Age", required: false, aliases: [], example: "44" },
   { key: "occupation", label: "Occupation", required: false, aliases: [], example: "Salaried" },
+  { key: "suspense_balance", label: "Suspense balance (Rs)", required: false, aliases: ["suspense"], example: "0" },
+  { key: "net_collectable_premium", label: "Net collectable premium (Rs)", required: false, aliases: ["net_collectable", "net_premium"], example: "36000" },
+  { key: "afyp", label: "AFYP (Rs)", required: false, aliases: ["annualised_first_year_premium"], example: "36000" },
+  { key: "ppt", label: "Premium paying term", required: false, aliases: ["premium_paying_term"], example: "10" },
+  { key: "pt", label: "Policy term", required: false, aliases: ["policy_term"], example: "20" },
+  { key: "insured_name", label: "Life insured", required: false, aliases: ["pi_name", "life_insured"], example: "Sunil Kapoor" },
+  { key: "policy_status", label: "Policy status", required: false, aliases: ["status"], example: "Premium due" },
+  { key: "state", label: "State", required: false, aliases: [], example: "Uttar Pradesh" },
+  { key: "email", label: "Email", required: false, aliases: ["email_id", "e_mail"], example: "" },
 ];
+
+const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+/** Accepts 2027-01-16, 16-Jan-27, 16-Jan-2027, 16/01/2027 and 16-01-2027. Returns YYYY-MM-DD or "". */
+export function parseDate(raw: string): string {
+  const t = raw.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const yr = (y: string) => (y.length === 2 ? 2000 + Number(y) : Number(y));
+  let m = /^(\d{1,2})[-\s/]([A-Za-z]{3})[A-Za-z]*[-\s/](\d{2}|\d{4})$/.exec(t);
+  if (m) {
+    const mo = MONTHS.indexOf(m[2]!.toLowerCase());
+    if (mo >= 0) return `${yr(m[3]!)}-${pad(mo + 1)}-${pad(Number(m[1]))}`;
+  }
+  m = /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/.exec(t);
+  if (m) return `${m[3]}-${pad(Number(m[2]))}-${pad(Number(m[1]))}`;
+  return "";
+}
+
+const money = (x: string) => Number(x.replace(/[^\d.]/g, "")) || 0;
 
 const HEADER = "policy_number,customer_name,phone,due_date,mode,premium,premiums_paid,issue_date,product,plan,propensity_band,autopay,last_year_payment,language,channel,branch,age,occupation";
 
@@ -79,6 +118,14 @@ export const BOOTH_FILE = [
   SAMPLE_FILE,
   "SLI02409105,Ramesh Yadav,+919800000005,2026-11-08,Quarterly,9000,8,2024-11-08,Traditional,Family Income Plan,,Bank auto-debit,In the Grace Period,Hindi,Bancassurance,Patna North,61,Farmer",
   "SLI02409106,Kavita Shah,+919800000006,2026-10-20,Annual,260000,1,2025-10-20,ULIP,Wealth Builder,P4,None,,English,Agency,Mumbai Central,52,Business owner",
+].join("\n");
+
+/** The insurer's own due-list layout, as exported from the policy admin system. */
+export const INSURER_FORMAT_FILE = [
+  "SL,Policy Number,Effective date,Due Date,Frequency,Premium,Suspense Balance,Net collectable premium,AFYP,Product Name,Product Category,PPT,PT,PO Name,PI Name,Policy Status,PO Address,State,Contact Number,Email-ID",
+  "1,SLI02411201,14-Nov-25,14-Nov-26,Annual,52000,0,52000,52000,Wealth Builder,ULIP,10,15,Anjali Desai,Anjali Desai,Premium due,\"12 MG Road, Pune\",Maharashtra,9820000101,anjali.d@example.com",
+  "2,SLI02411202,05-Nov-25,05-Nov-26,Annual,28000,6000,22000,28000,Assured Savings Plan,Traditional,12,20,Rakesh Gupta,Rakesh Gupta,Premium due,\"4 Civil Lines, Kanpur\",Uttar Pradesh,9820000102,",
+  "3,SLI02411203,20-Oct-25,20-Oct-26,Half-yearly,18000,0,18000,36000,Family Income Plan,Traditional,10,20,Sneha Kulkarni,Om Kulkarni,Grace,\"7 Shivaji Nagar, Nashik\",Maharashtra,9820000103,sneha.k@example.com",
 ].join("\n");
 
 /** What the customer does at a step: a call answer, or what happens after a message. */
@@ -190,23 +237,23 @@ export function parseDueFile(text: string): { rows: DueRow[]; problems: FileProb
     };
     const policy = get("policy_number");
     const mode = parseMode(get("mode"));
-    const due = get("due_date");
+    const due = parseDate(get("due_date"));
     const premium = Number(get("premium").replace(/[^\d.]/g, ""));
     if (!policy) return problems.push({ line, message: "No policy number" });
     if (seen.has(policy)) return problems.push({ line, message: `${policy} appears twice; the first row is kept` });
     if (!mode) return problems.push({ line, message: `${policy}: payment mode "${get("mode")}" is not Annual, Half-yearly, Quarterly or Monthly` });
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(due)) return problems.push({ line, message: `${policy}: due date must be YYYY-MM-DD` });
+    if (!due) return problems.push({ line, message: `${policy}: due date "${get("due_date")}" is not a date` });
     if (!premium) return problems.push({ line, message: `${policy}: premium is missing` });
     const phone = get("phone");
     if (!/^\+?\d{10,13}$/.test(phone.replace(/[\s-]/g, ""))) return problems.push({ line, message: `${policy}: mobile number "${phone}" is not valid` });
     seen.add(policy);
-    const issue = get("issue_date");
+    const issue = parseDate(get("issue_date"));
     let paid = Number(get("premiums_paid"));
     if (!get("premiums_paid") && /^\d{4}-\d{2}-\d{2}$/.test(issue)) {
       const months = Math.max(0, Math.round(diffDays(fromIso(due), fromIso(issue)) / 30.44));
       paid = Math.round(months / (12 / PER_YEAR[mode]));
     }
-    const productRaw = get("product").toLowerCase();
+    const productRaw = `${get("product")} ${get("plan")}`.toLowerCase();
     const product: DueRow["product"] = productRaw.includes("ulip") || productRaw.includes("unit") ? "ULIP" : productRaw.includes("term") ? "Term" : "Traditional";
     const ageN = Number(get("age"));
     rows.push({
@@ -229,6 +276,15 @@ export function parseDueFile(text: string): { rows: DueRow[]; problems: FileProb
       branch: get("branch") || "Not given",
       age: Number.isFinite(ageN) && ageN > 0 ? ageN : null,
       occupation: get("occupation"),
+      suspense: money(get("suspense_balance")),
+      netCollectable: get("net_collectable_premium") ? money(get("net_collectable_premium")) : Math.max(0, premium - money(get("suspense_balance"))),
+      afyp: get("afyp") ? money(get("afyp")) : null,
+      ppt: get("ppt"),
+      pt: get("pt"),
+      insured: get("insured_name"),
+      status: get("policy_status"),
+      state: get("state"),
+      email: get("email"),
     });
     return undefined;
   });
@@ -360,6 +416,8 @@ export function stagePolicy(r: DueRow, now: Date = NOW): Staged {
   } else {
     entry = "days";
   }
+  if (r.band == null) reasons.push("No propensity band in the file: treated as unscored, default scripts");
+  if (r.suspense > 0) reasons.push(`Rs ${r.suspense.toLocaleString("en-IN")} already in suspense: messages ask for Rs ${r.netCollectable.toLocaleString("en-IN")}`);
   return { workflowId, renewal, stage, timing, daysToDue: d, entryNodeId: entry, reasons, bandGroup, segment };
 }
 
@@ -474,7 +532,7 @@ function vars(s: RunState): Record<string, string> {
     name: r.name,
     policy: r.policy,
     plan: r.plan,
-    premium: `Rs ${r.premium.toLocaleString("en-IN")}`,
+    premium: `Rs ${(r.netCollectable || r.premium).toLocaleString("en-IN")}`,
     due: r.dueDate,
     grace_end: toIso(addDays(due, graceDays(r.mode))),
     sum_assured: `Rs ${(r.premium * PER_YEAR[r.mode] * 10).toLocaleString("en-IN")}`,

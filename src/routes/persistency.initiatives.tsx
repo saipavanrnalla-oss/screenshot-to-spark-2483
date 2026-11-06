@@ -13,7 +13,7 @@ import { useInitiatives, type Initiative } from "@/store/initiatives";
 
 export const Route = createFileRoute("/persistency/initiatives")({
   beforeLoad: ({ search }) => gate("initiatives", search),
-  head: () => ({ meta: [{ title: "Initiatives · Persistency · desible.ai" }] }),
+  head: () => ({ meta: [{ title: "Action plans · Persistency · desible.ai" }] }),
   component: InitiativesPage,
 });
 
@@ -34,7 +34,7 @@ function InitiativesPage() {
 
   return (
     <div className="mx-auto max-w-[1100px] space-y-4">
-      <PageHeader title="Initiatives" meta="Slices the Head of Persistency raised to operations, each with a target, a date and a plan" />
+      <PageHeader title="Action plans" meta="Slices the Head of Persistency raised to operations, each with a target, a date and a plan" />
       {items.length === 0 ? (
         <EmptyState title="Nothing raised yet. Raise a slice from Cohorts." action={<Link to="/persistency/cohort" className="text-[13px] font-medium text-primary hover:underline">Open Cohorts</Link>} />
       ) : (

@@ -95,6 +95,14 @@ export const SCRIPT_LIBRARY: ScriptVariant[] = [
     text: "Namaste {first} ji, aapke {plan} ka premium {premium} {due} ko due hai. Ek tap mein bharein: {pay_link}. Auto-debit lagwayein taaki koi date na chhoote: {mandate_link}.",
   },
   {
+    id: "link2-default", nodes: ["link15b"], name: "Second reminder with the link", channel: "WhatsApp", when: [], language: "English", version: 1, approvals: OK,
+    text: "Hi {first}, a reminder that {premium} for your {plan} is due on {due}. Your link is still open: {pay_link}. Reply CALL if you would like us to call you.",
+  },
+  {
+    id: "call15-default", nodes: ["call15", "s3call", "s2call"], name: "Reminder call", channel: "Voice", when: [], language: "English", version: 3, approvals: OK,
+    text: "Hello {first}, this is {agent} from Sample Life Insurance about policy {policy}. The call is recorded. Your premium of {premium} is due on {due}. When will you be able to pay? I can send the payment link on WhatsApp right away.",
+  },
+  {
     id: "link2-high-en", nodes: ["link15b"], name: "Second reminder, short (P6 to P10)", channel: "WhatsApp", when: ["High propensity"], language: "English", version: 1, approvals: OK,
     text: "Hi {first}, a quick reminder: {premium} for your {plan} is due on {due}. Your link is still open: {pay_link}.",
   },

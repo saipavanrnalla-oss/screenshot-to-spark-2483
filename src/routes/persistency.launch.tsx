@@ -11,7 +11,7 @@ import { WorthCard } from "@/components/r1/worth-card";
 import { PALETTE_BY_TYPE } from "@/data/persistency/r1/wf";
 import { gate } from "@/lib/gate";
 import {
-  BOOTH_FILE, BOOTH_STORIES, FILE_COLUMNS, REPLIES, SAMPLE_FILE, bandLabel, beatAt, parseDueFile, scriptFor, stagePolicy, wordsFor,
+  BOOTH_FILE, BOOTH_STORIES, INSURER_FORMAT_FILE, FILE_COLUMNS, REPLIES, SAMPLE_FILE, bandLabel, beatAt, parseDueFile, scriptFor, stagePolicy, wordsFor,
   type DueRow, type LiveEvent, type Reply, type RunState, type Staged,
 } from "@/engine/live-run";
 import { DISPATCH_URL } from "@/engine/dispatch";
@@ -21,9 +21,9 @@ export const Route = createFileRoute("/persistency/launch")({
   beforeLoad: ({ search }) => gate("launch", search),
   head: () => ({
     meta: [
-      { title: "Load the due list · Persistency · desible.ai" },
+      { title: "Import due list · Persistency · desible.ai" },
       { name: "description", content: "Upload the due list. Each policy is staged and starts its workflow at the right step." },
-      { property: "og:title", content: "Load the due list · Persistency · desible.ai" },
+      { property: "og:title", content: "Import due list · Persistency · desible.ai" },
       { property: "og:description", content: "Upload the due list. Each policy is staged and starts its workflow at the right step." },
     ],
   }),
@@ -72,19 +72,20 @@ function LaunchPage() {
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-4">
-      <PageHeader title="Load the due list" meta="Upload the file. Each policy is staged and starts its workflow at the right step." />
+      <PageHeader title="Import due list" meta="Upload the file. Each policy is staged and starts its workflow at the right step." />
 
       <section className="panel space-y-3 p-4" aria-label="Due list file">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <p className="text-[13px] font-semibold text-foreground">Due list</p>
-            <p className="text-[12px] text-muted-foreground">CSV with one row per policy. Required: policy number, customer name, mobile, due date, mode, premium.</p>
+            <p className="text-[12px] text-muted-foreground">CSV with one row per policy. Required: policy number, customer name, mobile, due date, mode, premium. The insurer's own export columns (PO Name, Contact Number, Frequency, Suspense Balance, Net collectable premium and the rest) are read as they are.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { setText(await f.text()); setFileName(f.name); setChecked(null); } e.target.value = ""; }} />
             <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()}><Upload /> Upload CSV</Button>
             <Button size="sm" variant="outline" onClick={() => { setText(SAMPLE_FILE); setFileName("booth-scenarios.csv"); setChecked(null); }}>Four booth scenarios</Button>
             <Button size="sm" variant="outline" onClick={() => { setText(BOOTH_FILE); setFileName("due-list-nov.csv"); setChecked(null); }}>Six-policy sample</Button>
+            <Button size="sm" variant="outline" onClick={() => { setText(INSURER_FORMAT_FILE); setFileName("PAS-due-list-export.csv"); setChecked(null); }}>Insurer file format</Button>
           </div>
         </div>
         <textarea value={text} onChange={(e) => { setText(e.target.value); setChecked(null); }} rows={5} aria-label="Due list contents" placeholder={FILE_COLUMNS.map((c) => c.key).join(",")} className={`${inputCls} h-auto py-2 font-mono text-[12px]`} />
@@ -142,7 +143,7 @@ function LaunchPage() {
                       </td>
                       <td className="py-2 pr-3">{s.renewal}</td>
                       <td className="py-2 pr-3"><StatusChip tone={stageTone(s.stage)}>{s.stage}</StatusChip><p className="mt-1 text-[12px] text-muted-foreground">{s.timing}</p></td>
-                      <td className="py-2 pr-3"><span className="font-medium text-foreground">{bandLabel(r.band)}</span><p className="text-[12px] text-muted-foreground">{r.language} · {r.autopay === "None" ? "No autopay" : r.autopay}</p></td>
+                      <td className="py-2 pr-3"><span className="font-medium text-foreground">{bandLabel(r.band)}</span><p className="text-[12px] text-muted-foreground">{r.language} · {r.autopay === "None" ? "No autopay" : r.autopay}</p>{r.suspense > 0 && <p className="text-[12px] text-muted-foreground">Collect Rs {r.netCollectable.toLocaleString("en-IN")} (Rs {r.suspense.toLocaleString("en-IN")} in suspense)</p>}</td>
                       <td className="py-2 pr-3">{s.workflowId ? <><p className="text-foreground">{WF_NAME[s.workflowId]}</p><p className="text-[12px] text-muted-foreground">{first?.label ?? s.entryNodeId}</p>{ch && <span className="mt-1 inline-block"><StatusChip tone={CHANNEL_TONE[ch]}>{ch}</StatusChip></span>}</> : <span className="text-muted-foreground">Not started</span>}</td>
                       <td className="py-2 pr-3">{sc ? <><p className="text-foreground">{sc.v.name}</p><p className="text-[12px] text-muted-foreground">Chosen for {sc.rule}</p></> : <span className="text-[12px] text-muted-foreground">{s.workflowId ? "No customer contact at this step" : ""}</span>}</td>
                       <td className="py-2 text-[12px] text-subtle"><ul className="list-disc space-y-0.5 pl-4">{s.reasons.map((x) => <li key={x}>{x}</li>)}</ul></td>
@@ -209,7 +210,7 @@ function WordsTable({ rows, staged }: { rows: DueRow[]; staged: Staged[] }) {
                     const sc = onPath ? scriptFor(r, s, w.id) : undefined;
                     return (
                       <td key={w.id} className="py-1.5 pr-3">
-                        {sc ? <><p className="text-foreground">{sc.v.name}</p><p className="text-muted-foreground">{sc.rule}</p></> : <span className="text-muted-foreground">Not on this journey</span>}
+                        {sc ? <><p className="text-foreground">{sc.v.name}</p><p className="text-muted-foreground">{sc.rule}</p></> : <span className="text-muted-foreground">{onPath ? "Default wording" : "Not on this journey"}</span>}
                       </td>
                     );
                   })}
@@ -270,7 +271,7 @@ function RunCard({ run, reply, onReply, onStep }: { run: RunState; reply: Reply;
             <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px]">
               <UserRound className="size-4 text-attention" />
               <span>{run.waitingCase.why}</span>
-              <Link to="/persistency/queue" className="ml-auto font-medium text-primary hover:underline">Open in the queue</Link>
+              <Link to="/persistency/queue" className="ml-auto font-medium text-primary hover:underline">Open in manual follow-ups</Link>
             </div>
           ) : (
             <div className="mt-2 flex flex-wrap items-center gap-2">

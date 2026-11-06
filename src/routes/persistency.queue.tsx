@@ -12,7 +12,7 @@ import { useUser } from "@/hooks/use-user";
 
 export const Route = createFileRoute("/persistency/queue")({
   beforeLoad: ({ search }) => gate("queue", search),
-  head: () => ({ meta: [{ title: "People queue · Persistency · desible.ai" }] }),
+  head: () => ({ meta: [{ title: "Manual follow-ups · Persistency · desible.ai" }] }),
   component: QueuePage,
 });
 
@@ -40,9 +40,9 @@ function QueuePage() {
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-4">
-      <PageHeader title="People queue" meta={`${open.length} open ${open.length === 1 ? "case" : "cases"} · cases an agent should not decide`} />
+      <PageHeader title="Manual follow-ups" meta={`${open.length} open ${open.length === 1 ? "case" : "cases"} · cases an agent should not decide`} />
       {open.length === 0 ? (
-        <EmptyState title="No open cases. Cases appear here when a workflow hands a policy to a person." action={<Link to="/persistency/launch" className="text-[13px] font-medium text-primary hover:underline">Load the due list</Link>} />
+        <EmptyState title="No open cases. Cases appear here when a workflow hands a policy to a person." action={<Link to="/persistency/launch" className="text-[13px] font-medium text-primary hover:underline">Import due list</Link>} />
       ) : (
         <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
           <ul className="space-y-2" aria-label="Open cases">

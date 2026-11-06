@@ -25,6 +25,7 @@ export type NavKey =
   | "executive"
   | "queue"
   | "cohort"
+  | "review"
   | "initiatives"
   | "scripts"
   | "decisions"
@@ -147,7 +148,7 @@ export const USERS: TestUser[] = [
     role: "Head of Persistency",
     scope: "Whole book",
     landing: "executive",
-    nav: ["executive", "cohort", "initiatives", "performance", "reports", "policies", "approvals", "workflows", "scripts"],
+    nav: ["executive", "cohort", "review", "initiatives", "performance", "reports", "policies", "approvals", "workflows", "scripts"],
     readOnly: ["workflows"],
     can: ["rules.approve", "workflows.approve", "agents.approve", "stages.approve", "policies.act", "policies.hold", "reports.packs", "experiments.edit"],
   },

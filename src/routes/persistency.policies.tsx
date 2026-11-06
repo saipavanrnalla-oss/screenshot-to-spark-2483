@@ -92,7 +92,7 @@ function PoliciesPage() {
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-4">
-      <PageHeader title="Policies" meta={`${num(rows.length)} of ${num(staged.length)} policies`} />
+      <PageHeader title="Policy 360" meta={`${num(rows.length)} of ${num(staged.length)} policies`} />
       <FilterBar
         page="policies"
         fields={[

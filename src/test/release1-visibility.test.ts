@@ -23,12 +23,12 @@ describe("Release 1 visibility", () => {
 
   it("shows each user the sidebar items for the demo", () => {
     expect(visibleFor("ops")).toEqual(["initiatives", "agents", "workflows", "scripts", "launch", "performance", "activity", "policies", "queue", "approvals"]);
-    expect(visibleFor("head")).toEqual(["executive", "cohort", "initiatives", "reports", "workflows", "scripts", "performance", "policies", "approvals"]);
+    expect(visibleFor("head")).toEqual(["executive", "cohort", "review", "initiatives", "reports", "workflows", "scripts", "performance", "policies", "approvals"]);
   });
 
   it("lands each user on the page for the demo", () => {
     const landing = Object.fromEntries(USERS.map((u) => [u.id, MODULES[u.landing].label]));
-    expect(landing).toEqual({ ops: "Agents", head: "Executive dashboard", caller: "People queue", gm: "Waivers and changes", qa: "Call quality", branch: "My branch" });
+    expect(landing).toEqual({ ops: "AI workforce", head: "Executive dashboard", caller: "Manual follow-ups", gm: "Waivers and changes", qa: "Call quality", branch: "My branch" });
   });
 
   it("keeps Head of Persistency read-only on workflows", () => {

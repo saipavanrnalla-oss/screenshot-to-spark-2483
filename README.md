@@ -43,7 +43,7 @@ For a faster build to demo from: `npm run build` then `npm run preview`.
 
 ## The booth demo
 
-Sign in as the Ops lead, open **Load the due list**, press **Four booth scenarios**, then **Check and stage** and **Start**. Each card plays its story when you press Run:
+Sign in as the Ops lead, open **Import due list**, press **Four booth scenarios**, then **Check and stage** and **Start**. Each card plays its story when you press Run:
 
 | Scenario | Customer | What it shows |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ Sign in as the Ops lead, open **Load the due list**, press **Four booth scenario
 | C | Farhan Ali, P4, T-13 | Two WhatsApp messages unpaid, the channel switches to a call, an explanation call, paid on the link |
 | D | Kiran Rao, P1, Grace day 4 | Two refusals; the Worth Pursuing Model drops below 25% and hands the case to the variable-payout vendor |
 
-The staging table and the "Same step, different words" table show which approved script each customer gets and why. On a workflow page, **Show highlights** pins the six steps worth pointing at.
+The staging table and the "Same step, different words" table show which approved script each customer gets and why. On a workflow page, **Show highlights** pins the six steps worth pointing at. Signed in as the Head of Persistency, **Monthly review** has the leadership pack: by channel and bank partner, propensity bands, ticket size, calling outcomes, autopay cancellations, complaints, replacement sales, WhatsApp and app adoption, and the reporting-block calendar. **Insurer file format** on Import due list loads a policy admin export as it is.
 
 ## Placing real calls and WhatsApp messages
 
