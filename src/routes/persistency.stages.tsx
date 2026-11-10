@@ -1,3 +1,4 @@
+import { propensityLabel } from "@/data/persistency/r1/common";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
@@ -6,7 +7,7 @@ import { PageHeader } from "@/components/ds/primitives";
 import { FilterBar } from "@/components/r1/filter-bar";
 import { PageTabs } from "@/components/r1/tabs";
 import { LastUpdated } from "@/components/r1/kpi";
-import { BOARD_COLUMNS, COHORTS, matchesFilters, useStagedPolicies, useStageSettingsInForce, type BoardColumn } from "@/components/r1/policy-model";
+import { BOARD_COLUMNS, PROPENSITY_GROUPS, matchesFilters, useStagedPolicies, useStageSettingsInForce, type BoardColumn } from "@/components/r1/policy-model";
 import { StageSettingsEditor } from "@/components/r1/stage-settings-editor";
 import { CHANNELS, PRODUCTS, REGIONS } from "@/data/persistency";
 import { gate } from "@/lib/gate";
@@ -61,7 +62,7 @@ function StagesPage() {
       const c = out[bp.column];
       c.count++;
       c.premium += bp.p.instalmentAmount;
-      c.cohorts[bp.p.insurerCohort] = (c.cohorts[bp.p.insurerCohort] ?? 0) + 1;
+      c.cohorts[propensityLabel(bp.p)] = (c.cohorts[propensityLabel(bp.p)] ?? 0) + 1;
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,7 +91,7 @@ function StagesPage() {
               { id: "product", label: "Product", options: PRODUCTS },
               { id: "channel", label: "Channel", options: CHANNELS },
               { id: "region", label: "Region", options: REGIONS },
-              { id: "cohort", label: "Cohort", options: COHORTS },
+              { id: "cohort", label: "Propensity", options: PROPENSITY_GROUPS },
             ]}
             values={filters}
             onChange={(v) => navigate({ search: (p) => ({ ...p, product: v["product"], channel: v["channel"], region: v["region"], cohort: v["cohort"] }) })}
@@ -111,7 +112,7 @@ function StagesPage() {
                     <p className="text-[12px] text-muted-foreground">premium due</p>
                   </button>
                   <div className="flex flex-wrap gap-1.5 p-3">
-                    {COHORTS.map((k) => (
+                    {PROPENSITY_GROUPS.map((k) => (
                       <button
                         key={k}
                         type="button"

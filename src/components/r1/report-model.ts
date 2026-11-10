@@ -1,3 +1,4 @@
+import { propensityLabel } from "@/data/persistency/r1/common";
 import type { Policy } from "@/data/persistency";
 import { branchOf } from "@/data/persistency/r1/common";
 import type { SeriesFilter } from "@/data/persistency/r1/reports";
@@ -20,7 +21,7 @@ export function levelValue(p: Policy, l: DrillLevel): string {
 }
 
 export function matchesPath(p: Policy, f: SeriesFilter): boolean {
-  return (!f.channel || p.channel === f.channel) && (!f.product || p.product === f.product) && (!f.ticket || ticketOf(p) === f.ticket) && (!f.region || p.region === f.region) && (!f.branch || branchOf(p) === f.branch) && (!f.cohort || p.insurerCohort === f.cohort);
+  return (!f.channel || p.channel === f.channel) && (!f.product || p.product === f.product) && (!f.ticket || ticketOf(p) === f.ticket) && (!f.region || p.region === f.region) && (!f.branch || branchOf(p) === f.branch) && (!f.cohort || propensityLabel(p) === f.cohort || p.insurerCohort === f.cohort);
 }
 
 const AT_RISK = new Set(["Renewal window open", "Grace", "Promised", "Early lapse", "Lapsed"]);

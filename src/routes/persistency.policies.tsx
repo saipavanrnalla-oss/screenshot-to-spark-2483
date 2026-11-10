@@ -12,7 +12,7 @@ import { ConfirmDialog } from "@/components/r1/confirm";
 import { StatusChip } from "@/components/r1/status-chip";
 import { PolicyPanel } from "@/components/r1/policy-panel";
 import { OWNER_OPTIONS, addToVisitList } from "@/components/r1/policy-actions";
-import { BOARD_COLUMNS, COHORTS, METHOD_FILTER, POLICY_STATUSES, matchesFilters, policyStatus, statusTone, useStagedPolicies, type BoardPolicy, type PolicyFilters } from "@/components/r1/policy-model";
+import { BOARD_COLUMNS, PROPENSITY_GROUPS, METHOD_FILTER, POLICY_STATUSES, matchesFilters, policyStatus, statusTone, useStagedPolicies, type BoardPolicy, type PolicyFilters } from "@/components/r1/policy-model";
 import { CHANNELS, PRODUCTS, REGIONS } from "@/data/persistency";
 import { HOLD_REASONS, branchOf, type HoldReason } from "@/data/persistency/r1/common";
 import { evaluate } from "@/engine/persistency";
@@ -102,7 +102,7 @@ function PoliciesPage() {
           { id: "channel", label: "Channel", options: CHANNELS },
           { id: "region", label: "Region", options: REGIONS },
           { id: "branch", label: "Branch", options: branches },
-          { id: "cohort", label: "Cohort", options: COHORTS },
+          { id: "cohort", label: "Propensity", options: PROPENSITY_GROUPS },
           { id: "method", label: "Payment method", options: METHOD_FILTER },
           { id: "status", label: "Status", options: POLICY_STATUSES },
           { id: "hold", label: "On hold", options: ["Yes", "No"] },

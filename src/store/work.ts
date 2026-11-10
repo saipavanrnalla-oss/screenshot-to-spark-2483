@@ -201,7 +201,7 @@ function seedApprovals(): Approval[] {
   return [
     {
       id: "AP-201", kind: "rule", objectId: "R15", objectName: "Early risk call", versionNo: 1, requestedBy: "MIS and analytics", at: "2026-10-27T09:10:00.000Z",
-      summary: "New rule: Lowest propensity cohort within 90 days of due gets an early renewal call", reach: 0, diff: ["New rule", "When: cohort Lowest propensity, within 90 days of due date", "Then: Early renewal call by Premium Renewal Voice Agent", "Priority 24"], conflicts: [],
+      summary: "New rule: Low propensity cohort within 90 days of due gets an early renewal call", reach: 0, diff: ["New rule", "When: cohort Low propensity, within 90 days of due date", "Then: Early renewal call by Premium Renewal Voice Agent", "Priority 24"], conflicts: [],
       needs: ["head"], signoffs: [], status: "waiting",
     },
     {
@@ -211,7 +211,7 @@ function seedApprovals(): Approval[] {
     },
     {
       id: "AP-203", kind: "rule", objectId: "R16", objectName: "Month-end push", versionNo: 2, requestedBy: "Head of Persistency", at: "2026-10-25T07:20:00.000Z",
-      summary: "Month-end push also covers cohort Low propensity", reach: 0, diff: ["Cohort: Moderate propensity → Moderate propensity, Low propensity", "Priority 25 → 24"], conflicts: [],
+      summary: "Month-end push also covers cohort Low propensity", reach: 0, diff: ["Cohort: Medium propensity → Medium propensity, Low propensity", "Priority 25 → 24"], conflicts: [],
       needs: ["head"], signoffs: [], status: "waiting",
       payload: { cohort: ["Moderate propensity", "Low propensity", "Medium", "Band 3"], priority: 24 },
     },
@@ -550,7 +550,7 @@ const RULE_HISTORY: Record<string, { note: string; change: Partial<Rule> }[]> = 
   R05: [{ note: "First release: reminder the day before", change: { then: { workflowId: "R3", action: "WhatsApp reminder a day before promised date", executor: "WhatsApp vendor", delayHours: 20 } } }],
   R10: [{ note: "First release", change: {} }],
   R13: [{ note: "First release", change: { priority: 35 } }, { note: "Priority 30", change: {} }],
-  R03: [{ note: "First release: Lowest propensity only", change: { when: { state: ["Grace"], cohort: ["Lowest propensity"] } } }],
+  R03: [{ note: "First release: Low propensity only", change: { when: { state: ["Grace"], cohort: ["Lowest propensity"] } } }],
 };
 
 function seedRuleVersions(id: string): Version<unknown>[] {

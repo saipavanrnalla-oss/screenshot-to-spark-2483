@@ -1,3 +1,4 @@
+import { propensityLabel } from "@/data/persistency/r1/common";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
@@ -126,7 +127,7 @@ function Persistency() {
         {sel("ticket", "Ticket size", TICKETS)}
         {sel("region", "Region", REGIONS)}
         {sel("branch", "Branch", branches)}
-        {sel("cohort", "Cohort", ["Highest propensity", "High propensity", "Moderate propensity", "Low propensity", "Lowest propensity"])}
+        {sel("cohort", "Propensity", ["Low propensity", "Medium propensity", "High propensity"])}
       </div>
       <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-5">
         {PERIODS.map((p) => {
@@ -554,12 +555,12 @@ function NewExperiment({ open, onOpenChange }: { open: boolean; onOpenChange: (o
   const [name, setName] = useState("");
   const [method, setMethod] = useState<ExperimentMethod>(METHODS[0]!);
   const [share, setShare] = useState(15);
-  const [cohorts, setCohorts] = useState<string[]>(["Low propensity", "Lowest propensity"]);
+  const [cohorts, setCohorts] = useState<string[]>(["Low propensity"]);
   const [products, setProducts] = useState<string[]>(["ULIP", "Traditional"]);
   const [start, setStart] = useState("2026-12-01");
   const [end, setEnd] = useState("2027-02-28");
   const [exclude, setExclude] = useState(true);
-  const eligible = useMemo(() => policies.filter((p) => cohorts.includes(p.insurerCohort) && products.includes(p.product) && (!exclude || !isSpecialCare(p))).length, [policies, cohorts, products, exclude]);
+  const eligible = useMemo(() => policies.filter((p) => cohorts.includes(propensityLabel(p)) && products.includes(p.product) && (!exclude || !isSpecialCare(p))).length, [policies, cohorts, products, exclude]);
   const untreated = Math.round((eligible * share) / 100);
   const treated = eligible - untreated;
   const small = untreated < MIN_GROUP || treated < MIN_GROUP;
@@ -576,7 +577,7 @@ function NewExperiment({ open, onOpenChange }: { open: boolean; onOpenChange: (o
           </label>
           <div>
             <p className="text-[12px] font-medium text-muted-foreground">Cohorts</p>
-            <div className="mt-1 flex gap-1.5">{["Highest propensity", "High propensity", "Moderate propensity", "Low propensity", "Lowest propensity"].map((c) => <button key={c} type="button" onClick={() => toggle(cohorts, c, setCohorts)} className={`rounded-pill border px-2.5 py-0.5 text-[12px] ${cohorts.includes(c) ? "border-primary" : "border-border text-subtle"}`}>{c}</button>)}</div>
+            <div className="mt-1 flex gap-1.5">{["Low propensity", "Medium propensity", "High propensity"].map((c) => <button key={c} type="button" onClick={() => toggle(cohorts, c, setCohorts)} className={`rounded-pill border px-2.5 py-0.5 text-[12px] ${cohorts.includes(c) ? "border-primary" : "border-border text-subtle"}`}>{c}</button>)}</div>
           </div>
           <div>
             <p className="text-[12px] font-medium text-muted-foreground">Products</p>

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { NOW_ISO, type Policy, type Stage } from "@/data/persistency";
 import { stageUnder, DEFAULT_STAGE_SETTINGS, type StageSettings } from "@/data/persistency/r1/stage-settings";
-import { branchOf, hasMandate, ticketLabel } from "@/data/persistency/r1/common";
+import { branchOf, hasMandate, propensityLabel, ticketLabel } from "@/data/persistency/r1/common";
 import { usePolicies } from "@/store/persistency";
 import { activeVersion, useVersions } from "@/store/work";
 import type { Tone } from "./status-chip";
@@ -104,7 +104,7 @@ export function matchesFilters(bp: BoardPolicy, f: PolicyFilters): boolean {
   if (f.product && p.product !== f.product) return false;
   if (f.channel && p.channel !== f.channel) return false;
   if (f.region && p.region !== f.region) return false;
-  if (f.cohort && p.insurerCohort !== f.cohort) return false;
+  if (f.cohort && propensityLabel(p) !== f.cohort && p.insurerCohort !== f.cohort) return false;
   if (f.method && !matchesMethod(p, f.method)) return false;
   if (f.status && policyStatus(p) !== f.status) return false;
   if (f.hold && (f.hold === "Yes") !== isOnHold(p)) return false;
@@ -119,3 +119,6 @@ export function matchesFilters(bp: BoardPolicy, f: PolicyFilters): boolean {
 }
 
 export const COHORTS = ["Highest propensity", "High propensity", "Moderate propensity", "Low propensity", "Lowest propensity", "Unscored"] as const;
+
+/** What screens show and filter on: the insurer's propensity as Low, Medium or High. */
+export const PROPENSITY_GROUPS = ["Low propensity", "Medium propensity", "High propensity", "Not scored"] as const;

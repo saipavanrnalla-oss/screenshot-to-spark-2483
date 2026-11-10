@@ -11,7 +11,7 @@ import { useMonth } from "@/components/persistency/month";
 import { PERIOD_FACTOR, computeFunnel } from "@/components/r1/funnel-model";
 import { prepare, useWorkflowRows, wfVersions } from "@/components/r1/wf-model";
 import { premiumAtRisk } from "@/components/r1/report-model";
-import { COHORTS } from "@/components/r1/policy-model";
+import { slice } from "@/components/r1/cohort-model";
 import { CHANNELS, PRODUCTS, REGIONS } from "@/data/persistency";
 import { hashId } from "@/data/persistency/derived";
 import { STATE_TILES, districtOf, stateOf } from "@/data/persistency/geo";
@@ -72,7 +72,10 @@ function ExecutiveDashboard() {
   const hi = Math.max(...byRegion.map((r) => r.p13));
   const byProduct = PRODUCTS.map((x) => ({ name: x, "13th month": last(persistencySeries({ product: x })).p13, "25th month": last(persistencySeries({ product: x })).p25 }));
   const byChannel = CHANNELS.map((x) => ({ name: x, "13th month": last(persistencySeries({ channel: x })).p13, "25th month": last(persistencySeries({ channel: x })).p25 }));
-  const byCohort = COHORTS.filter((c) => c !== "Unscored").map((c) => ({ name: c.replace(" propensity", ""), "13th month": last(persistencySeries({ cohort: c })).p13 }));
+  const byCohort = useMemo(() => {
+    const rows = slice(scoped, 13, "Propensity band");
+    return (["High", "Medium", "Low"] as const).map((b) => ({ name: b, "13th month": Math.round((rows.find((r) => r.key === `${b} propensity`)?.rate ?? 0) * 1000) / 10 }));
+  }, [scoped]);
 
   const branches = useMemo(() => {
     const m = new Map<string, { risk: number; n: number }>();
