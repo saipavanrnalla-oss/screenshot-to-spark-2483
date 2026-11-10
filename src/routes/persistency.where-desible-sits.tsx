@@ -34,7 +34,7 @@ const SYSTEMS: [string, string][] = [
 const EXECUTORS: [string, string][] = [
   ["call list daily 09:00", "Call-centre vendors (fixed and variable payout)"],
   ["message batch hourly", "WhatsApp vendor"],
-  ["call list hourly", "Voice bot vendor and Renewal voice agent"],
+  ["call list hourly", "Voice bot vendor and Premium Renewal Voice Agent"],
   ["visit list daily 08:30", "Field (sales officers)"],
   ["RM nudge list daily 10:00", "Bank relationship manager"],
   ["handoff screen, live", "Agents and desks"],

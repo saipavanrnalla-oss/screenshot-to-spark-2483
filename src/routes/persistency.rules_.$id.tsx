@@ -49,7 +49,7 @@ function blankRule(id: string): Rule {
     priority: 50,
     when: {},
     conds: [[]],
-    then: { workflowId: "R1", action: "", executor: "Message agent", delayHours: 4 },
+    then: { workflowId: "R1", action: "", executor: "Renewal Reminder Agent", delayHours: 4 },
     effectiveFrom: "2026-11-01",
     needsApprovalFrom: "Head of Persistency",
     source: "Insurer rule",
@@ -142,7 +142,7 @@ function RuleEditorPage() {
       reach: impact.matched.length,
       diff: ruleDiff(stored && isLive(stored) ? stored : undefined, draft),
       conflicts: overlaps.slice(0, 3).map((o) => `Shares ${num(o.n)} policies with ${o.rule.id} ${o.rule.name}`),
-      needs: noConds ? ["head", "compliance"] : ["head"],
+      needs: noConds ? ["head"] : ["head"],
       secondApproverReason: noConds ? "The rule has no conditions" : undefined,
     });
     toast.success(`Version ${no} sent for review`, { description: noConds ? "No conditions: a second approver is needed." : "Waiting for Head of Persistency." });

@@ -3,9 +3,9 @@ import { LEVEL_RANK, dimensionCount, isLive, policyDimensions, policyNumbers, ru
 import { ruleConditionText } from "./rule-text";
 
 export const EXECUTOR_OPTIONS = [
-  "Message agent",
-  "Renewal voice agent",
-  "Payment assist agent",
+  "Renewal Reminder Agent",
+  "Premium Renewal Voice Agent",
+  "Payment Link Dispatcher",
   "Call-centre vendor (fixed payout)",
   "Call-centre vendor (variable payout)",
   "WhatsApp vendor",

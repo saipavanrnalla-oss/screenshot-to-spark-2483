@@ -25,6 +25,7 @@ import { useEngineContext, usePersistencyStore, usePolicy } from "@/store/persis
 import { useWork } from "@/store/work";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { propensityLabel } from "@/data/persistency/r1/common";
 
 const search = z.object({
   tab: fallback(z.enum(["overview", "activity", "contacts", "payments"]).optional(), undefined),
@@ -110,7 +111,7 @@ function PolicyPage() {
               <Field label="Premium and mode">{inr(policy.instalmentAmount)} {policy.paymentMode}</Field>
               <Field label="Payment method">{policy.paymentMethod}</Field>
               <Field label="Mandate state">{mandate ?? "No mandate"}</Field>
-              <Field label="Cohort">{policy.insurerCohort}</Field>
+              <Field label="Propensity">{propensityLabel(policy)}</Field>
               <Field label="Stage">{policy.lifecycleStage}</Field>
               <Field label={dtd >= 0 ? "Days to due" : "Days overdue"}>{Math.abs(dtd)}</Field>
               <Field label="Grace ends">{date(policy.graceEnd)}</Field>

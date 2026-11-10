@@ -20,10 +20,15 @@ export const AGENT_META: Record<string, AgentMeta> = {
   "payment-assist": { inputs: ["Policy facts", "Payment method", "Mandate state"], outputs: ["Payment link sent", "Autopay set-up", "Payment status"], costPerTask: 2.1, channel: "WhatsApp" },
   "handoff-summariser": { inputs: ["Activity history", "Transcript", "Disposition"], outputs: ["Six-field packet"], costPerTask: 0.6, channel: "System" },
   quality: { inputs: ["Transcript or message", "Script version", "Contact policy"], outputs: ["Conduct check results", "Breach flag"], costPerTask: 0.5, channel: "System" },
+  "worth-score": { inputs: ["Propensity band", "Calls and outcomes", "Links sent and paid", "Promises", "Days past due", "Reason tag", "Premium"], outputs: ["Chance to collect", "Factors", "Keep calling or hand over"], costPerTask: 0.2, channel: "System" },
   welcome: { inputs: ["New business file"], outputs: ["Verification result"], costPerTask: 0, channel: "Voice" },
   revival: { inputs: ["Lapse extract"], outputs: ["Revival interest"], costPerTask: 0, channel: "Voice" },
   retention: { inputs: ["Surrender request"], outputs: ["Retention outcome"], costPerTask: 0, channel: "Voice" },
   "relationship-brief": { inputs: ["Policy facts", "Activity"], outputs: ["Brief"], costPerTask: 0, channel: "System" },
+  "mandate-recovery": { inputs: ["Mandate state", "Bounce reason"], outputs: ["New mandate link"], costPerTask: 0, channel: "WhatsApp" },
+  "fatigue-guard": { inputs: ["Contact history"], outputs: ["Allow or wait"], costPerTask: 0, channel: "System" },
+  "financial-stress": { inputs: ["Transcript", "Policy facts"], outputs: ["Offer for approval"], costPerTask: 0, channel: "Voice" },
+  reinstatement: { inputs: ["Lapse date", "Policy facts"], outputs: ["Reinstatement route"], costPerTask: 0, channel: "System" },
   learning: { inputs: ["Treated and untreated outcomes"], outputs: ["Proposed changes"], costPerTask: 0, channel: "System" },
 };
 
@@ -48,10 +53,10 @@ export const TOOL_KEYS = ["Look up policy facts", "Send payment link", "Record d
 export type ToolKey = (typeof TOOL_KEYS)[number];
 
 export const ROUTE_OPTIONS = [
-  "Payment assist agent",
+  "Payment Link Dispatcher",
   "R3 Promise-to-pay follow-up",
   "Telecaller",
-  "Surrender retention (L3)",
+  "ULIP Surrender Prevention (L3)",
   "Hold (X1)",
   "Remittance and operations",
   "Team lead",
@@ -80,13 +85,13 @@ export interface AgentConfig {
 }
 
 const DEFAULT_ROUTES: Record<Disposition, string> = {
-  "Will pay (link requested)": "Payment assist agent",
+  "Will pay (link requested)": "Payment Link Dispatcher",
   "Promise to pay with date": "R3 Promise-to-pay follow-up",
   "Already paid": "Close: paid",
   "Mandate problem": "Remittance and operations",
   "Short of cash": "Retry in the next window",
   "Unhappy with the policy": "Telecaller",
-  "Wants to surrender": "Surrender retention (L3)",
+  "Wants to surrender": "ULIP Surrender Prevention (L3)",
   "Complaint or mis-selling": "Hold (X1)",
   "Asked for a person": "Telecaller",
   "Wrong person": "Verify contact details",
@@ -192,7 +197,7 @@ export function seedAgentVersions(id: string): Version<AgentConfig>[] {
       author: AUTHORS[no % AUTHORS.length]!,
       at,
       note: NOTES[no] ?? `Version ${no}`,
-      approver: "Head of Persistency, Compliance and quality",
+      approver: "Head of Persistency",
       approvedAt: at,
       data: baseConfig(id, no),
       reviewedCalls: 30,

@@ -21,11 +21,11 @@ export function isHoldout(p: Pick<Policy, "policyId">): boolean {
 
 /* ---------- Cohort drift: last month's labels ---------- */
 
-const INS: InsurerCohort[] = ["A1", "A2", "A3", "A4", "A5"];
+const INS: InsurerCohort[] = ["Highest propensity", "High propensity", "Moderate propensity", "Low propensity", "Lowest propensity"];
 const RUL: RulesCohort[] = ["Low", "Medium", "High"];
 
 export function lastMonthInsurer(p: Policy): InsurerCohort {
-  if (p.insurerCohort === "Unscored") return hashId(p.policyId + "u") % 100 < 70 ? "Unscored" : "A3";
+  if (p.insurerCohort === "Unscored") return hashId(p.policyId + "u") % 100 < 70 ? "Unscored" : "Moderate propensity";
   const h = hashId(p.policyId + "lm");
   if (h % 100 >= 9) return p.insurerCohort;
   const i = INS.indexOf(p.insurerCohort);

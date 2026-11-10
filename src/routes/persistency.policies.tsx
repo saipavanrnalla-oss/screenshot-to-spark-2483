@@ -21,6 +21,7 @@ import { gate } from "@/lib/gate";
 import { date, dateTime, inr, num } from "@/lib/format";
 import { useEngineContext, usePersistencyStore } from "@/store/persistency";
 import { useWork } from "@/store/work";
+import { propensityLabel } from "@/data/persistency/r1/common";
 
 const opt = () => fallback(z.string().optional(), undefined);
 const search = z.object({
@@ -76,7 +77,7 @@ function PoliciesPage() {
     { id: "due", label: "Due date", value: (r) => r.p.dueDate, render: (r) => date(r.p.dueDate) },
     { id: "grace", label: "Grace end", value: (r) => r.p.graceEnd, render: (r) => date(r.p.graceEnd) },
     { id: "stage", label: "Stage", value: (r) => r.stage },
-    { id: "cohort", label: "Cohort", value: (r) => r.p.insurerCohort },
+    { id: "cohort", label: "Propensity", value: (r) => propensityLabel(r.p) },
     { id: "method", label: "Payment method", value: (r) => r.p.paymentMethod },
     { id: "status", label: "Status", value: (r) => policyStatus(r.p), render: (r) => <StatusChip tone={statusTone(policyStatus(r.p))}>{policyStatus(r.p)}</StatusChip> },
     { id: "last", label: "Last contact", value: (r) => r.p.lastTouch ?? "", render: (r) => (r.p.lastTouch ? date(r.p.lastTouch) : "None") },
@@ -92,7 +93,7 @@ function PoliciesPage() {
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-4">
-      <PageHeader title="Policies" meta={`${num(rows.length)} of ${num(staged.length)} policies`} />
+      <PageHeader title="Policy 360" meta={`${num(rows.length)} of ${num(staged.length)} policies`} />
       <FilterBar
         page="policies"
         fields={[

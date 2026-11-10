@@ -42,3 +42,24 @@ export const TICKET_LABELS = ["Below ₹2 lakh", "₹2 lakh to ₹5 lakh", "₹5
 export function pickBy<T>(id: string, salt: string, list: readonly T[]): T {
   return list[hashId(id + salt) % list.length]!;
 }
+
+/** The insurer's propensity groups, shown everywhere as Low, Medium or High; null when unscored. */
+export function propensityOf(p: Policy): "Low" | "Medium" | "High" | null {
+  switch (p.insurerCohort) {
+    case "Lowest propensity":
+    case "Low propensity":
+      return "Low";
+    case "Moderate propensity":
+      return "Medium";
+    case "High propensity":
+    case "Highest propensity":
+      return "High";
+    default:
+      return null;
+  }
+}
+
+export const propensityLabel = (p: Policy): string => {
+  const x = propensityOf(p);
+  return x ? `${x} propensity` : "Not scored";
+};

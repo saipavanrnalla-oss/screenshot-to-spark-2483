@@ -107,7 +107,7 @@ const VOICE_DISP: [Disposition, number][] = [
 ];
 const MSG_DISP: [Disposition | null, number][] = [[null, 50], ["Will pay (link requested)", 20], ["Not reachable", 12], ["Promise to pay with date", 8], ["Already paid", 6], ["Callback requested", 4]];
 const HANDOFF: Partial<Record<Disposition, string>> = {
-  "Will pay (link requested)": "Payment assist agent",
+  "Will pay (link requested)": "Payment Link Dispatcher",
   "Asked for a person": "Telecaller",
   "Wants to surrender": "Surrender retention",
   "Complaint or mis-selling": "Hold",
@@ -126,7 +126,7 @@ function pool(): Policy[] {
 function workflowFor(p: Policy, agentId: string): [string, string, string] {
   if (agentId === "payment-assist") return p.reasonCode === "Mandate bounce" || p.reasonCode === "Mandate failed" ? ["R4", "Payment link after bounce", "Bounce in file"] : ["R2", "Send payment link", "Disposition: will pay"];
   if (p.lifecycleStage === "Early lapse") return ["L1", agentId === "renewal-voice" ? "Recovery call" : "Revival link", "Lapsed 180 days or less"];
-  if (p.lifecycleStage === "Warming") return ["W1", "Station message", "Station date reached"];
+  if (p.lifecycleStage === "Warming") return ["W1", agentId === "renewal-voice" ? "Early renewal call" : "Station message", "Station date reached"];
   if (p.state === "Grace") return ["R2", agentId === "renewal-voice" ? "Collection call" : "Grace reminder", "Due date passed, unpaid"];
   if (p.state === "Promised") return ["R3", "Promise reminder", "Promise date tomorrow"];
   return ["R1", agentId === "renewal-voice" ? "Pre-due call" : "Pre-due reminder", "Due list at T minus 15"];
@@ -135,7 +135,7 @@ function workflowFor(p: Policy, agentId: string): [string, string, string] {
 function generate(): AgentTask[] {
   const rng = new Rng(40_400);
   const book = pool();
-  const counts: [string, number][] = [["message", 1600], ["renewal-voice", 900], ["reason-classifier", 700], ["payment-assist", 350], ["handoff-summariser", 200], ["quality", 250]];
+  const counts: [string, number][] = [["message", 1600], ["renewal-voice", 900], ["reason-classifier", 700], ["payment-assist", 350], ["handoff-summariser", 200], ["quality", 250], ["worth-score", 180]];
   const out: AgentTask[] = [];
   let seq = 1;
   for (const [agentId, n] of counts) {
@@ -182,10 +182,10 @@ function generate(): AgentTask[] {
         t.msgStatus = d === "Not reachable" ? "Sent" : d === "Will pay (link requested)" ? "Clicked" : d ? "Read" : rng.weighted<MsgStatus>([["Delivered", 40], ["Read", 45], ["Clicked", 15]]);
         if (d) t.disposition = d;
         t.result = d === "Not reachable" ? "No answer" : d === "Will pay (link requested)" ? "Handed off" : "Completed";
-        if (t.result === "Handed off") t.handoffTo = "Payment assist agent";
+        if (t.result === "Handed off") t.handoffTo = "Payment Link Dispatcher";
         if (!d && t.msgStatus === "Delivered" && rng.chance(0.15)) {
           t.result = "Handed off";
-          t.handoffTo = "Renewal voice agent";
+          t.handoffTo = "Premium Renewal Voice Agent";
         }
         t.threadId = THREADS[rng.int(0, THREADS.length - 1)]!.id;
         t.conduct = CHECKS.filter((c) => c !== "Identity and consent line said").map((c) => ({ check: c, pass: true }));
@@ -195,6 +195,16 @@ function generate(): AgentTask[] {
         if (t.confidence < 0.62 && rng.chance(0.4)) {
           t.result = "Handed off";
           t.handoffTo = "Team lead";
+        }
+        t.durationSec = 1;
+      } else if (agentId === "worth-score") {
+        t.workflow = "R1";
+        t.step = "Score: still worth calling?";
+        t.trigger = "Customer refused in the Grace Period";
+        t.confidence = +(0.08 + rng.next() * 0.6).toFixed(2);
+        if (t.confidence < 0.25) {
+          t.result = "Handed off";
+          t.handoffTo = "Specialist vendor (ATS), variable payout";
         }
         t.durationSec = 1;
       } else if (agentId === "payment-assist") {
@@ -284,13 +294,13 @@ export interface HandoffRule {
 }
 
 export const DEFAULT_HANDOFF_RULES: HandoffRule[] = [
-  { id: "HR1", from: "Message agent", to: "Renewal voice agent", trigger: "Message unread by the set time before the due date" },
-  { id: "HR2", from: "Renewal voice agent", to: "Payment assist agent", trigger: "Disposition: will pay, link requested" },
-  { id: "HR3", from: "Renewal voice agent", to: "Telecaller", trigger: "Disposition: asked for a person" },
-  { id: "HR4", from: "Renewal voice agent", to: "Surrender retention", trigger: "Disposition: wants to surrender" },
-  { id: "HR5", from: "Renewal voice agent", to: "High-value desk", trigger: "Ticket size above the high-value limit" },
+  { id: "HR1", from: "Renewal Reminder Agent", to: "Premium Renewal Voice Agent", trigger: "Message unread by the set time before the due date" },
+  { id: "HR2", from: "Premium Renewal Voice Agent", to: "Payment Link Dispatcher", trigger: "Disposition: will pay, link requested" },
+  { id: "HR3", from: "Premium Renewal Voice Agent", to: "Telecaller", trigger: "Disposition: asked for a person" },
+  { id: "HR4", from: "Premium Renewal Voice Agent", to: "Surrender retention", trigger: "Disposition: wants to surrender" },
+  { id: "HR5", from: "Premium Renewal Voice Agent", to: "High-value desk", trigger: "Ticket size above the high-value limit" },
   { id: "HR6", from: "Any agent", to: "Hold", trigger: "Complaint, bereavement, legal threat or do-not-contact" },
-  { id: "HR7", from: "Payment assist agent", to: "Remittance and operations", trigger: "Mandate fails or is rejected" },
+  { id: "HR7", from: "Payment Link Dispatcher", to: "Remittance and operations", trigger: "Mandate fails or is rejected" },
   { id: "HR8", from: "Any agent", to: "Team lead", trigger: "Two low-confidence results or two failed tasks" },
 ];
 
@@ -315,9 +325,9 @@ export const QUEUE: QueueTask[] = (() => {
   const rng = new Rng(9090);
   const book = pool();
   const execs: [string, string, string][] = [
-    ["Renewal voice agent", "R2", "Collection call"],
-    ["Message agent", "R1", "Pre-due reminder"],
-    ["Payment assist agent", "R2", "Send payment link"],
+    ["Premium Renewal Voice Agent", "R2", "Collection call"],
+    ["Renewal Reminder Agent", "R1", "Pre-due reminder"],
+    ["Payment Link Dispatcher", "R2", "Send payment link"],
     ["Call-centre vendor (fixed payout)", "R2", "Collection call"],
     ["Telecaller", "R2", "Call back the customer"],
     ["Sales officer", "R5", "Collect cheque"],

@@ -21,6 +21,7 @@ import { gate } from "@/lib/gate";
 import { dateTime, inr, num, pct } from "@/lib/format";
 import { usePersistencyStore, usePolicy } from "@/store/persistency";
 import { useQueue, useWork, type Orchestration } from "@/store/work";
+import { propensityLabel } from "@/data/persistency/r1/common";
 
 const search = z.object({
   tab: fallback(z.enum(["library", "handoffs", "queue", "settings"]).optional(), undefined),
@@ -52,7 +53,7 @@ function AgentsPage() {
   const overdue = queue.filter((q) => !q.closed && q.status === "Overdue").length;
   return (
     <div className="mx-auto max-w-[1600px] space-y-4">
-      <PageHeader title="Agents" meta={`${AGENTS.filter((a) => a.status === "Active").length} active · ${AGENTS.filter((a) => a.status === "Not enabled").length} not enabled`} />
+      <PageHeader title="AI workforce" meta={`${AGENTS.filter((a) => a.status === "Active").length} active · ${AGENTS.filter((a) => a.status === "Not enabled").length} not enabled`} />
       <PageTabs
         label="Agents"
         value={tab}
@@ -245,7 +246,7 @@ function Packet({ h }: { h: Handoff }) {
   const t = TASKS.find((x) => x.id === h.taskId);
   const deadline = new Date(new Date(h.at).getTime() + 48 * 3_600_000).toISOString();
   const fields: [string, string][] = [
-    ["Who the customer is", p ? `${p.customerName}, ${p.product} policy ${p.policyId}, premium ${inr(p.annualisedPremium)}, ${p.language}, cohort ${p.insurerCohort}` : h.policyId],
+    ["Who the customer is", p ? `${p.customerName}, ${p.product} policy ${p.policyId}, premium ${inr(p.annualisedPremium)}, ${p.language}, ${propensityLabel(p)}` : h.policyId],
     ["Why the case moved", h.trigger],
     ["What was said", t?.disposition ? `Customer said: ${t.disposition.toLowerCase()}${t.reason ? `; reason ${t.reason.toLowerCase()}` : ""}` : t?.msgStatus ? `Message ${t.msgStatus.toLowerCase()}, no reply` : "No conversation"],
     ["What was offered", "Payment link, autopay set-up"],
@@ -319,7 +320,7 @@ function HandoffRules() {
 
 /* ---------- Task queue ---------- */
 
-const MOVE_TO = ["Telecaller", "Renewal voice agent", "Call-centre vendor (fixed payout)", "Call-centre vendor (variable payout)", "Sales officer", "High-value desk", "Remittance and operations"];
+const MOVE_TO = ["Telecaller", "Premium Renewal Voice Agent", "Call-centre vendor (fixed payout)", "Call-centre vendor (variable payout)", "Sales officer", "High-value desk", "Remittance and operations"];
 
 function Queue() {
   const s = Route.useSearch();

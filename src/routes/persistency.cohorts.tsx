@@ -236,7 +236,7 @@ function BringYourOwn({ policies }: { policies: Policy[] }) {
                 <TooltipProvider>
                   <UiTooltip>
                     <TooltipTrigger aria-label="About labels"><Info className="size-3.5 text-muted-foreground" /></TooltipTrigger>
-                    <TooltipContent className="max-w-xs border-border bg-card text-xs text-subtle">Labels come from your file. Yours could be P1-P10 or anything else; this seed uses A1-A5.</TooltipContent>
+                    <TooltipContent className="max-w-xs border-border bg-card text-xs text-subtle">Labels come from your file. Yours could be scores, deciles or named groups; this sample uses five propensity groups.</TooltipContent>
                   </UiTooltip>
                 </TooltipProvider>
               </span>

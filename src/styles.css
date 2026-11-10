@@ -25,7 +25,7 @@
   --radius-xl: 12px;
   --radius-2xl: 16px;
   --radius-input: 6px;
-  --radius-card: 8px;
+  --radius-card: 14px;
   --radius-pill: 20px;
 
   --color-background: var(--background);
@@ -231,6 +231,7 @@ html.light {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px rgba(33, 30, 25, 0.04), 0 8px 24px rgba(33, 30, 25, 0.04);
 }
 
 @utility panel-translucent {

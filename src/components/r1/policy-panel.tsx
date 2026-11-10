@@ -11,6 +11,7 @@ import { Field } from "./tabs";
 import { StatusChip } from "./status-chip";
 import { policyStatus, statusTone } from "./policy-model";
 import { PolicyActions } from "./policy-actions";
+import { propensityLabel } from "@/data/persistency/r1/common";
 
 export function WhyHere({ policyId }: { policyId: string }) {
   const policy = usePolicy(policyId);
@@ -72,7 +73,7 @@ export function PolicyPanel({ policyId, onClose }: { policyId: string | null; on
               <Field label="Due date">{date(policy.dueDate)}</Field>
               <Field label="Grace ends">{date(policy.graceEnd)}</Field>
               <Field label="Stage">{policy.lifecycleStage}</Field>
-              <Field label="Cohort">{policy.insurerCohort}</Field>
+              <Field label="Propensity">{propensityLabel(policy)}</Field>
               <Field label="Payment method">{policy.paymentMethod}</Field>
               <Field label="Channel">{policy.channel}</Field>
             </dl>
