@@ -184,7 +184,7 @@ function LaunchPage() {
                 <label className="ml-auto flex items-center gap-2 text-muted-foreground"><input type="checkbox" checked={liveOn} onChange={(e) => setLiveOn(e.target.checked)} /> Place real calls and messages</label>
               </>
             ) : (
-              <span className="text-muted-foreground">Calls and WhatsApp messages are simulated. Set DISPATCH_URL on the server to place real ones for the live use cases.</span>
+              <span className="text-muted-foreground">Live calls are not connected. Every step plays its sample answer.</span>
             )}
           </div>
           <div className="grid gap-3 lg:grid-cols-2">
