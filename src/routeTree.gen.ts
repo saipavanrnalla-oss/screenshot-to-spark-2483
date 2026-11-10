@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PersistencyRouteImport } from './routes/persistency'
+import { Route as PayPolicyRouteImport } from './routes/pay.$policy'
 import { Route as PersistencyIndexRouteImport } from './routes/persistency.index'
 import { Route as PersistencyActivityRouteImport } from './routes/persistency.activity'
 import { Route as PersistencyAdminRouteImport } from './routes/persistency.admin'
@@ -44,6 +45,9 @@ import { Route as PersistencyStagesRouteImport } from './routes/persistency.stag
 import { Route as PersistencyWarRoomRouteImport } from './routes/persistency.war-room'
 import { Route as PersistencyWhereDesibleSitsRouteImport } from './routes/persistency.where-desible-sits'
 import { Route as PersistencyWhereWeSitRouteImport } from './routes/persistency.where-we-sit'
+import { Route as ApiLiveConfigRouteImport } from './routes/api.live.config'
+import { Route as ApiLiveDispatchRouteImport } from './routes/api.live.dispatch'
+import { Route as ApiLiveResultRouteImport } from './routes/api.live.result'
 import { Route as PersistencyAgentsIdRouteImport } from './routes/persistency.agents_.$id'
 import { Route as PersistencyPoliciesIdRouteImport } from './routes/persistency.policies_.$id'
 import { Route as PersistencyQueuesPersonaRouteImport } from './routes/persistency.queues.$persona'
@@ -70,6 +74,11 @@ const LoginRoute = LoginRouteImport.update({
 const PersistencyRoute = PersistencyRouteImport.update({
   id: '/persistency',
   path: '/persistency',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PayPolicyRoute = PayPolicyRouteImport.update({
+  id: '/pay/$policy',
+  path: '/pay/$policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PersistencyIndexRoute = PersistencyIndexRouteImport.update({
@@ -235,6 +244,21 @@ const PersistencyWhereWeSitRoute = PersistencyWhereWeSitRouteImport.update({
   path: '/where-we-sit',
   getParentRoute: () => PersistencyRoute,
 } as any)
+const ApiLiveConfigRoute = ApiLiveConfigRouteImport.update({
+  id: '/api/live/config',
+  path: '/api/live/config',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLiveDispatchRoute = ApiLiveDispatchRouteImport.update({
+  id: '/api/live/dispatch',
+  path: '/api/live/dispatch',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLiveResultRoute = ApiLiveResultRouteImport.update({
+  id: '/api/live/result',
+  path: '/api/live/result',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PersistencyAgentsIdRoute = PersistencyAgentsIdRouteImport.update({
   id: '/agents_/$id',
   path: '/agents/$id',
@@ -304,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/persistency': typeof PersistencyRouteWithChildren
+  '/pay/$policy': typeof PayPolicyRoute
   '/persistency/activity': typeof PersistencyActivityRoute
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
@@ -336,6 +361,9 @@ export interface FileRoutesByFullPath {
   '/persistency/where-desible-sits': typeof PersistencyWhereDesibleSitsRoute
   '/persistency/where-we-sit': typeof PersistencyWhereWeSitRoute
   '/persistency/': typeof PersistencyIndexRoute
+  '/api/live/config': typeof ApiLiveConfigRoute
+  '/api/live/dispatch': typeof ApiLiveDispatchRoute
+  '/api/live/result': typeof ApiLiveResultRoute
   '/persistency/agents/$id': typeof PersistencyAgentsIdRoute
   '/persistency/policies/$id': typeof PersistencyPoliciesIdRoute
   '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
@@ -352,6 +380,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/pay/$policy': typeof PayPolicyRoute
   '/persistency/activity': typeof PersistencyActivityRoute
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
@@ -384,6 +413,9 @@ export interface FileRoutesByTo {
   '/persistency/where-desible-sits': typeof PersistencyWhereDesibleSitsRoute
   '/persistency/where-we-sit': typeof PersistencyWhereWeSitRoute
   '/persistency': typeof PersistencyIndexRoute
+  '/api/live/config': typeof ApiLiveConfigRoute
+  '/api/live/dispatch': typeof ApiLiveDispatchRoute
+  '/api/live/result': typeof ApiLiveResultRoute
   '/persistency/agents/$id': typeof PersistencyAgentsIdRoute
   '/persistency/policies/$id': typeof PersistencyPoliciesIdRoute
   '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
@@ -402,6 +434,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/persistency': typeof PersistencyRouteWithChildren
+  '/pay/$policy': typeof PayPolicyRoute
   '/persistency/activity': typeof PersistencyActivityRoute
   '/persistency/admin': typeof PersistencyAdminRoute
   '/persistency/agents': typeof PersistencyAgentsRoute
@@ -434,6 +467,9 @@ export interface FileRoutesById {
   '/persistency/where-desible-sits': typeof PersistencyWhereDesibleSitsRoute
   '/persistency/where-we-sit': typeof PersistencyWhereWeSitRoute
   '/persistency/': typeof PersistencyIndexRoute
+  '/api/live/config': typeof ApiLiveConfigRoute
+  '/api/live/dispatch': typeof ApiLiveDispatchRoute
+  '/api/live/result': typeof ApiLiveResultRoute
   '/persistency/agents_/$id': typeof PersistencyAgentsIdRoute
   '/persistency/policies_/$id': typeof PersistencyPoliciesIdRoute
   '/persistency/queues/$persona': typeof PersistencyQueuesPersonaRoute
@@ -453,6 +489,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/persistency'
+    | '/pay/$policy'
     | '/persistency/activity'
     | '/persistency/admin'
     | '/persistency/agents'
@@ -485,6 +522,9 @@ export interface FileRouteTypes {
     | '/persistency/where-desible-sits'
     | '/persistency/where-we-sit'
     | '/persistency/'
+    | '/api/live/config'
+    | '/api/live/dispatch'
+    | '/api/live/result'
     | '/persistency/agents/$id'
     | '/persistency/policies/$id'
     | '/persistency/queues/$persona'
@@ -501,6 +541,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/pay/$policy'
     | '/persistency/activity'
     | '/persistency/admin'
     | '/persistency/agents'
@@ -533,6 +574,9 @@ export interface FileRouteTypes {
     | '/persistency/where-desible-sits'
     | '/persistency/where-we-sit'
     | '/persistency'
+    | '/api/live/config'
+    | '/api/live/dispatch'
+    | '/api/live/result'
     | '/persistency/agents/$id'
     | '/persistency/policies/$id'
     | '/persistency/queues/$persona'
@@ -550,6 +594,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/persistency'
+    | '/pay/$policy'
     | '/persistency/activity'
     | '/persistency/admin'
     | '/persistency/agents'
@@ -582,6 +627,9 @@ export interface FileRouteTypes {
     | '/persistency/where-desible-sits'
     | '/persistency/where-we-sit'
     | '/persistency/'
+    | '/api/live/config'
+    | '/api/live/dispatch'
+    | '/api/live/result'
     | '/persistency/agents_/$id'
     | '/persistency/policies_/$id'
     | '/persistency/queues/$persona'
@@ -600,6 +648,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   PersistencyRoute: typeof PersistencyRouteWithChildren
+  PayPolicyRoute: typeof PayPolicyRoute
+  ApiLiveConfigRoute: typeof ApiLiveConfigRoute
+  ApiLiveDispatchRoute: typeof ApiLiveDispatchRoute
+  ApiLiveResultRoute: typeof ApiLiveResultRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -623,6 +675,13 @@ declare module '@tanstack/react-router' {
       path: '/persistency'
       fullPath: '/persistency'
       preLoaderRoute: typeof PersistencyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pay/$policy': {
+      id: '/pay/$policy'
+      path: '/pay/$policy'
+      fullPath: '/pay/$policy'
+      preLoaderRoute: typeof PayPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/persistency/': {
@@ -849,6 +908,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersistencyWhereWeSitRouteImport
       parentRoute: typeof PersistencyRoute
     }
+    '/api/live/config': {
+      id: '/api/live/config'
+      path: '/api/live/config'
+      fullPath: '/api/live/config'
+      preLoaderRoute: typeof ApiLiveConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/live/dispatch': {
+      id: '/api/live/dispatch'
+      path: '/api/live/dispatch'
+      fullPath: '/api/live/dispatch'
+      preLoaderRoute: typeof ApiLiveDispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/live/result': {
+      id: '/api/live/result'
+      path: '/api/live/result'
+      fullPath: '/api/live/result'
+      preLoaderRoute: typeof ApiLiveResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/persistency/agents_/$id': {
       id: '/persistency/agents_/$id'
       path: '/agents/$id'
@@ -1038,6 +1118,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   PersistencyRoute: PersistencyRouteWithChildren,
+  PayPolicyRoute: PayPolicyRoute,
+  ApiLiveConfigRoute: ApiLiveConfigRoute,
+  ApiLiveDispatchRoute: ApiLiveDispatchRoute,
+  ApiLiveResultRoute: ApiLiveResultRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -5,6 +5,7 @@ import { AlertTriangle, BadgeCheck, CalendarClock, CreditCard, Hourglass, LineCh
 import { PageHeader } from "@/components/ds/primitives";
 import { AXIS_TICK, GRID, SERIES, TOOLTIP_STYLE } from "@/components/ds/chart-theme";
 import { Kpi } from "@/components/r1/kpi";
+import { AskData } from "@/components/r1/ask-data";
 import { LastUpdated } from "@/components/r1/kpi";
 import { useMonth } from "@/components/persistency/month";
 import { PERIOD_FACTOR, computeFunnel } from "@/components/r1/funnel-model";
@@ -166,6 +167,8 @@ function ExecutiveDashboard() {
           ))}
         </ul>
       </section>
+
+      <AskData policies={scoped} />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi icon={<LineIcon className="size-4" />} accent="#E8501A" label="13M Persistency" value={`${now.p13.toFixed(1)}%`} change={d(now.p13, before.p13)} good={now.p13 >= before.p13} />

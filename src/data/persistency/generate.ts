@@ -205,7 +205,7 @@ export function generatePolicies(): Policy[] {
       const early = r.chance(EARLY_SHARE_OF_LAPSED);
       stage = early ? "Early lapse" : "Late lapse";
       // Pick the policy's current age band first so persistency by period stays plausible.
-      const band = r.weighted([[0, 3], [1, 26], [2, 23], [3, 16], [4, 17], [5, 23], [6, 2]] as const);
+      const band = r.weighted([[0, 3], [1, 26], [2, 31], [3, 16], [4, 17], [5, 23], [6, 2]] as const);
       const ageMonths = band * 12 + r.next() * 12;
       const maxLateDays = Math.floor(ageMonths * 30.44 - grace - step * 30.44);
       const daysSince = early

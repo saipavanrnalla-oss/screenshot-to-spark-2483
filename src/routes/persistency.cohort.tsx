@@ -268,7 +268,7 @@ function DueBook({ policies, cut }: { policies: Policy[]; cut: Cut }) {
 
 function defaultPlan(r: SliceRow, book: number): string[] {
   return [
-    `Early service call at T-90 for every policy in this slice below P6 (${r.policies.toLocaleString("en-IN")} policies today)`,
+    `Early service call at T-90 for every Low propensity policy in this slice (${r.policies.toLocaleString("en-IN")} policies today)`,
     "Autopay nudge on WhatsApp at T-60 for policies not on autopay",
     "Send each seller their own due list and payment links in the Grace Period",
     `Weekly review against the book (${pct(book)}) until the target date`,

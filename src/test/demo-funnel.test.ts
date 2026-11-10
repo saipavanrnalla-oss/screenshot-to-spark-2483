@@ -21,10 +21,11 @@ describe("Demo workflows and funnel", () => {
     expect(computeFunnel(g, 1000, [], "t")).toEqual(computeFunnel(g, 1000, [], "t"));
   });
 
-  it("sends P6 to P10 to the message journey and P1 to P5 to the early call", () => {
+  it("sends Medium and High to the message journey and Low to the renewal call", () => {
     const g = SEED_GRAPHS["R1"]!;
     const to = (label: string) => g.edges.filter((e) => e.label === label && e.from === "band").map((e) => g.nodes.find((n) => n.id === e.to)!.type);
-    expect(to("P6 to P10")).toEqual(["agent.message"]);
-    expect(to("P1 to P5")).toEqual(["agent.voice"]);
+    expect(to("Medium")).toEqual(["agent.message"]);
+    expect(to("High")).toEqual(["agent.message"]);
+    expect(to("Low")).toEqual(["agent.voice"]);
   });
 });

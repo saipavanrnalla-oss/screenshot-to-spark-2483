@@ -19,7 +19,7 @@ import type { WfGraph } from "@/data/persistency/r1/wf";
 
 const FEATURED = ["R1", "R8"];
 const FEATURED_BLURB: Record<string, string> = {
-  R1: "From the due list at T-90 to Renewed, Renewed in the Grace Period, Revived or Closed. Early service call for P1 to P5, templates at T-60, T-45 and T-30, auto-debit balance check, payment links, Grace Period recovery, deep lapse vendors and revival.",
+  R1: "From the due list at T-90 to Renewed, Renewed in the Grace Period, Revived or Closed. Renewal calls from T-90 for Low propensity, WhatsApp first for Medium and High, templates at T-60, T-45 and T-30, auto-debit balance check, payment links, Grace Period recovery, deep lapse vendors and revival.",
   R8: "Starts from past payment behaviour, not the propensity score. Four segments get different starting points, then the same renewal and Grace Period journey, with the Reduced Paid-up and ULIP routes at the end of the Grace Period.",
 };
 

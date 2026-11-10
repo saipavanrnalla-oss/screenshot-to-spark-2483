@@ -25,7 +25,7 @@ export function WorthCard({ w, compact = false }: { w: WorthResult; compact?: bo
             {w.factors.map((f) => (
               <tr key={f.label} className="border-t border-border first:border-t-0">
                 <td className="py-1 text-foreground">{f.label}</td>
-                <td className={`py-1 text-right tabular-nums ${f.effect < 0 ? "text-failed" : "text-foreground"}`}>{f.effect > 0 && f.label.startsWith("Propensity") ? `${Math.round(f.effect * 100)}%` : f.label.startsWith("Not scored") ? `${Math.round(f.effect * 100)}%` : `${f.effect > 0 ? "+" : ""}${(f.effect * 100).toFixed(1)} pts`}</td>
+                <td className={`py-1 text-right tabular-nums ${f.effect < 0 ? "text-failed" : "text-foreground"}`}>{f.effect > 0 && f.label.endsWith("propensity") ? `${Math.round(f.effect * 100)}%` : f.label.startsWith("Not scored") ? `${Math.round(f.effect * 100)}%` : `${f.effect > 0 ? "+" : ""}${(f.effect * 100).toFixed(1)} pts`}</td>
               </tr>
             ))}
           </tbody>

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Fragment, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { FileCheck2, MessageCircle, Phone, Play, PlayCircle, Radio, Upload, UserRound } from "lucide-react";
+import { FileCheck2, Loader2, MessageCircle, Phone, Play, PlayCircle, Radio, Upload, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NoteBanner, PageHeader } from "@/components/ds/primitives";
 import { inputCls, selectCls } from "@/components/r1/tabs";
@@ -14,8 +14,7 @@ import {
   BOOTH_FILE, BOOTH_STORIES, INSURER_FORMAT_FILE, FILE_COLUMNS, REPLIES, SAMPLE_FILE, bandLabel, beatAt, parseDueFile, scriptFor, stagePolicy, wordsFor,
   type DueRow, type LiveEvent, type Reply, type RunState, type Staged,
 } from "@/engine/live-run";
-import { DISPATCH_URL } from "@/engine/dispatch";
-import { liveGraph, previewEntry, useLive } from "@/store/live";
+import { isLiveRun, liveGraph, previewEntry, useLive } from "@/store/live";
 
 export const Route = createFileRoute("/persistency/launch")({
   beforeLoad: ({ search }) => gate("launch", search),
@@ -32,7 +31,8 @@ export const Route = createFileRoute("/persistency/launch")({
 
 /** Contact steps worth comparing across customers, in journey order. */
 const WORD_STEPS: { id: string; label: string }[] = [
-  { id: "early", label: "Early call (T-90)" },
+  { id: "early", label: "Renewal call (T-90)" },
+  { id: "explain1", label: "If not convinced" },
   { id: "link15", label: "WhatsApp link (T-15)" },
   { id: "link15b", label: "Second WhatsApp" },
   { id: "call15", label: "Reminder call (T-15)" },
@@ -45,7 +45,14 @@ function LaunchPage() {
   const [checked, setChecked] = useState<{ rows: DueRow[]; staged: Staged[]; problems: { line: number; message: string }[] } | null>(null);
   const [missing, setMissing] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
-  const { runs, uploads, replies, addUpload, setReply, step, stepAll, clear } = useLive();
+  const { runs, uploads, replies, addUpload, setReply, step, stepAll, clear, liveOn, serverLive, setLiveOn, loadConfig, poll } = useLive();
+  const waiting = Object.values(runs).some((r) => r.live);
+  useEffect(() => { void loadConfig(); }, [loadConfig]);
+  useEffect(() => {
+    if (!waiting) return;
+    const t = setInterval(() => { void poll(); }, 2500);
+    return () => clearInterval(t);
+  }, [waiting, poll]);
   const list = useMemo(() => Object.values(runs), [runs]);
   const current = uploads[0];
   const board = current ? list.filter((r) => r.events[0]?.title.includes(current.fileName)) : list;
@@ -68,7 +75,7 @@ function LaunchPage() {
     setText("");
   };
 
-  const runnable = board.filter((r) => !r.done && !r.waitingCase);
+  const runnable = board.filter((r) => !r.done && !r.waitingCase && !r.live);
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-4">
@@ -83,8 +90,8 @@ function LaunchPage() {
           <div className="flex flex-wrap gap-2">
             <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { setText(await f.text()); setFileName(f.name); setChecked(null); } e.target.value = ""; }} />
             <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()}><Upload /> Upload CSV</Button>
-            <Button size="sm" variant="outline" onClick={() => { setText(SAMPLE_FILE); setFileName("booth-scenarios.csv"); setChecked(null); }}>Four booth scenarios</Button>
-            <Button size="sm" variant="outline" onClick={() => { setText(BOOTH_FILE); setFileName("due-list-nov.csv"); setChecked(null); }}>Six-policy sample</Button>
+            <Button size="sm" variant="outline" onClick={() => { setText(SAMPLE_FILE); setFileName("booth-use-cases.csv"); setChecked(null); }}>Booth use cases</Button>
+            <Button size="sm" variant="outline" onClick={() => { setText(BOOTH_FILE); setFileName("due-list-nov.csv"); setChecked(null); }}>Seven-policy sample</Button>
             <Button size="sm" variant="outline" onClick={() => { setText(INSURER_FORMAT_FILE); setFileName("PAS-due-list-export.csv"); setChecked(null); }}>Insurer file format</Button>
           </div>
         </div>
@@ -139,7 +146,7 @@ function LaunchPage() {
                       <td className="py-2 pr-3">
                         <p className="font-medium text-foreground">{r.name}</p>
                         <p className="font-mono text-[12px] text-muted-foreground">{r.policy}</p>
-                        {story && <p className="mt-1 text-[11px] text-primary">Scenario {story.code}: {story.title}</p>}
+                        {story && <p className="mt-1 text-[11px] text-primary">{story.live ? "Live use case" : "Scenario"} {story.code}: {story.title}</p>}
                       </td>
                       <td className="py-2 pr-3">{s.renewal}</td>
                       <td className="py-2 pr-3"><StatusChip tone={stageTone(s.stage)}>{s.stage}</StatusChip><p className="mt-1 text-[12px] text-muted-foreground">{s.timing}</p></td>
@@ -162,19 +169,26 @@ function LaunchPage() {
           <header className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-[15px] font-semibold text-foreground">Running from {current?.fileName ?? "uploads"}</h2>
-              <p className="text-[12px] text-muted-foreground">Each step runs when you press Run. The booth scenarios play their story; pick an answer to show another branch.</p>
+              <p className="text-[12px] text-muted-foreground">Each step runs when you press Run. Live use cases place a real call or WhatsApp and move on when the result comes back; the others play their story.</p>
             </div>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={() => { clear(); toast("Runs cleared"); }}>Clear runs</Button>
-              <Button size="sm" onClick={() => stepAll(runnable.map((r) => r.id))} disabled={!runnable.length}><PlayCircle /> Run next step for all</Button>
+              <Button size="sm" onClick={() => { void stepAll(runnable.map((r) => r.id)); }} disabled={!runnable.length}><PlayCircle /> Run next step for all</Button>
             </div>
           </header>
-          <p className="flex items-center gap-2 text-[12px] text-muted-foreground">
-            <Radio className="size-3.5" aria-hidden />
-            {DISPATCH_URL ? <>Calls and WhatsApp messages are sent to <span className="font-mono">{DISPATCH_URL}</span> as each step runs.</> : "Calls and WhatsApp messages are simulated in this browser. Set a dispatch address to place real ones."}
-          </p>
+          <div className="flex flex-wrap items-center gap-2 rounded-card border border-border bg-card px-3 py-2 text-[12px]">
+            <Radio className={`size-3.5 ${serverLive && liveOn ? "text-healthy" : "text-muted-foreground"}`} aria-hidden />
+            {serverLive ? (
+              <>
+                <span className="text-foreground">{liveOn ? "Live: use cases 1, 2a and 2b place real calls and WhatsApp messages." : "Live calls are off: every step is simulated."}</span>
+                <label className="ml-auto flex items-center gap-2 text-muted-foreground"><input type="checkbox" checked={liveOn} onChange={(e) => setLiveOn(e.target.checked)} /> Place real calls and messages</label>
+              </>
+            ) : (
+              <span className="text-muted-foreground">Calls and WhatsApp messages are simulated. Set DISPATCH_URL on the server to place real ones for the live use cases.</span>
+            )}
+          </div>
           <div className="grid gap-3 lg:grid-cols-2">
-            {board.map((r) => <RunCard key={r.id} run={r} reply={replies[r.id] ?? "As the customer would"} onReply={(v) => setReply(r.id, v)} onStep={() => step(r.id)} />)}
+            {board.map((r) => <RunCard key={r.id} run={r} live={isLiveRun(r, { liveOn, serverLive })} reply={replies[r.id] ?? "As the customer would"} onReply={(v) => setReply(r.id, v)} onStep={() => { void step(r.id); }} />)}
           </div>
         </section>
       )}
@@ -230,7 +244,9 @@ function ChannelIcon({ kind }: { kind: LiveEvent["kind"] }) {
   return <span className="inline-block size-3.5" />;
 }
 
-function RunCard({ run, reply, onReply, onStep }: { run: RunState; reply: Reply; onReply: (r: Reply) => void; onStep: () => void }) {
+function RunCard({ run, live, reply, onReply, onStep }: { run: RunState; live: boolean; reply: Reply; onReply: (r: Reply) => void; onStep: () => void }) {
+  const { setPhone, applyByHand } = useLive();
+  const firstContact = !run.events.some((e) => e.kind === "call" || e.kind === "whatsapp" || e.by === "Live dispatch");
   const g = liveGraph(run.graphId);
   const node = g.nodes.find((n) => n.id === run.nodeId);
   const pal = node ? PALETTE_BY_TYPE[node.type] : undefined;
@@ -247,11 +263,18 @@ function RunCard({ run, reply, onReply, onStep }: { run: RunState; reply: Reply;
         <div className="min-w-0 flex-1">
           <p className="text-[14px] font-semibold text-foreground">{run.row.name}</p>
           <p className="text-[12px] text-muted-foreground"><span className="font-mono">{run.row.policy}</span> · {run.row.plan} · Rs {run.row.premium.toLocaleString("en-IN")} {run.row.mode.toLowerCase()} · {bandLabel(run.row.band)} · {run.row.language}</p>
-          {run.story && <p className="mt-1 text-[12px] text-primary">Scenario {run.story.code}: {run.story.title}</p>}
+          {run.story && <p className="mt-1 text-[12px] text-primary">{run.story.live ? "Live use case" : "Scenario"} {run.story.code}: {run.story.title}</p>}
         </div>
+        {live && <StatusChip tone="ok">Live</StatusChip>}
         <StatusChip tone="neutral">{WF_NAME[run.graphId]}</StatusChip>
         <StatusChip tone={st.tone}>{st.word}</StatusChip>
       </header>
+      {live && !run.done && firstContact && (
+        <label className="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
+          Call and WhatsApp this number
+          <input value={run.row.phone} onChange={(e) => setPhone(run.id, e.target.value.replace(/[^\d+]/g, ""))} className={`${inputCls} h-8 max-w-[180px] font-mono`} aria-label={`Phone for ${run.row.policy}`} />
+        </label>
+      )}
 
       {!run.done && node && (
         <div className="rounded-card border border-border bg-surface-translucent p-3">
@@ -267,7 +290,17 @@ function RunCard({ run, reply, onReply, onStep }: { run: RunState; reply: Reply;
               <p className="mt-1.5 text-subtle">{wordsFor(run, sc.v.text)}</p>
             </details>
           )}
-          {run.waitingCase ? (
+          {run.live ? (
+            <div className="mt-2 space-y-2 text-[12px]">
+              <p className="flex items-center gap-2 text-foreground"><Loader2 className="size-4 animate-spin text-primary" aria-hidden />
+                {run.live.channel === "Voice" ? `Live call to ${run.live.phone}. The next step runs when the disposition comes back.` : `WhatsApp sent to ${run.live.phone}. The next step runs when the customer pays on the link.`}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {run.live.channel === "WhatsApp" && <Button size="sm" variant="outline" onClick={() => applyByHand(run.id, "No reply")}>No payment yet: move on</Button>}
+                <Button size="sm" variant="outline" onClick={() => applyByHand(run.id)}>Use the scenario answer</Button>
+              </div>
+            </div>
+          ) : run.waitingCase ? (
             <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px]">
               <UserRound className="size-4 text-attention" />
               <span>{run.waitingCase.why}</span>
@@ -292,7 +325,7 @@ function RunCard({ run, reply, onReply, onStep }: { run: RunState; reply: Reply;
                   </select>
                 </label>
               )}
-              <Button size="sm" className="ml-auto" onClick={onStep}><Play /> Run</Button>
+              <Button size="sm" className="ml-auto" onClick={onStep}>{live && ch && (ch === "Call" || ch === "WhatsApp") && reply === "As the customer would" ? <><Phone /> {ch === "Call" ? "Place the call" : "Send on WhatsApp"}</> : <><Play /> Run</>}</Button>
             </div>
           )}
         </div>
@@ -314,6 +347,7 @@ function RunCard({ run, reply, onReply, onStep }: { run: RunState; reply: Reply;
               {e.status && e.status !== e.title && <span className="text-muted-foreground"> · {e.status}</span>}
               <span className="text-muted-foreground"> · {e.by}</span>
               {e.script && <p className="text-muted-foreground">Script: {e.script.name}</p>}
+              {e.recordingUrl && <a href={e.recordingUrl} target="_blank" rel="noreferrer" className="font-medium text-primary hover:underline">Call recording</a>}
               {e.kind === "call" && e.transcript && e.transcript.length > 1 && (
                 <details className="mt-0.5">
                   <summary className="cursor-pointer font-medium text-primary">Transcript</summary>

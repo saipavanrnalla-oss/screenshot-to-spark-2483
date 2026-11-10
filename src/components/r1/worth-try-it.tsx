@@ -3,13 +3,13 @@ import { WorthCard } from "@/components/r1/worth-card";
 import { inputCls, selectCls } from "@/components/r1/tabs";
 import { worthScore, type WorthInput } from "@/engine/worth-score";
 
-const START: WorthInput = { band: 2, calls: 2, unanswered: 0, refusals: 1, promise: false, brokenPromises: 0, daysPastDue: 6, unpaidLinks: 1, reason: "Financial", annualPremium: 36000 };
+const START: WorthInput = { band: "Low", calls: 2, unanswered: 0, refusals: 1, promise: false, brokenPromises: 0, daysPastDue: 6, unpaidLinks: 1, reason: "Financial", annualPremium: 36000 };
 
 const PRESETS: { label: string; x: WorthInput }[] = [
-  { label: "P2, one refusal in grace", x: START },
-  { label: "P2, second refusal", x: { ...START, calls: 3, refusals: 2, daysPastDue: 9 } },
-  { label: "P8, not answering", x: { ...START, band: 8, refusals: 0, unanswered: 3, calls: 3, reason: undefined, unpaidLinks: 2 } },
-  { label: "P5, promised, then broke it", x: { ...START, band: 5, refusals: 0, promise: false, brokenPromises: 1, reason: undefined } },
+  { label: "Low, one refusal in grace", x: START },
+  { label: "Low, second refusal", x: { ...START, calls: 3, refusals: 2, daysPastDue: 9 } },
+  { label: "High, not answering", x: { ...START, band: "High", refusals: 0, unanswered: 3, calls: 3, reason: undefined, unpaidLinks: 2 } },
+  { label: "Medium, promised, then broke it", x: { ...START, band: "Medium", refusals: 0, promise: false, brokenPromises: 1, reason: undefined } },
 ];
 
 /** Change the customer's history and watch the chance to collect and the decision move. */
@@ -32,10 +32,12 @@ export function WorthTryIt() {
       </div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <div className="grid grid-cols-2 gap-2">
-          <label className="text-[12px] text-muted-foreground">Propensity band
-            <select value={x.band ?? ""} onChange={(e) => set("band", e.target.value ? Number(e.target.value) : null)} className={`${selectCls} mt-1 block w-full`} aria-label="Propensity band">
+          <label className="text-[12px] text-muted-foreground">Propensity
+            <select value={x.band ?? ""} onChange={(e) => set("band", (e.target.value || null) as WorthInput["band"])} className={`${selectCls} mt-1 block w-full`} aria-label="Propensity">
               <option value="">Not scored</option>
-              {Array.from({ length: 10 }, (_, i) => <option key={i} value={i + 1}>P{i + 1}</option>)}
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
             </select>
           </label>
           <label className="text-[12px] text-muted-foreground">Reason given

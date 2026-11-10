@@ -1,5 +1,5 @@
 import { hashId } from "@/data/persistency/derived";
-import { hasMandate } from "@/data/persistency/r1/common";
+import { hasMandate, propensityOf } from "@/data/persistency/r1/common";
 import { PALETTE_BY_TYPE, type WfEdge, type WfGraph, type WfNode } from "@/data/persistency/r1/wf";
 import type { Policy } from "@/data/persistency";
 import { isOutcome } from "@/engine/workflow";
@@ -56,7 +56,8 @@ export function walkPolicy(graph: WfGraph, p: Policy, behaviour: ExampleBehaviou
   const start = graph.nodes.find((n) => n.type.startsWith("trigger."));
   const steps: WalkStep[] = [];
   const visits = new Map<string, number>();
-  const lowBand = p.insurerCohort === "Low propensity" || p.insurerCohort === "Lowest propensity" || p.insurerCohort === "Unscored";
+  const prop = propensityOf(p) ?? "Medium";
+  const lowBand = prop === "Low";
   const mandate = hasMandate(p);
   const goodPayer = !lowBand && p.priorLatePayments === 0;
   let reason: string | undefined;
@@ -65,14 +66,16 @@ export function walkPolicy(graph: WfGraph, p: Policy, behaviour: ExampleBehaviou
     const has = (l: string) => labels.includes(l);
     switch (n.id) {
       case "hni": return p.annualisedPremium > 200_000 ? "Yes" : "No";
-      case "band": return lowBand ? "P1 to P5" : "P6 to P10";
+      case "band": return prop;
+      case "bandc": return prop === "High" ? "High: digital only" : "Low or Medium";
       case "seg": {
         if (p.revivedOn || p.priorLatePayments >= 3) return "Pays very late or revived";
         if (mandate && r("bounced") < 10) return "Debit bounced before";
         return p.priorLatePayments >= 1 ? "Pays late" : "Pays on time";
       }
-      case "out1": { const x = r("o1"); return x < 45 ? "Will pay" : x < 62 ? "Raised an issue" : x < 85 ? "Not reached" : "Refused"; }
-      case "out2": { const x = r("o2"); return x < 45 ? "Will pay" : x < 60 ? "Callback asked" : x < 85 ? "Not reached" : "Refused"; }
+      case "out1": { const x = r("o1"); return x < 40 ? "Will pay" : x < 47 ? "Not convinced" : x < 62 ? "Raised an issue" : x < 85 ? "Not reached" : "Refused"; }
+      case "out2": { const x = r("o2"); return x < 40 ? "Will pay" : x < 46 ? "Not convinced" : x < 60 ? "Callback asked" : x < 85 ? "Not reached" : "Refused"; }
+      case "ex1": case "ex2": return r("ex") < 70 ? "Will pay" : "Still not convinced";
       case "rdec": { const x = r("rd"); return x < 45 ? "Financial" : x < 75 ? "Service or product" : "Mis-selling"; }
       case "ad": return mandate ? "Yes" : "No";
       case "balDec": return r("bal") < 85 ? "Yes" : "No";

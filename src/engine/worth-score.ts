@@ -13,7 +13,7 @@ export const IN_HOUSE_ROUND_COST = 120;
 export const VENDOR_FEE = 0.12;
 
 export interface WorthInput {
-  band: number | null;
+  band: "Low" | "Medium" | "High" | null;
   calls: number;
   unanswered: number;
   refusals: number;
@@ -41,12 +41,12 @@ export interface WorthResult {
   why: string;
 }
 
-const BASE: Record<number, number> = { 1: 0.4, 2: 0.45, 3: 0.5, 4: 0.56, 5: 0.6, 6: 0.7, 7: 0.76, 8: 0.82, 9: 0.87, 10: 0.9 };
+const BASE: Record<string, number> = { Low: 0.4, Medium: 0.62, High: 0.85 };
 
 export function worthScore(x: WorthInput): WorthResult {
   const factors: WorthFactor[] = [];
   const base = x.band == null ? 0.6 : BASE[x.band] ?? 0.6;
-  factors.push({ label: x.band == null ? "Not scored: book average" : `Propensity band P${x.band}`, effect: base });
+  factors.push({ label: x.band == null ? "Not scored: book average" : `${x.band} propensity`, effect: base });
   if (x.refusals) factors.push({ label: `${x.refusals} refusal${x.refusals > 1 ? "s" : ""} on calls`, effect: -0.06 * x.refusals });
   if (x.unanswered) factors.push({ label: `${x.unanswered} call${x.unanswered > 1 ? "s" : ""} not answered`, effect: -0.03 * Math.min(x.unanswered, 5) });
   if (x.unpaidLinks) factors.push({ label: `${x.unpaidLinks} payment link${x.unpaidLinks > 1 ? "s" : ""} not paid`, effect: -0.02 * Math.min(x.unpaidLinks, 4) });

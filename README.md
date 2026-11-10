@@ -43,26 +43,49 @@ For a faster build to demo from: `npm run build` then `npm run preview`.
 
 ## The booth demo
 
-Sign in as the Ops lead, open **Import due list**, press **Four booth scenarios**, then **Check and stage** and **Start**. Each card plays its story when you press Run:
+Sign in as the Ops lead, open **Import due list**, press **Booth use cases**, then **Check and stage** and **Start**.
 
-| Scenario | Customer | What it shows |
-| --- | --- | --- |
-| A | Sunil Kapoor, P2, Hindi, T-80 | Voice call, disposition read from the call, the payment link on WhatsApp as the next step, paid |
-| B | Meera Iyer, P8, T-14 | WhatsApp first, no payment in 2 days, a second WhatsApp on the same channel, paid |
-| C | Farhan Ali, P4, T-13 | Two WhatsApp messages unpaid, the channel switches to a call, an explanation call, paid on the link |
-| D | Kiran Rao, P1, Grace day 4 | Two refusals; the Worth Pursuing Model drops below 25% and hands the case to the variable-payout vendor |
+| # | Customer | Propensity | What it shows | Live |
+| --- | --- | --- | --- | --- |
+| 1 | Sunil Kapoor, T-80 | Low | Renewal call, the customer promises, the disposition is read from the call, the payment link goes on WhatsApp, paid | Yes |
+| 2a | Farhan Ali, T-76 | Low | Renewal call, the customer is not convinced, a product explanation call follows, the customer agrees, link on WhatsApp, paid | Yes |
+| 2b | Meera Iyer, T-14 | Medium | WhatsApp with the link, no payment in 2 days, a second WhatsApp, still unpaid so a reminder call, promise, link resent, paid | Yes |
+| 3 | Arjun Nair, T-13 | High | Digital only: WhatsApp, a second WhatsApp, paid with no call | No |
+| 4 | Kiran Rao, Grace day 4 | Low | Two refusals; the Worth Pursuing Model drops below 25% and hands the case to the variable-payout vendor | No |
 
-The staging table and the "Same step, different words" table show which approved script each customer gets and why. On a workflow page, **Show highlights** pins the six steps worth pointing at. Signed in as the Head of Persistency, **Monthly review** has the leadership pack: by channel and bank partner, propensity bands, ticket size, calling outcomes, autopay cancellations, complaints, replacement sales, WhatsApp and app adoption, and the reporting-block calendar. **Insurer file format** on Import due list loads a policy admin export as it is.
+The staging table and the "Same step, different words" table show which approved script each customer gets and why. On a workflow page, **Show highlights** pins the steps worth pointing at. Signed in as the Head of Persistency, the Executive dashboard has **Ask the data** (four set questions answered from the policy book) and **Monthly review** has the leadership pack.
 
-## Placing real calls and WhatsApp messages
+## Live calls and WhatsApp
 
-By default every call and message is simulated in the browser. To send them for real, set an address in a `.env.local` file at the project root:
+By default every step is simulated. To place real calls and messages for use cases 1, 2a and 2b, start the app with the address of the voice and WhatsApp platform:
 
+```sh
+DISPATCH_URL=https://platform.example.com/demo/dispatch DISPATCH_TOKEN=secret npm run dev
 ```
-VITE_DISPATCH_URL=http://localhost:8787/dispatch
+
+On Windows PowerShell: `$env:DISPATCH_URL="https://..."; npm run dev`.
+
+The board then shows **Live**. Type the visitor's phone number on the card, press **Place the call**, and the server forwards the request to `DISPATCH_URL`. The platform calls back `/api/live/result` with the disposition and transcript, and the workflow moves to the next step on its own. The WhatsApp link opens a demo payment page (`/pay/<policy>`); pressing Pay there moves the policy to Renewed. No money is taken.
+
+To try the loop without the real platform, run the mock in a second terminal:
+
+```sh
+node scripts/mock-platform.mjs
+DISPATCH_URL=http://localhost:8787/dispatch npm run dev
 ```
 
-Each call or message step then POSTs one JSON action to that address. The payload and the result the platform sends back are in `docs/dispatch-contract.md`.
+The full contract (request, callback, disposition codes) is in `docs/dispatch-contract.md`.
+
+### Hosting the live demo
+
+The live loop keeps results in the server's memory, so it needs one long-running Node process:
+
+```sh
+NITRO_PRESET=node-server npm run build
+DISPATCH_URL=... node .output/server/index.mjs     # serves on port 3000; set PORT to change
+```
+
+The phone that receives the WhatsApp must be able to open the app's address, so host it on a public URL (any VM, Render, Railway or Fly.io).
 
 ## Built with
 

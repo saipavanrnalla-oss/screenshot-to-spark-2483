@@ -33,8 +33,8 @@ export interface DueRow {
   dueDate: string;
   premiumsPaid: number;
   autopay: Autopay;
-  /** P1 lowest propensity to pay to P10 highest; null when not scored. */
-  band: number | null;
+  /** The insurer's propensity to pay; null when not scored. */
+  band: Propensity | null;
   lastYear: string;
   channel: string;
   branch: string;
@@ -63,7 +63,7 @@ export const FILE_COLUMNS: { key: string; label: string; required: boolean; alia
   { key: "issue_date", label: "Issue date", required: false, aliases: ["effective_date", "risk_commencement"], example: "2026-01-14" },
   { key: "product", label: "Product type", required: false, aliases: ["plan_type", "product_category"], example: "Traditional" },
   { key: "plan", label: "Plan name", required: false, aliases: ["product_name"], example: "Assured Savings Plan" },
-  { key: "propensity_band", label: "Propensity band (P1 to P10)", required: false, aliases: ["band", "score"], example: "P2" },
+  { key: "propensity_band", label: "Propensity (Low, Medium, High)", required: false, aliases: ["band", "score", "propensity"], example: "Low" },
   { key: "autopay", label: "Autopay", required: false, aliases: ["mandate", "mandate_type"], example: "None" },
   { key: "last_year_payment", label: "Last year's payment", required: false, aliases: ["payment_history"], example: "" },
   { key: "language", label: "Language", required: false, aliases: [], example: "Hindi" },
@@ -104,28 +104,21 @@ const money = (x: string) => Number(x.replace(/[^\d.]/g, "")) || 0;
 
 const HEADER = "policy_number,customer_name,phone,due_date,mode,premium,premiums_paid,issue_date,product,plan,propensity_band,autopay,last_year_payment,language,channel,branch,age,occupation";
 
-/** The four booth scenarios. Each row plays a set story when the operator leaves the answer to the customer. */
+/** The booth file: three live use cases (real call and WhatsApp when a dispatch address is set) and two shown as simulations. */
 export const SAMPLE_FILE = [
   HEADER,
-  "SLI02409101,Sunil Kapoor,+919800000001,2027-01-16,Annual,36000,1,2026-01-16,Traditional,Assured Savings Plan,P2,None,,Hindi,Bancassurance,Lucknow Main,44,Self-employed",
-  "SLI02409102,Meera Iyer,+919800000002,2026-11-11,Annual,48000,1,2025-11-11,ULIP,Wealth Builder,P8,None,,English,Agency,Chennai Central,38,Salaried",
-  "SLI02409103,Farhan Ali,+919800000003,2026-11-10,Annual,30000,1,2025-11-10,Traditional,Assured Savings Plan,P4,None,,English,Bancassurance,Pune Camp,35,Salaried",
-  "SLI02409104,Kiran Rao,+919800000004,2026-10-24,Annual,24000,1,2025-10-24,Traditional,Family Income Plan,P1,None,,Hindi,Agency,Nagpur East,41,Self-employed",
+  "SLI02409101,Sunil Kapoor,+919800000001,2027-01-16,Annual,36000,1,2026-01-16,Traditional,Assured Savings Plan,Low,None,,English,Bancassurance,Lucknow Main,44,Self-employed",
+  "SLI02409102,Farhan Ali,+919800000002,2027-01-12,Annual,30000,1,2026-01-12,Traditional,Assured Savings Plan,Low,None,,English,Agency,Pune Camp,35,Salaried",
+  "SLI02409103,Meera Iyer,+919800000003,2026-11-11,Annual,48000,1,2025-11-11,ULIP,Wealth Builder,Medium,None,,English,Agency,Chennai Central,38,Salaried",
+  "SLI02409104,Arjun Nair,+919800000004,2026-11-10,Annual,42000,1,2025-11-10,ULIP,Wealth Builder,High,None,,English,Online,Kochi,33,Salaried",
+  "SLI02409105,Kiran Rao,+919800000005,2026-10-24,Annual,24000,1,2025-10-24,Traditional,Family Income Plan,Low,None,,Hindi,Agency,Nagpur East,41,Self-employed",
 ].join("\n");
 
-/** The booth scenarios plus an auto-debit 25th-month policy and an HNI policy. */
+/** The booth file plus an auto-debit 25th-month policy and an HNI policy. */
 export const BOOTH_FILE = [
   SAMPLE_FILE,
-  "SLI02409105,Ramesh Yadav,+919800000005,2026-11-08,Quarterly,9000,8,2024-11-08,Traditional,Family Income Plan,,Bank auto-debit,In the Grace Period,Hindi,Bancassurance,Patna North,61,Farmer",
-  "SLI02409106,Kavita Shah,+919800000006,2026-10-20,Annual,260000,1,2025-10-20,ULIP,Wealth Builder,P4,None,,English,Agency,Mumbai Central,52,Business owner",
-].join("\n");
-
-/** The insurer's own due-list layout, as exported from the policy admin system. */
-export const INSURER_FORMAT_FILE = [
-  "SL,Policy Number,Effective date,Due Date,Frequency,Premium,Suspense Balance,Net collectable premium,AFYP,Product Name,Product Category,PPT,PT,PO Name,PI Name,Policy Status,PO Address,State,Contact Number,Email-ID",
-  "1,SLI02411201,14-Nov-25,14-Nov-26,Annual,52000,0,52000,52000,Wealth Builder,ULIP,10,15,Anjali Desai,Anjali Desai,Premium due,\"12 MG Road, Pune\",Maharashtra,9820000101,anjali.d@example.com",
-  "2,SLI02411202,05-Nov-25,05-Nov-26,Annual,28000,6000,22000,28000,Assured Savings Plan,Traditional,12,20,Rakesh Gupta,Rakesh Gupta,Premium due,\"4 Civil Lines, Kanpur\",Uttar Pradesh,9820000102,",
-  "3,SLI02411203,20-Oct-25,20-Oct-26,Half-yearly,18000,0,18000,36000,Family Income Plan,Traditional,10,20,Sneha Kulkarni,Om Kulkarni,Grace,\"7 Shivaji Nagar, Nashik\",Maharashtra,9820000103,sneha.k@example.com",
+  "SLI02409106,Ramesh Yadav,+919800000006,2026-11-08,Quarterly,9000,8,2024-11-08,Traditional,Family Income Plan,,Bank auto-debit,In the Grace Period,Hindi,Bancassurance,Patna North,61,Farmer",
+  "SLI02409107,Kavita Shah,+919800000007,2026-10-20,Annual,260000,1,2025-10-20,ULIP,Wealth Builder,Medium,None,,English,Agency,Mumbai Central,52,Business owner",
 ].join("\n");
 
 /** What the customer does at a step: a call answer, or what happens after a message. */
@@ -135,28 +128,48 @@ export interface Story {
   code: string;
   title: string;
   shows: string;
+  /** Live use cases place a real call and send a real WhatsApp when a dispatch address is set. */
+  live: boolean;
   /** Keyed by step id, or step id and visit ("rehit#2"). */
   beats: Record<string, StoryBeat>;
 }
 
 export const BOOTH_STORIES: Record<string, Story> = {
   SLI02409101: {
-    code: "A", title: "Call first, then the link on WhatsApp", shows: "Voice call, disposition read from the call, next step on WhatsApp, paid",
+    code: "1", live: true, title: "Low propensity: call, promise, payment link on WhatsApp",
+    shows: "The renewal call follows the Low propensity script. The customer promises to pay, the disposition is read from the call, and the next step sends the payment link on WhatsApp",
     beats: { early: "Will pay", elink: "Pays on the link" },
   },
   SLI02409102: {
-    code: "B", title: "WhatsApp first, nudged again on WhatsApp", shows: "Higher band gets messages, no call. No payment in 2 days, so a second WhatsApp goes on the same channel",
-    beats: { link15: "No reply", link15b: "Pays on the link" },
+    code: "2a", live: true, title: "Low propensity: not convinced, explanation call, then the link",
+    shows: "The customer is not convinced on the first call. A product explanation call follows within minutes, the customer agrees, and the link goes on WhatsApp",
+    beats: { early: "Not convinced", explain1: "Will pay", elink: "Pays on the link" },
   },
   SLI02409103: {
-    code: "C", title: "No reply on WhatsApp, so a call", shows: "Two WhatsApp messages unpaid, the channel switches to a call, the customer asks for an explanation, then pays on the link",
-    beats: { link15: "No reply", link15b: "No reply", call15: "Wants an explanation", ptp2: "Pays on the link" },
+    code: "2b", live: true, title: "Medium propensity: WhatsApp first, nudge, then a call",
+    shows: "WhatsApp with the link first. No payment in 2 days, so a second WhatsApp. Still unpaid, so a reminder call; the customer promises and the link is resent",
+    beats: { link15: "No reply", link15b: "No reply", call15: "Will pay", ptp2: "Pays on the link" },
   },
   SLI02409104: {
-    code: "D", title: "When to stop calling", shows: "Two refusals in the Grace Period. The Worth Pursuing Model drops below 25% and hands the case to the variable-payout vendor",
+    code: "3", live: false, title: "High propensity: digital only",
+    shows: "WhatsApp with the link, a second WhatsApp after 2 days, paid without a call",
+    beats: { link15: "No reply", link15b: "Pays on the link" },
+  },
+  SLI02409105: {
+    code: "4", live: false, title: "When to stop calling",
+    shows: "Two refusals in the Grace Period. The Worth Pursuing Model drops below 25% and hands the case to the variable-payout vendor",
     beats: { "rehit#1": "Refused", "rehit#2": "Refused", vres: "Agrees with the vendor" },
   },
 };
+
+/** The insurer's own due-list layout, as exported from the policy admin system. */
+export const INSURER_FORMAT_FILE = [
+  "SL,Policy Number,Effective date,Due Date,Frequency,Premium,Suspense Balance,Net collectable premium,AFYP,Product Name,Product Category,PPT,PT,PO Name,PI Name,Policy Status,PO Address,State,Contact Number,Email-ID",
+  "1,SLI02411201,14-Nov-25,14-Nov-26,Annual,52000,0,52000,52000,Wealth Builder,ULIP,10,15,Anjali Desai,Anjali Desai,Premium due,\"12 MG Road, Pune\",Maharashtra,9820000101,anjali.d@example.com",
+  "2,SLI02411202,05-Nov-25,05-Nov-26,Annual,28000,6000,22000,28000,Assured Savings Plan,Traditional,12,20,Rakesh Gupta,Rakesh Gupta,Premium due,\"4 Civil Lines, Kanpur\",Uttar Pradesh,9820000102,",
+  "3,SLI02411203,20-Oct-25,20-Oct-26,Half-yearly,18000,0,18000,36000,Family Income Plan,Traditional,10,20,Sneha Kulkarni,Om Kulkarni,Grace,\"7 Shivaji Nagar, Nashik\",Maharashtra,9820000103,sneha.k@example.com",
+].join("\n");
+
 
 export interface FileProblem {
   line: number;
@@ -180,19 +193,18 @@ function splitCsv(line: string): string[] {
   return out.map((c) => c.trim());
 }
 
-function parseBand(v: string): number | null {
+/** Low, Medium or High. A numeric score (1 to 10) from an older file is grouped into the same three. */
+function parseBand(v: string): Propensity | null {
   const s = v.trim().toLowerCase();
   if (!s) return null;
-  const m = s.match(/^p?\s*(\d{1,2})$/);
+  const m = s.match(/^[a-z]?\s*(\d{1,2})$/);
   if (m) {
     const n = Number(m[1]);
-    return n >= 1 && n <= 10 ? n : null;
+    return n < 1 || n > 10 ? null : n <= 3 ? "Low" : n <= 7 ? "Medium" : "High";
   }
-  if (s.startsWith("lowest")) return 1;
-  if (s.startsWith("low")) return 4;
-  if (s.startsWith("moderate")) return 6;
-  if (s.startsWith("highest")) return 10;
-  if (s.startsWith("high")) return 8;
+  if (s.startsWith("l")) return "Low";
+  if (s.startsWith("m")) return "Medium";
+  if (s.startsWith("h")) return "High";
   return null;
 }
 
@@ -309,7 +321,8 @@ export interface Staged {
 
 const annual = (r: DueRow) => r.premium * PER_YEAR[r.mode];
 export const graceDays = (m: Mode) => (m === "Monthly" ? 15 : 30);
-export const bandLabel = (b: number | null) => (b == null ? "Not scored" : `P${b}`);
+export type Propensity = "Low" | "Medium" | "High";
+export const bandLabel = (b: Propensity | null) => (b == null ? "Not scored" : `${b} propensity`);
 
 export function segmentsOf(r: DueRow): string[] {
   const s: string[] = [];
@@ -335,8 +348,8 @@ export function stagePolicy(r: DueRow, now: Date = NOW): Staged {
   const g = graceDays(r.mode);
   const reasons: string[] = [];
   const segment = segmentsOf(r);
-  const low = r.band != null && r.band <= 5;
-  const bandGroup: Staged["bandGroup"] = r.band == null ? "Unscored" : low ? "Low propensity" : "High propensity";
+  const low = r.band === "Low";
+  const bandGroup: Staged["bandGroup"] = r.band == null ? "Unscored" : `${r.band} propensity`;
   const premiumWord = `${r.premiumsPaid} ${r.mode.toLowerCase()} premium${r.premiumsPaid === 1 ? "" : "s"} paid`;
 
   let workflowId: Staged["workflowId"] = null;
@@ -395,13 +408,14 @@ export function stagePolicy(r: DueRow, now: Date = NOW): Staged {
     if (workflowId === "R1") {
       if (low && d > 30) {
         entry = "early";
-        reasons.push(`${bandLabel(r.band)} is in the lower propensity bands: early service call`);
+        reasons.push("Low propensity: calls start with the early service call at T-90");
       } else if (d > 45) entry = "t60";
       else if (d > 30) entry = "t45";
       else if (d > 15) entry = "rpn";
       else if (d > 0) entry = "ad";
       else entry = r.autopay === "None" ? "t0" : "debit";
-      if (!low && d > 30) reasons.push(`${bandLabel(r.band)}${r.band == null ? "" : " is in the higher propensity bands"}: messages first, no early call`);
+      if (r.band === "Medium") reasons.push("Medium propensity: WhatsApp first, a call at T-15 if still unpaid");
+      if (r.band === "High") reasons.push("High propensity: digital only, WhatsApp with the payment link; a call only in the Grace Period");
     } else {
       const seg = r8Segment(r);
       reasons.push(`Last year: ${r.lastYear || "paid on time"}, so the segment is "${seg}"`);
@@ -410,7 +424,7 @@ export function stagePolicy(r: DueRow, now: Date = NOW): Staged {
       else if (d > 0) entry = "ad";
       else entry = r.autopay === "None" ? "t0" : "debit";
     }
-    if (d <= 15 && d > 0) reasons.push(r.autopay === "None" ? `Not on autopay: payment link on WhatsApp first, a call only if it is not paid` : `${r.autopay} registered: balance check before the debit`);
+    if (d <= 15 && d > 0 && r.autopay !== "None") reasons.push(`${r.autopay} registered: balance check before the debit`);
   } else if (stage === "Grace Period") {
     entry = "rehit";
   } else {
@@ -423,7 +437,7 @@ export function stagePolicy(r: DueRow, now: Date = NOW): Staged {
 
 /* ---------------- Run ---------------- */
 
-export const REPLIES = ["As the customer would", "Will pay", "Wants an explanation", "Not reached", "Refused", "Needs a person", "Pays now"] as const;
+export const REPLIES = ["As the customer would", "Will pay", "Not convinced", "Not reached", "Refused", "Needs a person", "Pays now"] as const;
 export type Reply = (typeof REPLIES)[number];
 
 export type EventKind = "file" | "stage" | "system" | "whatsapp" | "call" | "payment" | "brief" | "person" | "vendor" | "wait" | "decision" | "outcome" | "score";
@@ -443,6 +457,7 @@ export interface LiveEvent {
   transcript?: { who: "Agent" | "Customer"; text: string }[] | undefined;
   disposition?: string | undefined;
   status?: string | undefined;
+  recordingUrl?: string | undefined;
 }
 
 export interface PersonCase {
@@ -475,9 +490,60 @@ export interface RunState {
   /** Channel actions that need the real platform. */
   handoffs: Handoff[];
   story?: Story | undefined;
+  /** Live mode: a real call or WhatsApp is out and the board waits for its result. */
+  live?: LivePending | undefined;
+  /** A real result to apply at the next step, in place of the scenario or a simulated answer. */
+  liveResult?: LiveResult | undefined;
+  /** Where the customer's payment link points; the demo payment page in live mode. */
+  payLink?: string | undefined;
   calls: number;
   unanswered: number;
   unpaidLinks: number;
+}
+
+export interface LivePending {
+  requestId: string;
+  nodeId: string;
+  channel: "Voice" | "WhatsApp";
+  sentAt: string;
+  phone: string;
+}
+
+export interface LiveResult {
+  nodeId: string;
+  beat: StoryBeat;
+  disposition?: string | undefined;
+  transcript?: { who: "Agent" | "Customer"; text: string }[] | undefined;
+  recordingUrl?: string | undefined;
+}
+
+/** What the voice or WhatsApp platform sends back, as received. */
+export interface ChannelResult {
+  requestId?: string | undefined;
+  policy: string;
+  step?: string | undefined;
+  channel: "Voice" | "WhatsApp";
+  disposition?: string | undefined;
+  subDisposition?: string | undefined;
+  transcript?: { who: "Agent" | "Customer"; text: string }[] | undefined;
+  recordingUrl?: string | undefined;
+  delivered?: boolean | undefined;
+  read?: boolean | undefined;
+  paid?: boolean | undefined;
+  at: string;
+}
+
+/** Maps a platform disposition (the insurer's disposition codes) to the branch the workflow takes. */
+export function beatFromResult(r: ChannelResult): StoryBeat {
+  if (r.channel === "WhatsApp") return r.paid ? "Pays on the link" : "No reply";
+  if (r.paid) return "Pays now";
+  const d = `${r.disposition ?? ""} ${r.subDisposition ?? ""}`.toLowerCase();
+  if (/not convinced|follow.?up|upon resolution|explain|more information/.test(d)) return "Not convinced";
+  if (/promise|will pay|agreed|represent/.test(d)) return "Will pay";
+  if (/non.?contact|not reach|ringing|busy|switched off|no answer|invalid|wrong number|out of coverage/.test(d)) return "Not reached";
+  if (/do not call|meet agent|person|complaint/.test(d)) return "Needs a person";
+  if (/no intention|refus|financial|missell|mis-sell|surrender|another policy/.test(d)) return "Refused";
+  return "Not reached";
 }
 
 /** One action the real platform must take. Sent to the dispatch address when one is set. */
@@ -509,7 +575,7 @@ function ctxFor(s: RunState): ScriptContext {
 }
 
 export function ctxOf(row: DueRow, staged: Staged): ScriptContext {
-  return { band: staged.bandGroup, bandNo: row.band, segment: staged.segment, product: row.product, language: row.language };
+  return { band: staged.bandGroup, segment: staged.segment, product: row.product, language: row.language };
 }
 
 /** The variant a step will use for this customer, and why. */
@@ -520,6 +586,7 @@ export function scriptFor(row: DueRow, staged: Staged, nodeId: string): { v: Scr
 
 /** What the story says the customer does at this step, on this visit. */
 export function beatAt(s: RunState, nodeId: string, visitNo: number): StoryBeat | undefined {
+  if (s.liveResult?.nodeId === nodeId) return s.liveResult.beat;
   return s.story?.beats[`${nodeId}#${visitNo}`] ?? s.story?.beats[nodeId];
 }
 
@@ -538,7 +605,7 @@ function vars(s: RunState): Record<string, string> {
     sum_assured: `Rs ${(r.premium * PER_YEAR[r.mode] * 10).toLocaleString("en-IN")}`,
     uin: "121L000V01",
     app_link: "sample.life/app",
-    pay_link: `pay.sample.life/${r.policy.slice(-4)}`,
+    pay_link: s.payLink ?? `pay.sample.life/${r.policy.slice(-4)}`,
     mandate_link: `sample.life/enach/${r.policy.slice(-4)}`,
     opt_out: "sample.life/stop",
     helpline: "1800 000 0000",
@@ -550,6 +617,15 @@ function vars(s: RunState): Record<string, string> {
 /** A script's text filled in for this customer, as it would be sent or spoken. */
 export function wordsFor(s: RunState, text: string): string {
   return fillScript(text, vars(s));
+}
+
+/** The channel action the current step would send, for live dispatch. Undefined for steps with no customer contact. */
+export function contactFor(s: RunState, node: WfNode): { channel: "Voice" | "WhatsApp"; scriptId?: string | undefined; scriptName?: string | undefined; text: string } | undefined {
+  const t = node.type;
+  const call = t === "agent.voice" || (t === "agent.payment" && /call/i.test(node.label));
+  if (!call && t !== "agent.message" && t !== "agent.payment") return undefined;
+  const sc = scriptOf(s, node.id) ?? scriptOf(s, call ? "call15" : /link/i.test(node.label) ? "link15" : "t0");
+  return { channel: call ? "Voice" : "WhatsApp", scriptId: sc?.v.id, scriptName: sc?.v.name, text: sc?.text ?? node.label };
 }
 
 function scriptOf(s: RunState, nodeId: string) {
@@ -575,7 +651,7 @@ function messageResult(s: RunState, node: WfNode, reply: Reply, beat: StoryBeat 
   const x = hash(s.id + node.id + (s.visits[node.id] ?? 0));
   if (/link/i.test(node.label) && reply === "As the customer would" && !beat) {
     const promised = PROMISED.includes(s.lastDisposition ?? "");
-    if (x < (promised ? 75 : s.staged.bandGroup === "High propensity" ? 45 : 20)) return "Pays";
+    if (x < (promised ? 75 : s.staged.bandGroup === "High propensity" ? 50 : s.staged.bandGroup === "Medium propensity" ? 35 : 20)) return "Pays";
   }
   return x < 70 ? "Read" : "No reply";
 }
@@ -585,9 +661,10 @@ const CONTACT = (t: string) => t === "agent.message" || t === "agent.voice" || t
 /** The disposition a simulated call returns when the operator leaves it to the customer. */
 function naturalReply(s: RunState, nodeId: string): Exclude<Reply, "As the customer would"> {
   const x = hash(s.row.policy + nodeId + (s.visits[nodeId] ?? 0));
+  if (nodeId.startsWith("explain")) return x < 70 ? "Will pay" : "Refused";
   const low = s.staged.bandGroup === "Low propensity";
-  if (low) return x < 35 ? "Will pay" : x < 50 ? "Wants an explanation" : x < 75 ? "Not reached" : x < 92 ? "Refused" : "Needs a person";
-  return x < 60 ? "Will pay" : x < 70 ? "Wants an explanation" : x < 88 ? "Not reached" : x < 96 ? "Refused" : "Needs a person";
+  if (low) return x < 35 ? "Will pay" : x < 50 ? "Not convinced" : x < 75 ? "Not reached" : x < 92 ? "Refused" : "Needs a person";
+  return x < 60 ? "Will pay" : x < 70 ? "Not convinced" : x < 88 ? "Not reached" : x < 96 ? "Refused" : "Needs a person";
 }
 
 function transcriptFor(s: RunState, opening: string, reply: Exclude<Reply, "As the customer would">): LiveEvent["transcript"] {
@@ -601,11 +678,11 @@ function transcriptFor(s: RunState, opening: string, reply: Exclude<Reply, "As t
       say("Yes, I will pay. Please send the link.", "Haan, main bhar dunga. Link bhej dijiye.");
       ag("Thank you. On which date shall I note it?", "Dhanyavaad. Kis tareekh ko note karoon?");
       say("This week, by Friday.", "Isi hafte, Friday tak.");
-      ag("Noted. The link is on your WhatsApp now.", "Note kar liya. Link aapke WhatsApp par bhej diya hai.");
+      ag("Noted. I am sending the secure payment link to your WhatsApp now.", "Note kar liya. Surakshit payment link abhi aapke WhatsApp par bhej rahi hoon.");
       break;
-    case "Wants an explanation":
-      say("Before I pay I want to understand what I get from this policy.", "Pay karne se pehle samajhna hai ki is policy se mujhe kya milega.");
-      ag("Of course. Let me take you through the benefits.", "Bilkul, main aapko benefits samjhati hoon.");
+    case "Not convinced":
+      say("I am not convinced. I was told I only had to pay once, and I don't see what I get by paying again.", "Mujhe yakeen nahi hai. Mujhe bataya gaya tha ek hi baar bharna hai, dobara bharne se kya milega?");
+      ag("I understand. It may be that you did not get complete information at the time. A colleague will call you in a few minutes to take you through the benefits of your plan.", "Main samajh sakti hoon. Ho sakta hai us samay poori jaankari na mili ho. Kuch hi minute mein ek colleague aapko plan ke fayde samjhane ke liye call karegi.");
       break;
     case "Refused":
       say("I don't want to continue. Money is tight right now.", "Abhi paise nahi hain, main continue nahi karna chahta.");
@@ -625,7 +702,7 @@ function transcriptFor(s: RunState, opening: string, reply: Exclude<Reply, "As t
 const dispositionWord: Record<Exclude<Reply, "As the customer would">, string> = {
   "Will pay": "Promise to pay",
   "Pays now": "Paid on the call",
-  "Wants an explanation": "Explained, will pay",
+  "Not convinced": "Follow-up: not convinced",
   "Not reached": "Not reached",
   Refused: "No intention to pay",
   "Needs a person": "Asked for a person",
@@ -645,11 +722,16 @@ function lowerChoice(s: RunState, node: WfNode, labels: string[], reply: Reply):
   const disp = s.lastDisposition;
   switch (node.id) {
     case "hni": return s.row.premium * PER_YEAR[s.row.mode] > 200_000 ? "Yes" : "No";
-    case "band": return s.staged.bandGroup === "Low propensity" ? "P1 to P5" : "P6 to P10";
+    case "band": return s.staged.bandGroup === "Low propensity" ? "Low" : s.staged.bandGroup === "High propensity" ? "High" : "Medium";
+    case "bandc": return s.staged.bandGroup === "High propensity" ? "High: digital only" : "Low or Medium";
     case "seg": return r8Segment(s.row);
+    case "ex1": case "ex2":
+      return disp === "Promise to pay" || disp === "Explained, will pay" || disp === "Paid on the call" ? "Will pay" : "Still not convinced";
     case "out1":
+      if (disp === "Follow-up: not convinced" && has("Not convinced")) return "Not convinced";
       return disp === "Promise to pay" || disp === "Explained, will pay" || disp === "Paid on the call" ? "Will pay" : disp === "Not reached" ? "Not reached" : disp === "No intention to pay" ? "Refused" : "Raised an issue";
     case "out2":
+      if (disp === "Follow-up: not convinced" && has("Not convinced")) return "Not convinced";
       return disp === "Promise to pay" || disp === "Explained, will pay" || disp === "Paid on the call" ? "Will pay" : disp === "Not reached" ? "Not reached" : disp === "No intention to pay" ? "Refused" : "Callback asked";
     case "resp":
       return disp === "Promise to pay" || disp === "Explained, will pay" || disp === "Paid on the call" ? "Will pay" : disp === "No intention to pay" ? "Refuses" : disp === "Asked for a person" ? "Needs a person" : "No response";
@@ -725,10 +807,14 @@ export function runStep(graph: WfGraph, prev: RunState, replyIn: Reply = "As the
       kind: "call", nodeId: node.id, title: `${node.label}: ${dispositionWord[actual]}`, by: who,
       detail: actual === "Not reached" ? `Called ${s.row.phone}, no answer` : `Called ${s.row.phone}, ${2 + (hash(s.id + node.id) % 4)} min ${10 + (hash(node.id + s.id) % 50)} s, ${s.row.language}. Disposition read from the call: ${dispositionWord[actual]}`,
       ...(sc ? { script: sc.ref, text: sc.text } : {}),
-      transcript: transcriptFor(s, opening, actual), disposition: dispositionWord[actual],
+      transcript: s.liveResult?.nodeId === node.id && s.liveResult.transcript?.length ? s.liveResult.transcript : transcriptFor(s, opening, actual),
+      disposition: s.liveResult?.nodeId === node.id && s.liveResult.disposition ? s.liveResult.disposition : dispositionWord[actual],
+      ...(s.liveResult?.nodeId === node.id ? { status: "Live call", recordingUrl: s.liveResult.recordingUrl } : {}),
     });
     s.handoffs.push({ at: node.id, channel: "Voice", scriptId: sc?.v.id, text: sc?.text, action: `Place a call with script ${sc?.v.id ?? "default"}, return disposition and transcript` });
-    if (actual === "Wants an explanation") {
+    const nextDecision = graph.edges.find((e) => e.from === s.nodeId)?.to;
+    const explicitExplain = graph.edges.some((e) => e.from === nextDecision && e.label === "Not convinced");
+    if (actual === "Not convinced" && !explicitExplain) {
       const ex = scriptOf(s, "explain");
       s.calls += 1;
       push({
@@ -747,7 +833,7 @@ export function runStep(graph: WfGraph, prev: RunState, replyIn: Reply = "As the
       s.paid = true;
       push({ kind: "payment", nodeId: node.id, title: `Paid Rs ${s.row.premium.toLocaleString("en-IN")} by UPI on the link`, by: "Payment gateway", status: "Paid" });
     }
-    s.lastDisposition = actual === "Wants an explanation" ? "Explained, will pay" : dispositionWord[actual];
+    s.lastDisposition = actual === "Not convinced" && !explicitExplain ? "Explained, will pay" : dispositionWord[actual];
     if (actual === "Refused") s.refusals += 1;
     if (actual === "Needs a person") s.reason = "Mis-selling";
     else if (actual === "Refused") s.reason = "Financial";
@@ -801,6 +887,7 @@ export function runStep(graph: WfGraph, prev: RunState, replyIn: Reply = "As the
     push({ kind: "system", nodeId: node.id, title: node.label, by: who });
   }
 
+  if (s.liveResult?.nodeId === node.id) s.liveResult = undefined;
   const edges = out.get(node.id) ?? [];
   let next: WfEdge | undefined;
   if (edges.length === 1) next = edges[0];

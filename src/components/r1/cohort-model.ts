@@ -1,5 +1,5 @@
 import { addMonths, hashId, NOW, requiredInstalment, type Policy, type PersistencyPeriod } from "@/data/persistency";
-import { branchOf, hasMandate } from "@/data/persistency/r1/common";
+import { branchOf, hasMandate, propensityOf } from "@/data/persistency/r1/common";
 
 /** Targets the Head of Persistency is measured on. Plan values, not results. */
 export const TARGETS: Record<13 | 25, number> = { 13: 0.88, 25: 0.8 };
@@ -35,7 +35,7 @@ export function cutValue(p: Policy, c: Cut): string {
     case "Region": return p.region;
     case "Branch": return branchOf(p);
     case "Seller": return sellerOf(p);
-    case "Propensity band": return p.insurerCohort;
+    case "Propensity band": { const x = propensityOf(p); return x ? `${x} propensity` : "Not scored"; }
     case "Payment mode": return p.paymentMode;
     case "Autopay": return hasMandate(p) ? "On autopay" : "Not on autopay";
     case "Customer profile": return p.customerProfile;

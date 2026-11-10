@@ -173,24 +173,22 @@ function build(section: SectionId, rows: ReviewRowKey[], block: Policy[], period
       };
     }
     case "band": {
-      const lowOf = (ps: Policy[]) => ps.filter((p) => { const b = bandOf(p); return b != null && b <= 5; });
-      const highOf = (ps: Policy[]) => ps.filter((p) => { const b = bandOf(p); return b != null && b > 5; });
-      const allLow = agg(lowOf(block), period);
-      const allHigh = agg(highOf(block), period);
+      const LEVELS = ["Low", "Medium", "High"] as const;
+      const of = (ps: Policy[], l: (typeof LEVELS)[number]) => ps.filter((p) => bandOf(p) === l);
+      const allBy = LEVELS.map((l) => agg(of(block, l), period));
       const out = rows.map((r) => {
         const ps = per(r);
         const a = agg(ps, period);
-        const lo = agg(lowOf(ps), period);
-        const hi = agg(highOf(ps), period);
-        return { label: r.key, level: r.level, total: r.total, cells: [crore(a.premium), pct(share(lo.premium, a.premium), 0), lo.premium ? rateCell(lo.rate, allLow.rate) : null, hi.premium ? rateCell(hi.rate, allHigh.rate) : null, rateCell(a.rate, all.rate)] as Cell[] };
+        const by = LEVELS.map((l) => agg(of(ps, l), period));
+        return { label: r.key, level: r.level, total: r.total, cells: [crore(a.premium), ...by.map((x) => pct(share(x.premium, a.premium), 0)), ...by.map((x, i) => (x.premium ? rateCell(x.rate, allBy[i]!.rate) : null)), rateCell(a.rate, all.rate)] as Cell[] };
       });
-      const lowRows = worst((ps) => agg(lowOf(ps), period).rate).filter((x) => x.v > 0 && x.v < allLow.rate - 0.03).map((x) => x.key);
+      const lowRows = worst((ps) => agg(of(ps, "Low"), period).rate).filter((x) => x.v > 0 && x.v < allBy[0]!.rate - 0.03).map((x) => x.key);
       return {
-        groups: [{ label: "", span: 1 }, { label: "Contribution", span: 1 }, { label: "Persistency", span: 3 }],
-        columns: ["Block", "P1 to P5 share", "P1 to P5", "P6 to P10", "Total"], rows: out,
+        groups: [{ label: "", span: 1 }, { label: "Share of block", span: 3 }, { label: "Persistency", span: 4 }],
+        columns: ["Block", "Low", "Medium", "High", "Low ", "Medium ", "High ", "Total"], rows: out,
         highlights: [
-          `P6 to P10 persist at ${pct(allHigh.rate, 0)} and make up ${pct(share(allHigh.premium, all.premium), 0)} of the block; P1 to P5 persist at ${pct(allLow.rate, 0)}.`,
-          ...(lowRows.length ? [`P1 to P5 persistency is lowest in ${lowRows.slice(0, 3).join(", ")}.`] : []),
+          `High propensity persists at ${pct(allBy[2]!.rate, 0)} and Medium at ${pct(allBy[1]!.rate, 0)}; Low propensity persists at ${pct(allBy[0]!.rate, 0)} with ${pct(share(allBy[0]!.premium, all.premium), 0)} of the block.`,
+          ...(lowRows.length ? [`Low propensity persistency is weakest in ${lowRows.slice(0, 3).join(", ")}.`] : []),
         ],
       };
     }

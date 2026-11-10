@@ -7,6 +7,7 @@
 import { addMonths, hashId, NOW, type Policy, type PersistencyPeriod } from "@/data/persistency";
 import { inBlock, persisted } from "@/components/r1/cohort-model";
 import { persistencySeries, type SeriesFilter } from "@/data/persistency/r1/reports";
+import { propensityOf } from "@/data/persistency/r1/common";
 
 export type ProductView = "All" | "ULIP" | "Traditional";
 
@@ -71,13 +72,8 @@ export function agg(ps: Policy[], period: PersistencyPeriod): Agg {
 
 /* ---------- Propensity bands ---------- */
 
-const COHORT_BASE: Record<string, number> = { "Lowest propensity": 1, "Low propensity": 3, "Moderate propensity": 5, "High propensity": 7, "Highest propensity": 9 };
-
-/** P1 to P10 from the insurer's five propensity groups; null when unscored. */
-export function bandOf(p: Policy): number | null {
-  const b = COHORT_BASE[p.insurerCohort];
-  return b == null ? null : b + (h(p, "band") % 2);
-}
+/** Low, Medium or High, as the review shows them; null when unscored. */
+export const bandOf = propensityOf;
 
 /* ---------- Ticket size on AFYP ---------- */
 

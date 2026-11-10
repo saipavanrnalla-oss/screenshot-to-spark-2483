@@ -24,30 +24,23 @@ export interface ScriptVariant {
 const OK = { marketing: "Approved", compliance: "Approved", legal: "Approved" } as const;
 
 export const SCRIPT_LIBRARY: ScriptVariant[] = [
-  // Early service call, T-90: P1 to P3 get a firm ask with a visit offer, P4 to P5 a lighter service call
+  // Renewal call, pre-due (T-90). Structure from the insurer's telecaller script: greeting and
+  // identification, purpose and permission, recording line, policy facts, ask the promise, date and mode.
   {
-    id: "early-p13-en", nodes: ["early"], name: "Early service call, firm ask (P1 to P3)", channel: "Voice", when: ["P1 to P3"], language: "English", version: 3, approvals: OK,
-    text: "Good morning, this is {agent} calling from Sample Life Insurance about your policy {policy}. This call is recorded for quality and training. Your next premium of {premium} is due on {due}. On which date will you pay, and by which mode? I can send a payment link on WhatsApp now, set up auto-debit, or ask your advisor to visit and collect.",
+    id: "early-low-en", nodes: ["early"], name: "Pre-due renewal call (Low propensity)", channel: "Voice", when: ["Low propensity"], language: "English", version: 3, approvals: OK,
+    text: "Good morning, this is {agent} calling on behalf of Sample Life Insurance. May I speak to {name}? This call is about your policy with us; is this a good time to talk? Before I go ahead, this call is recorded for quality and training. Your policy {policy}, {plan}, has a premium of {premium} due on {due}. Your due date is coming up, so we request you to pay on time and keep enjoying the benefits of your policy. May I confirm that you will pay by the due date? On which date, and by which mode: online, on the Sample Life app, or a cheque at a branch? I can also send a secure payment link on WhatsApp right now, and you can register auto-debit so future premiums are never missed.",
   },
   {
-    id: "early-p13-hi", nodes: ["early"], name: "Early service call, firm ask (P1 to P3)", channel: "Voice", when: ["P1 to P3"], language: "Hindi", version: 3, approvals: OK,
-    text: "Namaste, main {agent}, Sample Life Insurance se, aapki policy {policy} ke baare mein baat kar rahi hoon. Yeh call quality ke liye record ho rahi hai. Aapka agla premium {premium} {due} ko due hai. Aap kis tareekh ko aur kis mode se bharenge? Main abhi WhatsApp par payment link bhej sakti hoon, auto-debit laga sakti hoon, ya advisor ko collect karne bhej sakti hoon.",
+    id: "early-low-hi", nodes: ["early"], name: "Pre-due renewal call (Low propensity)", channel: "Voice", when: ["Low propensity"], language: "Hindi", version: 3, approvals: OK,
+    text: "Namaste, main {agent}, Sample Life Insurance ki taraf se baat kar rahi hoon. Kya meri baat {name} ji se ho rahi hai? Yeh call aapki policy ke baare mein hai; kya abhi baat karne ka sahi samay hai? Aage badhne se pehle bata doon, yeh call quality aur training ke liye record ho rahi hai. Aapki policy {policy}, {plan}, ka premium {premium} {due} ko due hai. Due date paas aa rahi hai, isliye aapse request hai ki premium samay par bharein taaki policy ke saare fayde jaari rahein. Kya aap due date tak premium bhar denge? Kis tareekh ko, aur kis mode se: online, Sample Life app se, ya branch mein cheque se? Main abhi WhatsApp par payment link bhej sakti hoon, aur aage ke premium ke liye auto-debit bhi lag sakta hai.",
   },
   {
-    id: "early-p45-en", nodes: ["early"], name: "Early service call, details check (P4 to P5)", channel: "Voice", when: ["P4 to P5"], language: "English", version: 2, approvals: OK,
-    text: "Good morning, this is {agent} from Sample Life Insurance about your policy {policy}. The call is recorded. Your premium of {premium} is due on {due}. May I confirm your alternate number and nominee, and would you like the premium to go by auto-debit so you never miss a date?",
+    id: "elink-en", nodes: ["elink"], name: "Payment link after the call", channel: "WhatsApp", when: [], language: "English", version: 2, approvals: OK,
+    text: "Hi {first}, thank you for speaking with us. As discussed on the call, here is your secure link to pay {premium} for your {plan}, policy {policy}: {pay_link}. Paying on time keeps your life cover and benefits without a break. For help, call {helpline}.",
   },
   {
-    id: "early-p45-hi", nodes: ["early"], name: "Early service call, details check (P4 to P5)", channel: "Voice", when: ["P4 to P5"], language: "Hindi", version: 2, approvals: OK,
-    text: "Namaste, main {agent}, Sample Life Insurance se. Call record ho rahi hai. Aapki policy {policy} ka premium {premium} {due} ko due hai. Kya main aapka alternate number aur nominee confirm kar loon? Kya aap auto-debit lagwana chahenge taaki koi date na chhoote?",
-  },
-  {
-    id: "elink-en", nodes: ["elink"], name: "Payment link after the promise", channel: "WhatsApp", when: [], language: "English", version: 1, approvals: OK,
-    text: "Hi {first}, thank you for speaking with us. As promised on the call, here is the link to pay {premium} for your {plan}: {pay_link}. It takes one tap with UPI or card.",
-  },
-  {
-    id: "elink-hi", nodes: ["elink"], name: "Payment link after the promise", channel: "WhatsApp", when: [], language: "Hindi", version: 1, approvals: OK,
-    text: "Namaste {first} ji, baat karne ke liye dhanyavaad. Call par jaisa tay hua, {plan} ka premium {premium} bharne ka link: {pay_link}. UPI ya card se ek tap mein.",
+    id: "elink-hi", nodes: ["elink"], name: "Payment link after the call", channel: "WhatsApp", when: [], language: "Hindi", version: 2, approvals: OK,
+    text: "Namaste {first} ji, baat karne ke liye dhanyavaad. Call par jaisa tay hua, {plan} (policy {policy}) ka premium {premium} bharne ka surakshit link: {pay_link}. Samay par bharne se aapka life cover aur saare fayde jaari rehte hain. Madad ke liye {helpline} par call karein.",
   },
   // Templates T-60, T-45, T-30, T-15, T-0
   {
@@ -75,91 +68,83 @@ export const SCRIPT_LIBRARY: ScriptVariant[] = [
     text: "Renewal Premium Notice. Policy {policy}, {plan}. Premium {premium} due on {due}. Pay online, through the app, or at any branch. Policies on auto-debit will be debited on the due date; please keep the balance ready.",
   },
   {
-    id: "link15-default", nodes: ["link15", "link7"], name: "Premium due, payment link, autopay nudge", channel: "WhatsApp", when: [], language: "English", version: 3, approvals: OK,
-    text: "Hi {first}, your {plan} premium of {premium} is due on {due}. Pay in one tap: {pay_link}. Set up auto-debit so you never miss a date: {mandate_link}. Help: {helpline}.",
+    id: "link15-default", nodes: ["link15", "link7"], name: "Premium due, payment link", channel: "WhatsApp", when: [], language: "English", version: 4, approvals: OK,
+    text: "Hi {first}, your {plan} premium of {premium} is due on {due}. Pay on time to keep your life cover and benefits without a break: {pay_link}. You can also pay and manage your policy on the Sample Life app: {app_link}. For help, call {helpline}. Thank you for choosing Sample Life Insurance.",
   },
   {
-    id: "link15-low-en", nodes: ["link15"], name: "Payment link with help options (P1 to P5)", channel: "WhatsApp", when: ["Low propensity"], language: "English", version: 2, approvals: OK,
-    text: "Hi {first}, your {plan} premium of {premium} is due on {due}. Keep your family's cover of {sum_assured} going: pay here {pay_link}. Short this month? Reply HELP and we will call you with options, or your advisor can collect a cheque.",
+    id: "link15-hi", nodes: ["link15", "link7"], name: "Premium due, payment link", channel: "WhatsApp", when: [], language: "Hindi", version: 4, approvals: OK,
+    text: "Namaste {first} ji, aapke {plan} ka premium {premium} {due} ko due hai. Samay par bharein taaki life cover aur fayde bina rukawat jaari rahein: {pay_link}. Sample Life app par bhi bhar sakte hain: {app_link}. Madad ke liye {helpline}.",
   },
   {
-    id: "link15-low-hi", nodes: ["link15"], name: "Payment link with help options (P1 to P5)", channel: "WhatsApp", when: ["Low propensity"], language: "Hindi", version: 2, approvals: OK,
-    text: "Namaste {first} ji, {plan} ka premium {premium} {due} ko due hai. Parivaar ka {sum_assured} ka cover jaari rakhein: {pay_link}. Is mahine mushkil hai? HELP likhein, hum options ke saath call karenge, ya advisor cheque le jayenge.",
+    id: "link15-low-en", nodes: ["link15"], name: "Premium due, link and help options (Low propensity)", channel: "WhatsApp", when: ["Low propensity"], language: "English", version: 3, approvals: OK,
+    text: "Hi {first}, your {plan} premium of {premium} is due on {due}. Keep your family's cover of {sum_assured} going: pay here {pay_link}. Short this month? Reply HELP and we will call you with options, such as a date within the grace period or a monthly mode.",
   },
   {
-    id: "link15-high-en", nodes: ["link15"], name: "One-tap payment link (P6 to P10)", channel: "WhatsApp", when: ["High propensity"], language: "English", version: 2, approvals: OK,
-    text: "Hi {first}, your {plan} premium of {premium} is due on {due}. Pay in one tap: {pay_link}. Turn on auto-debit and skip the reminder next year: {mandate_link}.",
+    id: "link15-med-en", nodes: ["link15"], name: "Premium due, payment link (Medium propensity)", channel: "WhatsApp", when: ["Medium propensity"], language: "English", version: 3, approvals: OK,
+    text: "Hi {first}, your {plan} premium of {premium} is due on {due}. Pay on time to keep your life cover and benefits without a break: {pay_link}. Manage your policy on the Sample Life app: {app_link}. For help, call {helpline}.",
   },
   {
-    id: "link15-hi", nodes: ["link15", "link7"], name: "Premium due, payment link, autopay nudge", channel: "WhatsApp", when: [], language: "Hindi", version: 3, approvals: OK,
-    text: "Namaste {first} ji, aapke {plan} ka premium {premium} {due} ko due hai. Ek tap mein bharein: {pay_link}. Auto-debit lagwayein taaki koi date na chhoote: {mandate_link}.",
+    id: "link15-high-en", nodes: ["link15"], name: "One-tap link and auto-debit (High propensity)", channel: "WhatsApp", when: ["High propensity"], language: "English", version: 3, approvals: OK,
+    text: "Hi {first}, your {plan} premium of {premium} is due on {due}. Pay in one tap: {pay_link}. Make future payments worry-free: register auto-debit for no missed dates and continuous cover: {mandate_link}.",
   },
   {
-    id: "link2-default", nodes: ["link15b"], name: "Second reminder with the link", channel: "WhatsApp", when: [], language: "English", version: 1, approvals: OK,
+    id: "link2-default", nodes: ["link15b"], name: "Second reminder with the link", channel: "WhatsApp", when: [], language: "English", version: 2, approvals: OK,
     text: "Hi {first}, a reminder that {premium} for your {plan} is due on {due}. Your link is still open: {pay_link}. Reply CALL if you would like us to call you.",
   },
   {
-    id: "call15-default", nodes: ["call15", "s3call", "s2call"], name: "Reminder call", channel: "Voice", when: [], language: "English", version: 3, approvals: OK,
-    text: "Hello {first}, this is {agent} from Sample Life Insurance about policy {policy}. The call is recorded. Your premium of {premium} is due on {due}. When will you be able to pay? I can send the payment link on WhatsApp right away.",
+    id: "link2-med-en", nodes: ["link15b"], name: "Second reminder, what is at stake (Medium propensity)", channel: "WhatsApp", when: ["Medium propensity"], language: "English", version: 2, approvals: OK,
+    text: "Hi {first}, your premium of {premium} for policy {policy} is due on {due}. If it is not paid by the end of the grace period, your cover of {sum_assured} stops and the benefits reduce. Pay now: {pay_link}. Reply CALL and we will call you.",
   },
   {
-    id: "link2-high-en", nodes: ["link15b"], name: "Second reminder, short (P6 to P10)", channel: "WhatsApp", when: ["High propensity"], language: "English", version: 1, approvals: OK,
-    text: "Hi {first}, a quick reminder: {premium} for your {plan} is due on {due}. Your link is still open: {pay_link}.",
-  },
-  {
-    id: "link2-low-en", nodes: ["link15b"], name: "Second reminder, what is at stake (P1 to P5)", channel: "WhatsApp", when: ["Low propensity"], language: "English", version: 1, approvals: OK,
+    id: "link2-low-en", nodes: ["link15b"], name: "Second reminder, what is at stake (Low propensity)", channel: "WhatsApp", when: ["Low propensity"], language: "English", version: 2, approvals: OK,
     text: "Hi {first}, your premium of {premium} is due on {due}. If it is missed after the grace period, the cover of {sum_assured} stops and the benefits reduce. Pay now: {pay_link}. Reply CALL and we will call you.",
   },
   {
-    id: "link2-low-hi", nodes: ["link15b"], name: "Second reminder, what is at stake (P1 to P5)", channel: "WhatsApp", when: ["Low propensity"], language: "Hindi", version: 1, approvals: OK,
-    text: "Namaste {first} ji, premium {premium} {due} ko due hai. Grace period ke baad bhi na bharne par {sum_assured} ka cover band ho jayega. Abhi bharein: {pay_link}. CALL likhein, hum call karenge.",
+    id: "link2-high-en", nodes: ["link15b"], name: "Second reminder, short (High propensity)", channel: "WhatsApp", when: ["High propensity"], language: "English", version: 2, approvals: OK,
+    text: "Hi {first}, a quick reminder: {premium} for your {plan} is due on {due}. Your link is still open: {pay_link}.",
   },
   {
     id: "t0-default", nodes: ["t0"], name: "Due-date reminder with link", channel: "WhatsApp", when: [], language: "English", version: 2, approvals: OK,
     text: "Hi {first}, your {plan} premium of {premium} is due today. Pay now to keep your cover and benefits without a break: {pay_link}.",
   },
-  // Reminder call T-15
+  // Reminder call, T-15. Same telecaller structure, shorter, after the WhatsApp messages went unpaid.
   {
-    id: "call15-p13", nodes: ["call15", "s3call"], name: "Reminder call, firm ask with options (P1 to P3)", channel: "Voice", when: ["P1 to P3"], language: "English", version: 2, approvals: OK,
-    text: "Hello {first}, this is {agent} from Sample Life Insurance about policy {policy}. The call is recorded. Your premium of {premium} is due on {due}, and your family's cover of {sum_assured} depends on it. On which date will you pay? If the full amount is hard this month, a monthly mode or a date within the grace period is possible.",
+    id: "call15-default", nodes: ["call15", "s3call", "s2call"], name: "Reminder call", channel: "Voice", when: [], language: "English", version: 4, approvals: OK,
+    text: "Good afternoon, this is {agent} calling on behalf of Sample Life Insurance. May I speak to {name}? This call is recorded for quality and training. Your policy {policy}, {plan}, has a premium of {premium} due on {due}. We sent you the payment link on WhatsApp. May I confirm the date you will pay, and the mode? I can send the link again right now.",
   },
   {
-    id: "call15-p13-hi", nodes: ["call15", "s3call"], name: "Reminder call, firm ask with options (P1 to P3)", channel: "Voice", when: ["P1 to P3"], language: "Hindi", version: 2, approvals: OK,
-    text: "Namaste {first} ji, main {agent}, Sample Life Insurance se, policy {policy} ke baare mein. Call record ho rahi hai. Aapka premium {premium} {due} ko due hai, aur parivaar ka {sum_assured} ka cover isi par tika hai. Aap kis tareekh ko bharenge? Poori rakam is mahine mushkil ho to monthly mode ya grace period ke andar ki tareekh bhi ho sakti hai.",
+    id: "call15-med-en", nodes: ["call15", "s2call"], name: "Reminder call after WhatsApp (Medium propensity)", channel: "Voice", when: ["Medium propensity"], language: "English", version: 3, approvals: OK,
+    text: "Good afternoon, this is {agent} calling on behalf of Sample Life Insurance. May I speak to {name}? This call is recorded for quality and training. We sent you two WhatsApp reminders for policy {policy}, {plan}. Your premium of {premium} is due on {due}, and paying on time keeps your cover and benefits running. May I confirm the date you will pay and the mode: online, the app, or a cheque at a branch? I can send the secure link again right now.",
   },
   {
-    id: "call15-low", nodes: ["call15", "s3call", "s2call"], name: "Reminder call, firm ask (P4 to P5)", channel: "Voice", when: ["P4 to P5"], language: "English", version: 4, approvals: OK,
-    text: "Hello {first}, this is {agent} from Sample Life Insurance about policy {policy}. The call is recorded. Your premium of {premium} is due on {due}. On which date will you pay, and by which mode? I can send a link right now, or ask your advisor to collect a cheque.",
+    id: "call15-low-en", nodes: ["call15", "s3call", "s2call"], name: "Reminder call, firm ask (Low propensity)", channel: "Voice", when: ["Low propensity"], language: "English", version: 5, approvals: OK,
+    text: "Good afternoon, this is {agent} calling on behalf of Sample Life Insurance. May I speak to {name}? This call is recorded for quality and training. Your premium of {premium} for policy {policy} is due on {due}, and your family's cover of {sum_assured} depends on it. On which date will you pay? If the full amount is hard this month, you can pay within the grace period with no extra charge, or change to a monthly mode.",
   },
   {
-    id: "call15-high", nodes: ["call15", "s2call"], name: "Reminder call, light touch (P6 to P10)", channel: "Voice", when: ["High propensity"], language: "English", version: 4, approvals: OK,
-    text: "Hello {first}, this is {agent} from Sample Life Insurance. The call is recorded. A quick reminder that your premium of {premium} is due on {due}. You can pay online, on the app, or through the link I can send now. Thank you for staying with us.",
+    id: "call15-farmer", nodes: ["call15", "early"], name: "Renewal call, farmer", channel: "Voice", when: ["Farmer"], language: "Hindi", version: 2, approvals: OK,
+    text: "Namaste {first} ji, aapki policy {policy} lambe samay ke liye guaranteed fayde deti hai aur aapke parivaar aur aapki kheti dono ko suraksha deti hai. Premium {premium} {due} ko due hai. Kab bharenge? Main link bhej sakti hoon, ya branch mein cheque se bhi bhar sakte hain.",
+  },
+  // When the customer is not convinced: the mis-selling rebuttal, then the product explanation call.
+  {
+    id: "explain-trad", nodes: ["explain", "explain1", "explain2"], name: "Not convinced: explain the benefits, traditional", channel: "Voice", when: ["Traditional"], language: "English", version: 3, approvals: OK,
+    text: "It may be that you did not get complete information when you bought the policy; the details are also in your welcome call and policy document. Please give me two minutes to explain. Your {plan} gives your family life cover of {sum_assured}. Bonuses are added every year the premium is paid, and the maturity benefit is paid at the end of the term. You get a tax benefit on this year's premium and can take a loan against the policy. If the premium is not paid by the end of the grace period, the cover stops and the benefits reduce. Paying within the grace period costs nothing extra.",
   },
   {
-    id: "call15-farmer", nodes: ["call15", "early"], name: "Reminder call, farmer", channel: "Voice", when: ["Farmer"], language: "Hindi", version: 2, approvals: OK,
-    text: "Namaste {first} ji, aapki policy {policy} aapke parivaar aur aapki kheti dono ko suraksha deti hai. Premium {premium} {due} ko due hai. Kab bharenge? Main link bhej sakti hoon, ya branch mein cash ya cheque se bhi bhar sakte hain.",
+    id: "explain-ulip", nodes: ["explain", "explain1", "explain2"], name: "Not convinced: explain the benefits, ULIP", channel: "Voice", when: ["ULIP"], language: "English", version: 3, approvals: { marketing: "Approved", compliance: "Approved", legal: "In review" },
+    text: "It may be that you did not get complete information when you bought the policy; please give me two minutes to explain. Your {plan} does two jobs: life cover of {sum_assured} for your family, and your premium invested in the funds you chose. If a premium is missed, your money moves to the discontinued fund and stops growing with your funds, and the life cover stops. When you pay, the discontinuance charges are added back to your fund. If the full amount is hard, you can change to a monthly or quarterly mode.",
   },
-  // Product explanation, when the customer asks
+  // Grace Period: the post-due script.
   {
-    id: "explain-trad", nodes: ["explain"], name: "Product explanation, traditional", channel: "Voice", when: ["Traditional"], language: "English", version: 2, approvals: OK,
-    text: "Your {plan} gives life cover of {sum_assured} and guaranteed benefits at maturity. Bonuses are added each year the premium is paid. If a premium is missed after the grace period, cover stops and the benefits reduce. You also get a tax benefit for the premium you pay this year.",
-  },
-  {
-    id: "explain-ulip", nodes: ["explain"], name: "Product explanation, ULIP", channel: "Voice", when: ["ULIP"], language: "English", version: 2, approvals: { marketing: "Approved", compliance: "Approved", legal: "In review" },
-    text: "Your {plan} does two jobs: life cover of {sum_assured}, and your premium invested in the funds you chose. Returns depend on the market and are best judged over many years. If a premium is missed, the money moves to the discontinued fund and stops growing with your funds, and life cover stops. Paying now keeps both running.",
-  },
-  // Grace and lapse
-  {
-    id: "rehit-default", nodes: ["rehit"], name: "Grace Period reminder call", channel: "Voice", when: [], language: "English", version: 3, approvals: OK,
-    text: "Hello {first}, this is {agent} from Sample Life Insurance. Your premium of {premium} was due on {due}. Your policy is in its grace period until {grace_end}; paying before then keeps your cover with no extra charge. May I send the link now?",
+    id: "rehit-default", nodes: ["rehit"], name: "Grace Period call", channel: "Voice", when: [], language: "English", version: 4, approvals: OK,
+    text: "Good morning, this is {agent} calling on behalf of Sample Life Insurance. May I speak to {name}? This call is recorded for quality and training. Your premium of {premium} was due on {due}, so we request you to pay within the grace period, until {grace_end}, to keep enjoying the benefits of your policy. Paying online is quickest; I can send the link now. I would also suggest auto-debit so future premiums go through on time.",
   },
   {
-    id: "rehit-low-hi", nodes: ["rehit"], name: "Grace Period call, firm (P1 to P5)", channel: "Voice", when: ["Low propensity"], language: "Hindi", version: 2, approvals: OK,
-    text: "Namaste {first} ji, main {agent}, Sample Life Insurance se. Call record ho rahi hai. Aapka premium {premium} {due} ko due tha. Policy {grace_end} tak grace period mein hai; tab tak bharne par koi extra charge nahi. Uske baad cover band ho jayega. Kya main abhi link bhej doon, ya aapke liye monthly mode dekhein?",
+    id: "rehit-low-en", nodes: ["rehit"], name: "Grace Period call, firm (Low propensity)", channel: "Voice", when: ["Low propensity"], language: "English", version: 3, approvals: OK,
+    text: "Good morning, this is {agent} calling on behalf of Sample Life Insurance. May I speak to {name}? This call is recorded for quality and training. Your premium of {premium} was due on {due}. The policy is in its grace period until {grace_end}; paying before then costs nothing extra, and after that the cover stops. May I send the link now, or would a monthly mode help?",
   },
   {
-    id: "rehit-low-en", nodes: ["rehit"], name: "Grace Period call, firm (P1 to P5)", channel: "Voice", when: ["Low propensity"], language: "English", version: 2, approvals: OK,
-    text: "Hello {first}, this is {agent} from Sample Life Insurance. The call is recorded. Your premium of {premium} was due on {due}. The policy is in its grace period until {grace_end}; paying before then costs nothing extra, and after that the cover stops. May I send the link now, or would a monthly mode help?",
+    id: "rehit-low-hi", nodes: ["rehit"], name: "Grace Period call, firm (Low propensity)", channel: "Voice", when: ["Low propensity"], language: "Hindi", version: 3, approvals: OK,
+    text: "Namaste, main {agent}, Sample Life Insurance ki taraf se. Call record ho rahi hai. Aapka premium {premium} {due} ko due tha. Policy {grace_end} tak grace period mein hai; tab tak bharne par koi extra charge nahi, uske baad cover band ho jayega. Kya main abhi link bhej doon, ya monthly mode dekhein?",
   },
   {
     id: "fund-default", nodes: ["fund"], name: "Keep funds for the debit", channel: "Voice", when: [], language: "English", version: 2, approvals: OK,
@@ -184,9 +169,7 @@ export const SCRIPT_LIBRARY: ScriptVariant[] = [
 ];
 
 export interface ScriptContext {
-  band: "Low propensity" | "High propensity" | "Unscored";
-  /** P1 to P10, when the policy is scored. */
-  bandNo?: number | null | undefined;
+  band: "Low propensity" | "Medium propensity" | "High propensity" | "Unscored";
   segment: string[];
   product: string;
   language: "English" | "Hindi";
@@ -196,13 +179,8 @@ export interface ScriptContext {
 export function pickScript(nodeId: string, ctx: ScriptContext): ScriptVariant | undefined {
   const pool = SCRIPT_LIBRARY.filter((s) => s.nodes.includes(nodeId));
   if (!pool.length) return undefined;
-  const range = bandRange(ctx.bandNo);
-  const tags = new Set([ctx.band, ...ctx.segment, ctx.product, ...(range ? [range] : [])]);
-  const score = (s: ScriptVariant) => {
-    if (s.when.some((w) => !tags.has(w))) return -1;
-    // A band range is narrower than "Low propensity", so it wins over it.
-    return s.when.reduce((a, w) => a + (w.startsWith("P") && w.includes(" to ") ? 12 : 10), 0) + (s.language === ctx.language ? 5 : 0);
-  };
+  const tags = new Set([ctx.band, ...ctx.segment, ctx.product]);
+  const score = (s: ScriptVariant) => (s.when.some((w) => !tags.has(w)) ? -1 : s.when.length * 10 + (s.language === ctx.language ? 5 : 0));
   return [...pool].sort((a, b) => score(b) - score(a)).find((s) => score(s) >= 0);
 }
 
@@ -210,13 +188,7 @@ export function fillScript(text: string, vars: Record<string, string>): string {
   return text.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? `{${k}}`);
 }
 
-export function bandRange(b: number | null | undefined): string | undefined {
-  if (b == null) return undefined;
-  return b <= 3 ? "P1 to P3" : b <= 5 ? "P4 to P5" : "P6 to P10";
-}
-
-/** Why this variant was chosen, in words: "P1 to P3 · Hindi". */
+/** Why this variant was chosen, in words: "Low propensity · Hindi". */
 export function scriptRule(v: ScriptVariant): string {
-  const who = v.when.map((w) => (w === "Low propensity" ? "P1 to P5" : w === "High propensity" ? "P6 to P10" : w));
-  return [...(who.length ? who : ["Everyone"]), v.language].join(" · ");
+  return [...(v.when.length ? v.when : ["Everyone"]), v.language].join(" · ");
 }

@@ -7,8 +7,8 @@ export interface Highlight {
 
 export const WF_HIGHLIGHTS: Record<string, Highlight[]> = {
   R1: [
-    { nodeId: "band", title: "Your propensity bands drive the journey", text: "P1 to P5 get an early service call at T-90. P6 to P10 start on WhatsApp. The bands come from your analytics team; the workflow acts on them." },
-    { nodeId: "call15", title: "The script changes with the band", text: "One voice agent, with different approved words for P1 to P3, P4 to P5 and P6 to P10, in the customer's language. Marketing, compliance and legal sign each version once." },
+    { nodeId: "band", title: "Your propensity scores drive the journey", text: "Low propensity gets renewal calls from T-90. Medium starts on WhatsApp and gets a call if still unpaid. High stays digital. The scores come from your analytics team; the workflow acts on them." },
+    { nodeId: "call15", title: "The script changes with the band", text: "One voice agent, with different approved words for Low, Medium and High propensity, in the customer's language. Marketing, compliance and legal sign each version once." },
     { nodeId: "rdec", title: "The reason decides the next step", text: "The classifier reads every call. Mis-selling goes to the complaint desk, money trouble gets payment options, a service issue becomes a ticket." },
     { nodeId: "lp1", title: "Calls and WhatsApp on one platform", text: "WhatsApp with the link first, a second nudge on the same channel after two days, and a call only if the premium is still unpaid." },
     { nodeId: "worth", title: "Knows when to stop spending", text: "The Worth Pursuing Model rescores after every contact. Below 25%, in-house calls stop and the case goes to the vendor who is paid only on recovery." },
