@@ -187,6 +187,8 @@ export const useLive = create<LiveState>()(
               if (!run?.live || r.at < run.live.sentAt) continue;
               if (r.requestId && r.requestId !== run.live.requestId) continue;
               if (r.channel !== run.live.channel && !(r.channel === "WhatsApp" && r.paid)) continue;
+              // A WhatsApp delivery or read receipt is shown only; the step waits for a payment or the operator.
+              if (r.channel === "WhatsApp" && !r.paid) continue;
               applyResult(run, beatFromResult({ ...r, channel: run.live.channel === "WhatsApp" ? "WhatsApp" : r.channel }), r);
             }
             set({ lastPoll: body.now ?? new Date().toISOString() });
