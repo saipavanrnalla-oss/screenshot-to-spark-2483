@@ -50,6 +50,8 @@ export interface DueRow {
   status: string;
   state: string;
   email: string;
+  /** Demo only: which booth use case this row replays (1, 2a, 2b, 3, 4); empty for a normal policy. */
+  useCase: string;
 }
 
 export const FILE_COLUMNS: { key: string; label: string; required: boolean; aliases: string[]; example: string }[] = [
@@ -80,6 +82,7 @@ export const FILE_COLUMNS: { key: string; label: string; required: boolean; alia
   { key: "policy_status", label: "Policy status", required: false, aliases: ["status"], example: "Premium due" },
   { key: "state", label: "State", required: false, aliases: [], example: "Uttar Pradesh" },
   { key: "email", label: "Email", required: false, aliases: ["email_id", "e_mail"], example: "" },
+  { key: "demo_use_case", label: "Demo use case (1, 2a, 2b, 3 or 4)", required: false, aliases: ["use_case", "scenario"], example: "1" },
 ];
 
 const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
@@ -102,24 +105,33 @@ export function parseDate(raw: string): string {
 
 const money = (x: string) => Number(x.replace(/[^\d.]/g, "")) || 0;
 
-const HEADER = "policy_number,customer_name,phone,due_date,mode,premium,premiums_paid,issue_date,product,plan,propensity_band,autopay,last_year_payment,language,channel,branch,age,occupation";
+const HEADER = "policy_number,customer_name,phone,due_date,mode,premium,premiums_paid,issue_date,product,plan,propensity_band,autopay,last_year_payment,language,channel,branch,age,occupation,demo_use_case";
 
 /** The booth file: three live use cases (real call and WhatsApp when a dispatch address is set) and two shown as simulations. */
 export const SAMPLE_FILE = [
   HEADER,
-  "SLI02409101,Sunil Kapoor,+919800000001,2027-01-16,Annual,36000,1,2026-01-16,Traditional,Assured Savings Plan,Low,None,,English,Bancassurance,Lucknow Main,44,Self-employed",
-  "SLI02409102,Farhan Ali,+919800000002,2027-01-12,Annual,30000,1,2026-01-12,Traditional,Assured Savings Plan,Low,None,,English,Agency,Pune Camp,35,Salaried",
-  "SLI02409103,Meera Iyer,+919800000003,2026-11-11,Annual,48000,1,2025-11-11,ULIP,Wealth Builder,Medium,None,,English,Agency,Chennai Central,38,Salaried",
-  "SLI02409104,Arjun Nair,+919800000004,2026-11-10,Annual,42000,1,2025-11-10,ULIP,Wealth Builder,High,None,,English,Online,Kochi,33,Salaried",
-  "SLI02409105,Kiran Rao,+919800000005,2026-10-24,Annual,24000,1,2025-10-24,Traditional,Family Income Plan,Low,None,,Hindi,Agency,Nagpur East,41,Self-employed",
+  "SLI02409101,Sunil Kapoor,+919800000001,2027-01-16,Annual,36000,1,2026-01-16,Traditional,Assured Savings Plan,Low,None,,English,Bancassurance,Lucknow Main,44,Self-employed,1",
+  "SLI02409102,Farhan Ali,+919800000002,2027-01-12,Annual,30000,1,2026-01-12,Traditional,Assured Savings Plan,Low,None,,English,Agency,Pune Camp,35,Salaried,2a",
+  "SLI02409103,Meera Iyer,+919800000003,2026-11-11,Annual,48000,1,2025-11-11,ULIP,Wealth Builder,Medium,None,,English,Agency,Chennai Central,38,Salaried,2b",
+  "SLI02409104,Arjun Nair,+919800000004,2026-11-10,Annual,42000,1,2025-11-10,ULIP,Wealth Builder,High,None,,English,Online,Kochi,33,Salaried,3",
+  "SLI02409105,Kiran Rao,+919800000005,2026-10-24,Annual,24000,1,2025-10-24,Traditional,Family Income Plan,Low,None,,Hindi,Agency,Nagpur East,41,Self-employed,4",
 ].join("\n");
 
 /** The booth file plus an auto-debit 25th-month policy and an HNI policy. */
 export const BOOTH_FILE = [
   SAMPLE_FILE,
-  "SLI02409106,Ramesh Yadav,+919800000006,2026-11-08,Quarterly,9000,8,2024-11-08,Traditional,Family Income Plan,,Bank auto-debit,In the Grace Period,Hindi,Bancassurance,Patna North,61,Farmer",
-  "SLI02409107,Kavita Shah,+919800000007,2026-10-20,Annual,260000,1,2025-10-20,ULIP,Wealth Builder,Medium,None,,English,Agency,Mumbai Central,52,Business owner",
+  "SLI02409106,Ramesh Yadav,+919800000006,2026-11-08,Quarterly,9000,8,2024-11-08,Traditional,Family Income Plan,,Bank auto-debit,In the Grace Period,Hindi,Bancassurance,Patna North,61,Farmer,",
+  "SLI02409107,Kavita Shah,+919800000007,2026-10-20,Annual,260000,1,2025-10-20,ULIP,Wealth Builder,Medium,None,,English,Agency,Mumbai Central,52,Business owner,",
 ].join("\n");
+
+/** The booth story a row replays: its demo_use_case column first, else its policy number. */
+export function storyFor(row: Pick<DueRow, "policy" | "useCase">): Story | undefined {
+  if (row.useCase) {
+    const s = Object.values(BOOTH_STORIES).find((x) => x.code.toLowerCase() === row.useCase);
+    if (s) return s;
+  }
+  return BOOTH_STORIES[row.policy];
+}
 
 /** What the customer does at a step: a call answer, or what happens after a message. */
 export type StoryBeat = Exclude<Reply, "As the customer would"> | "No reply" | "Pays on the link" | "Agrees with the vendor" | "Declines the vendor";
@@ -297,6 +309,7 @@ export function parseDueFile(text: string): { rows: DueRow[]; problems: FileProb
       status: get("policy_status"),
       state: get("state"),
       email: get("email"),
+      useCase: get("demo_use_case").toLowerCase(),
     });
     return undefined;
   });
@@ -566,7 +579,7 @@ export function startRun(row: DueRow, staged: Staged, fileName: string): RunStat
   ];
   return {
     id, row, staged, graphId: staged.workflowId, nodeId: staged.entryNodeId, day: 0, done: false, paid: false, refusals: 0,
-    visits: {}, events, handoffs: [], story: BOOTH_STORIES[row.policy], calls: 0, unanswered: 0, unpaidLinks: 0,
+    visits: {}, events, handoffs: [], story: storyFor(row), calls: 0, unanswered: 0, unpaidLinks: 0,
   };
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BOOTH_FILE, SAMPLE_FILE, beatFromResult, parseDueFile, runStep, resolveCase, scriptFor, settle, stagePolicy, startRun, type RunState } from "@/engine/live-run";
+import { BOOTH_FILE, SAMPLE_FILE, beatFromResult, storyFor, parseDueFile, runStep, resolveCase, scriptFor, settle, stagePolicy, startRun, type RunState } from "@/engine/live-run";
 import { SEED_GRAPHS } from "@/data/persistency/r1/wf";
 import { prepare } from "@/components/r1/wf-model";
 import { worthScore } from "@/engine/worth-score";
@@ -128,6 +128,16 @@ describe("live run", () => {
   it("every call and message is listed for the real platform with its script", () => {
     const end = runToEnd(begin(SAMPLE_FILE, 2));
     expect(end.handoffs.filter((h) => h.channel === "WhatsApp" || h.channel === "Voice").every((h) => !!h.scriptId && !!h.text)).toBe(true);
+  });
+
+  it("an uploaded row replays a booth use case from its demo_use_case column", () => {
+    const csv = SAMPLE_FILE.replace("SLI02409102,Farhan Ali,+919800000002", "TEST0001,Visitor,+919811111111");
+    const row = parseDueFile(csv).rows[1]!;
+    expect(row.policy).toBe("TEST0001");
+    expect(storyFor(row)?.code).toBe("2a");
+    const end = runToEnd(begin(csv, 1));
+    expect(end.endState).toBe("Renewed");
+    expect(kinds(end)).toEqual(["call", "call", "whatsapp", "payment"]);
   });
 
   it("every booth policy reaches an end state", () => {

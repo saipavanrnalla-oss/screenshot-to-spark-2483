@@ -12,6 +12,7 @@ import { useShell } from "@/hooks/use-shell";
 import { navVisible } from "@/lib/gate";
 import { usePersistencyStore } from "@/store/persistency";
 import { useSession } from "@/store/session";
+import { AskDesible } from "@/components/r1/ask-desible";
 import { cn } from "@/lib/utils";
 import { NAV, navForPath } from "./nav";
 import { Wordmark } from "./wordmark";
@@ -245,6 +246,7 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <AskDesible />
     </div>
   );
 }

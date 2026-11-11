@@ -1,28 +1,24 @@
-import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { Send, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { inputCls } from "@/components/r1/tabs";
 import { TARGETS, blockLabel, inBlock, persisted, slice, total } from "@/components/r1/cohort-model";
 import { OUTCOMES, flags, outcomeOf, yearChange } from "@/components/r1/review-model";
-import { BASE_POLICIES, type Policy } from "@/data/persistency";
+import type { Policy } from "@/data/persistency";
 import { propensityOf } from "@/data/persistency/r1/common";
 
 /**
  * Ask the data, demo version: four set questions a Head of Persistency asks first, answered from the
- * same policy book the dashboard uses. Free text is matched to the nearest question.
+ * same policy book the dashboard uses. Free text is matched to the nearest question. The assistant that
+ * shows the answers is in ask-desible.tsx.
  */
 
-type QId = "level" | "where" | "why" | "act";
+export type QId = "level" | "where" | "why" | "act";
 
-const QUESTIONS: { id: QId; text: string }[] = [
+export const QUESTIONS: { id: QId; text: string }[] = [
   { id: "level", text: "What is my 13th month persistency?" },
   { id: "where", text: "Where is 13th month persistency falling?" },
   { id: "why", text: "Why are customers not paying?" },
   { id: "act", text: "What should we do this month?" },
 ];
 
-interface Answer {
+export interface Answer {
   lead: string;
   rows?: { label: string; value: string; note?: string | undefined }[] | undefined;
   link?: { to: string; label: string } | undefined;
@@ -32,7 +28,7 @@ const p1 = (x: number) => `${(x * 100).toFixed(1)}%`;
 const p0 = (x: number) => `${Math.round(x * 100)}%`;
 const cr = (n: number) => `Rs ${(n / 1e7).toFixed(2)} Cr`;
 
-function match(text: string): QId | null {
+export function match(text: string): QId | null {
   const t = text.toLowerCase();
   if (/(what should|do this|action|fix|recommend|plan|next)/.test(t)) return "act";
   if (/(why|reason|not paying|cause)/.test(t)) return "why";
@@ -41,7 +37,7 @@ function match(text: string): QId | null {
   return null;
 }
 
-function answer(id: QId, book: Policy[]): Answer {
+export function answer(id: QId, book: Policy[]): Answer {
   const block = book.filter((p) => inBlock(p, 13));
   const all = total(slice(book, 13, "Channel"));
   const unpaid = block.filter((p) => !persisted(p, 13));
@@ -104,73 +100,3 @@ function answer(id: QId, book: Policy[]): Answer {
   }
 }
 
-export function AskData({ policies = BASE_POLICIES }: { policies?: Policy[] }) {
-  const [thread, setThread] = useState<{ q: string; a: Answer | null; id: QId | null }[]>([]);
-  const [text, setText] = useState("");
-  const [busy, setBusy] = useState(false);
-  const cache = useMemo(() => new Map<QId, Answer>(), [policies]);
-
-  const ask = (q: string, forced?: QId) => {
-    const id = forced ?? match(q);
-    setText("");
-    setBusy(true);
-    setThread((t) => [...t, { q, a: null, id }]);
-    window.setTimeout(() => {
-      const a = id ? cache.get(id) ?? answer(id, policies) : null;
-      if (id && a) cache.set(id, a);
-      setThread((t) => t.map((x, i) => (i === t.length - 1 ? { ...x, a } : x)));
-      setBusy(false);
-    }, 700);
-  };
-
-  return (
-    <section className="panel flex flex-col gap-3 p-5" aria-label="Ask the data">
-      <header className="flex items-center gap-2">
-        <Sparkles className="size-4 text-primary" aria-hidden />
-        <h2 className="text-[14px] font-semibold text-foreground">Ask the data</h2>
-        <span className="text-[12px] text-muted-foreground">Answers come from the same policy book as this dashboard</span>
-      </header>
-      <div className="flex flex-wrap gap-1.5">
-        {QUESTIONS.map((q) => (
-          <button key={q.id} type="button" disabled={busy} onClick={() => ask(q.text, q.id)} className="rounded-pill border border-border px-2.5 py-1 text-[12px] text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-50">{q.text}</button>
-        ))}
-      </div>
-      {thread.length > 0 && (
-        <ol className="max-h-[420px] space-y-3 overflow-y-auto">
-          {thread.map((t, i) => (
-            <li key={i} className="space-y-2">
-              <p className="ml-auto w-fit max-w-[85%] rounded-card bg-primary/10 px-3 py-1.5 text-[13px] text-foreground">{t.q}</p>
-              {t.a === null && t.id !== null ? (
-                <p className="text-[12px] text-muted-foreground">Reading the policy book…</p>
-              ) : t.a ? (
-                <div className="space-y-2 rounded-card border border-border bg-surface-translucent p-3 text-[13px]">
-                  <p className="text-foreground">{t.a.lead}</p>
-                  {t.a.rows && (
-                    <table className="w-full text-[12px]">
-                      <tbody>
-                        {t.a.rows.map((r) => (
-                          <tr key={r.label} className="border-t border-border first:border-t-0">
-                            <td className="py-1 pr-2 text-foreground">{r.label}</td>
-                            <td className="py-1 pr-2 text-right font-medium tabular-nums text-foreground">{r.value}</td>
-                            <td className="py-1 text-muted-foreground">{r.note}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                  {t.a.link && <Link to={t.a.link.to as never} className="text-[12px] font-medium text-primary hover:underline">{t.a.link.label}</Link>}
-                </div>
-              ) : (
-                <p className="rounded-card border border-border p-3 text-[13px] text-muted-foreground">In this version I answer the four questions above. Pick one, or ask in those words.</p>
-              )}
-            </li>
-          ))}
-        </ol>
-      )}
-      <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (text.trim()) ask(text.trim()); }}>
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Ask about persistency, where it is falling, or why" className={inputCls} aria-label="Ask the data" />
-        <Button size="sm" type="submit" disabled={!text.trim() || busy}><Send /> Ask</Button>
-      </form>
-    </section>
-  );
-}

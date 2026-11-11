@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { FileCheck2, Loader2, MessageCircle, Phone, Play, PlayCircle, Radio, Upload, UserRound } from "lucide-react";
+import { Download, FileCheck2, Loader2, MessageCircle, Phone, Play, PlayCircle, Radio, Upload, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NoteBanner, PageHeader } from "@/components/ds/primitives";
 import { inputCls, selectCls } from "@/components/r1/tabs";
@@ -11,7 +11,7 @@ import { WorthCard } from "@/components/r1/worth-card";
 import { PALETTE_BY_TYPE } from "@/data/persistency/r1/wf";
 import { gate } from "@/lib/gate";
 import {
-  BOOTH_FILE, BOOTH_STORIES, INSURER_FORMAT_FILE, FILE_COLUMNS, REPLIES, SAMPLE_FILE, bandLabel, beatAt, parseDueFile, scriptFor, stagePolicy, wordsFor,
+  BOOTH_FILE, storyFor, INSURER_FORMAT_FILE, FILE_COLUMNS, REPLIES, SAMPLE_FILE, bandLabel, beatAt, parseDueFile, scriptFor, stagePolicy, wordsFor,
   type DueRow, type LiveEvent, type Reply, type RunState, type Staged,
 } from "@/engine/live-run";
 import { isLiveRun, liveGraph, previewEntry, useLive } from "@/store/live";
@@ -39,12 +39,29 @@ const WORD_STEPS: { id: string; label: string }[] = [
   { id: "rehit", label: "Grace Period call" },
 ];
 
+const SAMPLES = [
+  { name: "Booth use cases", file: "booth-use-cases.csv", text: SAMPLE_FILE, about: "Five policies: live use cases 1, 2a and 2b, and scenarios 3 and 4. Put the visitor's mobile in the phone column to call them." },
+  { name: "Seven-policy due list", file: "due-list-nov.csv", text: BOOTH_FILE, about: "The booth policies plus a 25th month policy on auto-debit and a high-value policy." },
+  { name: "Insurer export format", file: "PAS-due-list-export.csv", text: INSURER_FORMAT_FILE, about: "Three policies in the insurer's own column names, read without renaming." },
+];
+
+/** Saves a sample as a CSV file in the browser. */
+function download(name: string, body: string) {
+  const url = URL.createObjectURL(new Blob([body + "\n"], { type: "text/csv" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function LaunchPage() {
   const [text, setText] = useState("");
   const [fileName, setFileName] = useState("due-list.csv");
   const [checked, setChecked] = useState<{ rows: DueRow[]; staged: Staged[]; problems: { line: number; message: string }[] } | null>(null);
   const [missing, setMissing] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
   const { runs, uploads, replies, addUpload, setReply, step, stepAll, clear, liveOn, serverLive, setLiveOn, loadConfig, poll } = useLive();
   const waiting = Object.values(runs).some((r) => r.live);
   useEffect(() => { void loadConfig(); }, [loadConfig]);
@@ -57,14 +74,21 @@ function LaunchPage() {
   const current = uploads[0];
   const board = current ? list.filter((r) => r.events[0]?.title.includes(current.fileName)) : list;
 
-  const check = () => {
-    const p = parseDueFile(text);
+  const check = (src: string = text) => {
+    const p = parseDueFile(src);
     setMissing(p.missing);
     if (p.missing.length) {
       setChecked(null);
       return;
     }
     setChecked({ rows: p.rows, staged: p.rows.map((r) => stagePolicy(r)), problems: p.problems });
+  };
+
+  /** A file added by upload, drop or a sample: read it and stage it straight away. */
+  const load = (name: string, body: string) => {
+    setText(body);
+    setFileName(name);
+    check(body);
   };
 
   const start = () => {
@@ -82,21 +106,46 @@ function LaunchPage() {
       <PageHeader title="Import due list" meta="Upload the file. Each policy is staged and starts its workflow at the right step." />
 
       <section className="panel space-y-3 p-4" aria-label="Due list file">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <p className="text-[13px] font-semibold text-foreground">Due list</p>
-            <p className="text-[12px] text-muted-foreground">CSV with one row per policy. Required: policy number, customer name, mobile, due date, mode, premium. The insurer's own export columns (PO Name, Contact Number, Frequency, Suspense Balance, Net collectable premium and the rest) are read as they are.</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { setText(await f.text()); setFileName(f.name); setChecked(null); } e.target.value = ""; }} />
-            <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()}><Upload /> Upload CSV</Button>
-            <Button size="sm" variant="outline" onClick={() => { setText(SAMPLE_FILE); setFileName("booth-use-cases.csv"); setChecked(null); }}>Booth use cases</Button>
-            <Button size="sm" variant="outline" onClick={() => { setText(BOOTH_FILE); setFileName("due-list-nov.csv"); setChecked(null); }}>Seven-policy sample</Button>
-            <Button size="sm" variant="outline" onClick={() => { setText(INSURER_FORMAT_FILE); setFileName("PAS-due-list-export.csv"); setChecked(null); }}>Insurer file format</Button>
+        <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) load(f.name, await f.text()); e.target.value = ""; }} />
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Upload the due list CSV"
+          onClick={() => fileRef.current?.click()}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileRef.current?.click(); }}
+          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={async (e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files?.[0]; if (f) load(f.name, await f.text()); }}
+          className={`flex cursor-pointer flex-col items-center gap-2 rounded-card border-2 border-dashed px-6 py-8 text-center transition-colors ${dragging ? "border-primary bg-primary/5" : "border-border hover:border-primary"}`}
+        >
+          <Upload className="size-6 text-primary" aria-hidden />
+          <p className="text-[14px] font-semibold text-foreground">Drop the due list CSV here, or choose a file</p>
+          <p className="max-w-[720px] text-[12px] text-muted-foreground">One row per policy. Required: policy number, customer name, mobile, due date, mode, premium. The insurer's own export columns (PO Name, Contact Number, Frequency, Suspense Balance, Net collectable premium and the rest) are read as they are. The file is checked and staged as soon as it is added.</p>
+          <Button size="sm" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}><Upload /> Choose CSV file</Button>
+        </div>
+        {missing.length > 0 && <NoteBanner tone="failed">{fileName} is missing {missing.join(", ")}.</NoteBanner>}
+        <div className="space-y-2">
+          <p className="text-[12px] font-medium text-muted-foreground">Sample files: download one to upload, or use it directly</p>
+          <div className="grid gap-2 md:grid-cols-3">
+            {SAMPLES.map((x) => (
+              <div key={x.file} className="flex flex-col gap-1 rounded-card border border-border p-3">
+                <p className="text-[13px] font-semibold text-foreground">{x.name}</p>
+                <p className="text-[12px] text-muted-foreground">{x.about}</p>
+                <div className="mt-1 flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => download(x.file, x.text)}><Download /> Download CSV</Button>
+                  <Button size="sm" variant="ghost" onClick={() => load(x.file, x.text)}>Use this file</Button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <textarea value={text} onChange={(e) => { setText(e.target.value); setChecked(null); }} rows={5} aria-label="Due list contents" placeholder={FILE_COLUMNS.map((c) => c.key).join(",")} className={`${inputCls} h-auto py-2 font-mono text-[12px]`} />
-        {missing.length > 0 && <NoteBanner tone="failed">The file is missing {missing.join(", ")}.</NoteBanner>}
+        <details className="text-[12px]">
+          <summary className="cursor-pointer font-medium text-muted-foreground">Paste CSV text instead</summary>
+          <textarea value={text} onChange={(e) => { setText(e.target.value); setChecked(null); }} rows={5} aria-label="Due list contents" placeholder={FILE_COLUMNS.map((c) => c.key).join(",")} className={`${inputCls} mt-2 h-auto py-2 font-mono text-[12px]`} />
+          <div className="mt-2 flex justify-end">
+            <Button size="sm" onClick={() => check()} disabled={!text.trim()}><FileCheck2 /> Check and stage</Button>
+          </div>
+        </details>
         <details className="text-[12px]">
           <summary className="cursor-pointer font-medium text-muted-foreground">Columns the file can carry</summary>
           <div className="mt-2 overflow-x-auto">
@@ -110,9 +159,6 @@ function LaunchPage() {
             </table>
           </div>
         </details>
-        <div className="flex justify-end">
-          <Button onClick={check} disabled={!text.trim()}><FileCheck2 /> Check and stage</Button>
-        </div>
       </section>
 
       {checked && (
@@ -140,7 +186,7 @@ function LaunchPage() {
                   const first = s.workflowId ? previewEntry(r) : undefined;
                   const sc = first ? scriptFor(r, s, first.nodeId) : undefined;
                   const ch = first ? channelOf(first.type, first.label) : undefined;
-                  const story = BOOTH_STORIES[r.policy];
+                  const story = storyFor(r);
                   return (
                     <tr key={r.policy} className="border-t border-border align-top">
                       <td className="py-2 pr-3">
