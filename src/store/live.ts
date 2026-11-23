@@ -3,9 +3,10 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { SEED_GRAPHS } from "@/data/persistency/r1/wf";
 import { prepare } from "@/components/r1/wf-model";
 import {
-  beatFromResult, contactFor, resolveCase, runStep, settle, startRun, stagePolicy,
+  agentPromptFor, beatFromResult, contactFor, resolveCase, runStep, settle, startRun, stagePolicy,
   type ChannelResult, type DueRow, type Reply, type RunState, type StoryBeat,
 } from "@/engine/live-run";
+import { DISPOSITIONS } from "@/data/persistency/r1/agent-prompt";
 
 /** Uploaded due lists and the policies running from them. Kept in the browser; the live loop uses /api/live. */
 export const LIVE_KEY = "pct-live-v3";
@@ -91,6 +92,7 @@ export const useLive = create<LiveState>()(
                 step: node.id, stepLabel: node.label, channel: contact.channel, scriptId: contact.scriptId, scriptName: contact.scriptName, text,
                 payLink: withLink.payLink, premium: run.row.netCollectable || run.row.premium, dueDate: run.row.dueDate, plan: run.row.plan,
                 propensity: run.row.band, workflow: run.graphId,
+                ...(contact.channel === "Voice" ? { agentPrompt: agentPromptFor(withLink, node), allowedDispositions: DISPOSITIONS.map((d) => `${d.code} / ${d.sub}`) } : {}),
               }),
             });
             const body = (await res.json().catch(() => ({}))) as { forwarded?: boolean; reason?: string };

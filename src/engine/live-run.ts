@@ -9,6 +9,7 @@ import { hashId } from "@/data/persistency/derived";
 import { PALETTE_BY_TYPE, type WfEdge, type WfGraph, type WfNode } from "@/data/persistency/r1/wf";
 import { fillScript, pickScript, scriptRule, type ScriptContext, type ScriptVariant } from "@/data/persistency/r1/scripts-lib";
 import { worthScore, type WorthResult } from "@/engine/worth-score";
+import { buildAgentPrompt, callKindFor } from "@/data/persistency/r1/agent-prompt";
 import { isOutcome } from "@/engine/workflow";
 
 /* ---------------- File ---------------- */
@@ -551,6 +552,8 @@ export function beatFromResult(r: ChannelResult): StoryBeat {
   if (r.channel === "WhatsApp") return r.paid ? "Pays on the link" : "No reply";
   if (r.paid) return "Pays now";
   const d = `${r.disposition ?? ""} ${r.subDisposition ?? ""}`.toLowerCase();
+  if (/already paid|to verify|complaint|mis-?selling|sensitive/.test(d)) return "Needs a person";
+  if (/call ?back|customer busy/.test(d)) return "Not reached";
   if (/not convinced|follow.?up|upon resolution|explain|more information/.test(d)) return "Not convinced";
   if (/promise|will pay|agreed|represent/.test(d)) return "Will pay";
   if (/non.?contact|not reach|ringing|busy|switched off|no answer|invalid|wrong number|out of coverage/.test(d)) return "Not reached";
@@ -627,6 +630,19 @@ function vars(s: RunState): Record<string, string> {
   };
 }
 
+/** The voice agent's full instructions for a live call at this step: scope, steps, guardrails, dispositions. */
+export function agentPromptFor(s: RunState, node: WfNode): string | undefined {
+  const c = contactFor(s, node);
+  if (!c || c.channel !== "Voice") return undefined;
+  const v = vars(s);
+  const g = (k: string) => v[k] ?? "";
+  return buildAgentPrompt(callKindFor(node.id, c.scriptId), {
+    agent: g("agent"), name: g("name"), first: g("first"), policy: g("policy"), plan: g("plan"), product: s.row.product,
+    premium: g("premium"), due: g("due"), graceEnd: g("grace_end"), sumAssured: g("sum_assured"), mode: s.row.mode,
+    language: s.row.language, helpline: g("helpline"), propensity: s.row.band ?? "Unscored", stepLabel: node.label, scriptId: c.scriptId ?? "default",
+  });
+}
+
 /** A script's text filled in for this customer, as it would be sent or spoken. */
 export function wordsFor(s: RunState, text: string): string {
   return fillScript(text, vars(s));
@@ -680,9 +696,20 @@ function naturalReply(s: RunState, nodeId: string): Exclude<Reply, "As the custo
   return x < 60 ? "Will pay" : x < 70 ? "Not convinced" : x < 88 ? "Not reached" : x < 96 ? "Refused" : "Needs a person";
 }
 
+/** A voice script's opening as spoken: the identity question, the customer confirming, then the rest. */
+function openingTurns(text: string, hindi: boolean): NonNullable<LiveEvent["transcript"]> {
+  const parts = text.split(/\s*\[(?:After the customer confirms|Customer ke confirm karne ke baad)\]\s*/);
+  if (parts.length < 2) return [{ who: "Agent", text }];
+  return [
+    { who: "Agent", text: parts[0]! },
+    { who: "Customer", text: hindi ? "Haan, bol raha hoon." : "Yes, speaking." },
+    { who: "Agent", text: parts.slice(1).join(" ") },
+  ];
+}
+
 function transcriptFor(s: RunState, opening: string, reply: Exclude<Reply, "As the customer would">): LiveEvent["transcript"] {
   const hi = s.row.language === "Hindi";
-  const t: NonNullable<LiveEvent["transcript"]> = [{ who: "Agent", text: opening }];
+  const t: NonNullable<LiveEvent["transcript"]> = openingTurns(opening, hi);
   const say = (en: string, h: string) => t.push({ who: "Customer", text: hi ? h : en });
   const ag = (en: string, h: string) => t.push({ who: "Agent", text: hi ? h : en });
   switch (reply) {
@@ -695,7 +722,7 @@ function transcriptFor(s: RunState, opening: string, reply: Exclude<Reply, "As t
       break;
     case "Not convinced":
       say("I am not convinced. I was told I only had to pay once, and I don't see what I get by paying again.", "Mujhe yakeen nahi hai. Mujhe bataya gaya tha ek hi baar bharna hai, dobara bharne se kya milega?");
-      ag("I understand. It may be that you did not get complete information at the time. A colleague will call you in a few minutes to take you through the benefits of your plan.", "Main samajh sakti hoon. Ho sakta hai us samay poori jaankari na mili ho. Kuch hi minute mein ek colleague aapko plan ke fayde samjhane ke liye call karegi.");
+      ag("I understand. A colleague will call you shortly to walk you through your plan's benefits, so you can decide.", "Main samajh sakti hoon. Kuch hi der mein ek colleague aapko plan ke fayde samjhane ke liye call karegi, taaki aap faisla kar sakein.");
       break;
     case "Refused":
       say("I don't want to continue. Money is tight right now.", "Abhi paise nahi hain, main continue nahi karna chahta.");
@@ -835,7 +862,7 @@ export function runStep(graph: WfGraph, prev: RunState, replyIn: Reply = "As the
         detail: `Called back within the hour, ${s.row.product} benefits explained`,
         ...(ex ? { script: ex.ref, text: ex.text } : {}),
         transcript: [
-          { who: "Agent", text: ex?.text ?? "Explained the plan benefits." },
+          ...openingTurns(ex?.text ?? "Explained the plan benefits.", s.row.language === "Hindi"),
           { who: "Customer", text: s.row.language === "Hindi" ? "Theek hai, ab samajh aaya. Link bhej dijiye." : "That is clear now. Please send the link." },
         ],
         disposition: "Explained, will pay",

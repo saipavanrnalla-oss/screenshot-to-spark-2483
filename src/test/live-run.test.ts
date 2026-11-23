@@ -115,7 +115,7 @@ describe("live run", () => {
     expect(v("Promise To Pay", "Will pay by own")).toBe("Will pay");
     expect(v("Follow-up", "Not convinced")).toBe("Not convinced");
     expect(v("NON CONTACT", "Switched off")).toBe("Not reached");
-    expect(v("No Intention To Pay", "Misselling")).toBe("Refused");
+    expect(v("No Intention To Pay", "Misselling")).toBe("Needs a person");
     expect(v("Do Not Call")).toBe("Needs a person");
     expect(beatFromResult({ policy: "x", channel: "WhatsApp", paid: true, at: "" })).toBe("Pays on the link");
   });
