@@ -74,3 +74,40 @@ describe("dispositions the agent may return", () => {
     for (const d of DISPOSITIONS) expect(beat(d.code, d.sub)).toBeTruthy();
   });
 });
+
+describe("prompt follows the uploaded due list", () => {
+  it("fills each call from its own row", async () => {
+    const { parseDueFile, BOOTH_FILE, INSURER_FORMAT_FILE, stagePolicy, startRun, agentPromptFor } = await import("@/engine/live-run");
+    const { SEED_GRAPHS } = await import("@/data/persistency/r1/wf");
+    const { prepare } = await import("@/components/r1/wf-model");
+    const graph = prepare(SEED_GRAPHS["R1"]!);
+    const node = graph.nodes.find((n) => n.id === "early")!;
+    const promptFor = (row: ReturnType<typeof parseDueFile>["rows"][number]) => {
+      const run = startRun(row, stagePolicy(row), "test.csv")!;
+      return agentPromptFor({ ...run, nodeId: node.id }, node)!;
+    };
+    const rows = [...parseDueFile(BOOTH_FILE).rows, ...parseDueFile(INSURER_FORMAT_FILE).rows];
+    const prompts = rows.map(promptFor);
+    expect(new Set(prompts).size).toBe(rows.length);
+    rows.forEach((r, i) => {
+      const p = prompts[i]!;
+      expect(p).toContain(`Policyholder: ${r.name}`);
+      expect(p).toContain(`Policy number: ${r.policy}`);
+      expect(p).toContain(`Premium due date: ${r.dueDate}`);
+      for (const other of rows.filter((o) => o.policy !== r.policy)) expect(p).not.toContain(other.policy);
+      expect(p).not.toMatch(/: undefined|: null|: $/m);
+      expect(p).not.toContain(r.phone);
+    });
+    const autoDebit = prompts[rows.findIndex((r) => r.autopay !== "None")]!;
+    expect(autoDebit).toContain("Auto-debit: Bank auto-debit");
+    expect(autoDebit).not.toContain("You can also set up auto-debit there");
+  });
+
+  it("explains money already held and a different life insured", () => {
+    const p = buildAgentPrompt("preDue", { ...P, modalPremium: "Rs 36,000", suspense: "Rs 6,000", premium: "Rs 30,000", insured: "Neha Kapoor" });
+    expect(p).toContain("We already hold Rs 6,000 against it, so the amount to pay is Rs 30,000.");
+    expect(p).toContain("Life insured: Neha Kapoor");
+    expect(p).toContain("on the life of Neha Kapoor");
+    expect(buildAgentPrompt("preDue", P)).not.toContain("Life insured:");
+  });
+});

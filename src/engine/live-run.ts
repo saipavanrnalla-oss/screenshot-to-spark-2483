@@ -631,6 +631,8 @@ function vars(s: RunState): Record<string, string> {
 }
 
 /** The voice agent's full instructions for a live call at this step: scope, steps, guardrails, dispositions. */
+const rs = (n: number) => `Rs ${n.toLocaleString("en-IN")}`;
+
 export function agentPromptFor(s: RunState, node: WfNode): string | undefined {
   const c = contactFor(s, node);
   if (!c || c.channel !== "Voice") return undefined;
@@ -639,7 +641,11 @@ export function agentPromptFor(s: RunState, node: WfNode): string | undefined {
   return buildAgentPrompt(callKindFor(node.id, c.scriptId), {
     agent: g("agent"), name: g("name"), first: g("first"), policy: g("policy"), plan: g("plan"), product: s.row.product,
     premium: g("premium"), due: g("due"), graceEnd: g("grace_end"), sumAssured: g("sum_assured"), mode: s.row.mode,
-    language: s.row.language, helpline: g("helpline"), propensity: s.row.band ?? "Unscored", stepLabel: node.label, scriptId: c.scriptId ?? "default",
+    language: s.row.language, helpline: g("helpline"), propensity: s.row.band ?? "Unscored",
+    renewal: s.staged.renewal, modalPremium: rs(s.row.premium), suspense: s.row.suspense > 0 ? rs(s.row.suspense) : "",
+    premiumsPaid: String(s.row.premiumsPaid || ""), issueDate: s.row.issueDate, autopay: s.row.autopay, lastYear: s.row.lastYear,
+    ppt: s.row.ppt, pt: s.row.pt, insured: s.row.insured, status: s.row.status, channel: s.row.channel, branch: s.row.branch,
+    stepLabel: node.label, scriptId: c.scriptId ?? "default",
   });
 }
 

@@ -26,6 +26,55 @@ export interface PromptInput {
   propensity: string;
   stepLabel: string;
   scriptId: string;
+  /** Optional details from the uploaded due list. Blank values are left out of the prompt. */
+  renewal?: string;
+  modalPremium?: string;
+  suspense?: string;
+  premiumsPaid?: string;
+  issueDate?: string;
+  autopay?: string;
+  lastYear?: string;
+  ppt?: string;
+  pt?: string;
+  insured?: string;
+  status?: string;
+  channel?: string;
+  branch?: string;
+}
+
+const has = (x?: string) => !!x && x.trim() !== "" && x !== "0" && x !== "Rs 0";
+const autopayOn = (p: PromptInput) => has(p.autopay) && p.autopay !== "None";
+const otherInsured = (p: PromptInput) => has(p.insured) && p.insured!.trim().toLowerCase() !== p.name.trim().toLowerCase();
+
+/** The customer's details as uploaded, one line each, blank ones left out. */
+function contextLines(p: PromptInput): string {
+  const rows: [string, string | undefined][] = [
+    ["Policyholder", p.name],
+    ["Life insured", otherInsured(p) ? p.insured : undefined],
+    ["Policy number", p.policy],
+    ["Plan", `${p.plan} (${p.product})`],
+    ["Policy status", p.status],
+    ["Renewal", p.renewal],
+    ["Issue date", p.issueDate],
+    ["Premiums paid so far", p.premiumsPaid],
+    ["Payment mode", p.mode],
+    ["Modal premium", has(p.suspense) ? p.modalPremium : undefined],
+    ["Already held against the policy (suspense)", has(p.suspense) ? p.suspense : undefined],
+    ["Amount to pay now", p.premium],
+    ["Premium due date", p.due],
+    ["Grace period ends", p.graceEnd],
+    ["Life cover (sum assured)", p.sumAssured],
+    ["Premium paying term", p.ppt ? `${p.ppt} years` : undefined],
+    ["Policy term", p.pt ? `${p.pt} years` : undefined],
+    ["Auto-debit", has(p.autopay) ? p.autopay : undefined],
+    ["Last year's payment", p.lastYear],
+    ["Sourced through", p.channel],
+    ["Branch", p.branch],
+    ["Insurer's propensity band", p.propensity],
+    ["Customer helpline", p.helpline],
+    ["Call language", p.language],
+  ];
+  return rows.filter(([, v]) => has(v)).map(([k, v]) => `${k}: ${v}`).join("\n");
 }
 
 /** Which call this step is. */
@@ -74,12 +123,17 @@ const PURPOSE_LINE: Record<CallKind, (p: PromptInput) => string> = {
   grace: () => `"Thank you. This call is about your Sample Life policy, and it is recorded for quality and training. Is this a good time to talk for two minutes?"`,
 };
 
+const held = (p: PromptInput) => (has(p.suspense) ? ` We already hold ${p.suspense} against it, so the amount to pay is ${p.premium}.` : "");
+const cover = (p: PromptInput) => (otherInsured(p) ? `life cover of ${p.sumAssured} on the life of ${p.insured}` : `life cover of ${p.sumAssured}`);
+
 const FACTS: Record<CallKind, (p: PromptInput) => string> = {
-  preDue: (p) => `"Your policy ${p.policy}, ${p.plan}, has a premium of ${p.premium} due on ${p.due}. Paying on time keeps your life cover of ${p.sumAssured} and your policy benefits running."`,
+  preDue: (p) => has(p.suspense)
+    ? `"Your policy ${p.policy}, ${p.plan}, has a premium of ${p.modalPremium} due on ${p.due}.${held(p)} Paying on time keeps your ${cover(p)} and your policy benefits running."`
+    : `"Your policy ${p.policy}, ${p.plan}, has a premium of ${p.premium} due on ${p.due}. Paying on time keeps your ${cover(p)} and your policy benefits running."`,
   explain: (p) => p.product === "ULIP"
-    ? `"Your ${p.plan} does two things. It gives your family life cover of ${p.sumAssured}, and your premium is invested in the funds you chose. If a premium is missed, the life cover stops, and your money moves to the discontinued policy fund, where it no longer grows with your chosen funds. When you pay, the discontinuance charges are added back to your fund."`
-    : `"Your ${p.plan} gives your family life cover of ${p.sumAssured}. Bonuses, if declared, are added for each year the premium is paid, and the maturity benefit is paid at the end of the policy term as per your policy document. Premiums may also be eligible for tax benefits as per prevailing tax laws. If the premium is not paid by the end of the grace period, the life cover stops and the benefits reduce."`,
-  reminder: (p) => `"We sent you WhatsApp reminders for policy ${p.policy}, ${p.plan}. Your premium of ${p.premium} is due on ${p.due}, and paying on time keeps your life cover of ${p.sumAssured} running."`,
+    ? `"Your ${p.plan} does two things. It gives your family ${cover(p)}, and your premium is invested in the funds you chose. If a premium is missed, the life cover stops, and your money moves to the discontinued policy fund, where it no longer grows with your chosen funds. When you pay, the discontinuance charges are added back to your fund."`
+    : `"Your ${p.plan} gives your family ${cover(p)}. Bonuses, if declared, are added for each year the premium is paid, and the maturity benefit is paid at the end of the policy term as per your policy document. Premiums may also be eligible for tax benefits as per prevailing tax laws. If the premium is not paid by the end of the grace period, the life cover stops and the benefits reduce."`,
+  reminder: (p) => `"We sent you WhatsApp reminders for policy ${p.policy}, ${p.plan}. Your premium of ${p.premium} is due on ${p.due}, and paying on time keeps your ${cover(p)} running."`,
   grace: (p) => `"Your premium of ${p.premium} for policy ${p.policy} was due on ${p.due}. You can still pay within the grace period, until ${p.graceEnd}, at no extra charge, and your cover continues."`,
 };
 
@@ -94,24 +148,16 @@ This call has ONE purpose: ${PURPOSE[kind]}.
 You are a service caller. You do not sell, you do not advise, and you do not discuss anything outside this policy's renewal.
 
 # CURRENT CONTEXT (the only facts you may use)
-Policyholder: ${p.name}
-Policy number: ${p.policy}
-Plan: ${p.plan} (${p.product})
-Renewal premium: ${p.premium}
-Premium due date: ${p.due}
-Payment mode: ${p.mode}
-Grace period ends: ${p.graceEnd}
-Life cover (sum assured): ${p.sumAssured}
-Customer helpline: ${p.helpline}
-Call language: ${p.language}
+These details come from the insurer's due list uploaded for this policy. They change with every call: use only the values below, never values from an earlier call or an example.
+${contextLines(p)}
 This step: ${p.stepLabel} (script ${p.scriptId})
-If a fact is not in this list, you do not know it. Never estimate, calculate or invent any figure, date, fund value, bonus rate, surrender value, loan amount or return.
+Use these details only to talk with ${p.name} about this policy. Never read out the phone number or any detail not needed to answer their question. If a fact is not in this list, you do not know it. Never estimate, calculate or invent any figure, date, fund value, bonus rate, surrender value, loan amount or return.
 
 # CRITICAL OPERATIONAL RULES
 1. NO REPETITION: check the conversation so far. Never repeat a line you have already said, except when the customer asks you to repeat it.
 2. INTERRUPTIONS: if the customer asks an in-scope question, answer it briefly from APPROVED ANSWERS, then return to the step where you left off.
 3. OUTPUT FORMAT: output only the words to be spoken. No step names, labels, reasoning, lists or emojis.
-4. TTS FORMATTING: write amounts, dates and numbers as English words ("Rs 36,000" is "Thirty Six Thousand Rupees"; "2027-01-16" is "Sixteenth of January Twenty Twenty Seven"). Read policy and phone numbers digit by digit ("S L I Zero Two Four Zero Nine One Zero One"). Write acronyms with spaces ("U P I", "E C S").
+4. TTS FORMATTING: write amounts, dates and numbers as English words (for example "Rs 25,000" is "Twenty Five Thousand Rupees" and "2027-03-05" is "Fifth of March Twenty Twenty Seven"). Read policy numbers digit by digit (for example "SLI123" is "S L I One Two Three"). Write acronyms with spaces ("U P I", "E C S").
 5. ONE THING AT A TIME: one dialogue per turn, then stop and wait. Keep each turn under three sentences.
 6. PRESENCE CHECK: if your last line ended with a question such as "Is this a good time to talk?" and the customer only says "Hello?" or "I'm here", acknowledge and ask the same question again. Do not treat it as an answer.
 7. LANGUAGE: ${hindi ? "speak in corporate Hinglish (Hindi sentences, English words for every number, amount and date). Switch to English if the customer speaks English." : "speak in English. If the customer speaks Hindi, switch to corporate Hinglish (Hindi sentences, English words for every number, amount and date)."} For any other language, go to STEP_LANGUAGE.
@@ -172,7 +218,7 @@ DIALOGUE: ${ASK}
 - Asks not to be called: go to STEP_DO_NOT_CALL
 
 [STEP_5] (Confirm and send the link)
-DIALOGUE: "Thank you. I'll send a secure payment link to this number on WhatsApp right after this call. You can also set up auto-debit there so future premiums go through on time. So I've noted that you'll pay by [the date they gave]. Is that right?"
+DIALOGUE: "Thank you. I'll send a secure payment link to this number on WhatsApp right after this call.${autopayOn(p) ? "" : " You can also set up auto-debit there so future premiums go through on time."} So I've noted that you'll pay by [the date they gave]. Is that right?"
 - Yes: go to STEP_CLOSE (disposition Promise To Pay, Will pay by own)
 - Changes the date: confirm the new date once, then STEP_CLOSE
 
@@ -240,7 +286,8 @@ DIALOGUE: "Thank you, ${p.first}. Have a good day."
 - How can I pay? "Through the secure link on WhatsApp, on the Sample Life app, or by cheque at a branch."
 - Is the link safe? "Yes. It opens Sample Life's secure payment page for your policy only."
 - Can I pay on this call? "I can't take payments on the call. The secure link is the quickest way."
-- Auto-debit? "You can set up auto-debit from the payment link, so future premiums go through on time."
+- Auto-debit? ${autopayOn(p) ? `"Your policy has ${p.autopay} set up. If this premium did not go through, the secure link is the quickest way to pay it."` : `"You can set up auto-debit from the payment link, so future premiums go through on time."`}${has(p.suspense) ? `
+- Why is the amount less than my premium? "We already hold ${p.suspense} against your policy, so you only need to pay ${p.premium}."` : ""}
 - Can I change to monthly payments, get a waiver, or a loan? "A colleague can help with that. I'll ask them to call you."
 - Fund value, bonus amount, surrender value, returns? "I don't have that on this call. You can see it on the Sample Life app, or call ${p.helpline}."
 - Tax? "Premiums may be eligible for tax benefits as per prevailing tax laws. Please check with your tax advisor."

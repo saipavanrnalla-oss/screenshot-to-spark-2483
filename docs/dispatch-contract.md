@@ -50,7 +50,7 @@ Visitor's phone: WhatsApp link -> /pay/<policy> -> POST /api/live/result (paid)
 | --- | --- |
 | `channel` | `Voice`: place an outbound call with the voice agent. `WhatsApp`: send a message from the approved template |
 | `scriptId`, `text` | The approved script for this customer, already chosen by propensity, product and language, with the customer's details filled in. Voice: the agent's opening and the facts it must say. WhatsApp: the message body |
-| `agentPrompt` | Voice only. The agent's full instructions for this call: persona, the facts it may use, the steps and branches, the guardrails and the disposition table. **Load it as the voice agent's system prompt for this call.** The rendered prompts for the live use cases are in `docs/voice-agent-prompts.md` |
+| `agentPrompt` | Voice only. The agent's full instructions for this call: persona, the facts it may use, the steps and branches, the guardrails and the disposition table. It is built when the call is placed, from the uploaded due-list row for this policy (details, amount to pay after any suspense, auto-debit, life insured, script by band, product and language), so it differs on every call. **Load it as the voice agent's system prompt for this call.** The rendered prompts for the live use cases are in `docs/voice-agent-prompts.md` |
 | `allowedDispositions` | Voice only. The only `disposition / subDisposition` pairs the agent may return |
 | `payLink` | The link to put in the WhatsApp message. It opens the demo payment page |
 | `callbackUrl` | Where to post the result. Echo `requestId` |
